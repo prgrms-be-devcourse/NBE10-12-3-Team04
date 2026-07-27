@@ -1,6 +1,6 @@
 package com.triptrace.global.exception;
 
-import com.triptrace.global.errorCode.ErrorCode;
+import com.triptrace.global.error.ErrorCode;
 import com.triptrace.global.rsData.RsData;
 
 public class ServiceException extends RuntimeException {

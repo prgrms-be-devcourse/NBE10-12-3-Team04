@@ -1,8 +1,8 @@
 package com.triptrace.global.app;
 
 
-public enum DomainList {
-    GLOBAL("01","GLOBAL"),
+public enum Domain {
+    COMMON("01","COMMON"),
     AUTH("02","AUTH"),
     IMAGE("03","IMAGE"),
     MARKER("04","MARKER"),
@@ -10,7 +10,7 @@ public enum DomainList {
     POST("06","POST"),
     TRIP("07","TRIP");
 
-    DomainList(String code, String name) {
+    Domain(String code, String name) {
         this.code = code;
         this.name = name;
     }
