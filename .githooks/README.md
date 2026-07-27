@@ -37,7 +37,7 @@ type: 세부 작업내용
 허용되는 타입:
 
 ```text
-feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert
+feat, fix, style, refactor, test, build,front, chore
 ```
 
 예시:
