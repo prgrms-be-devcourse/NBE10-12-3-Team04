@@ -13,8 +13,8 @@ if printf '%s\n' "$branch_name" | grep -Eq '^(main|develop)$'; then
   exit 0
 fi
 
-# 작업 브랜치는 type + issue 번호 + 작업내용 형식만 허용합니다.
-if printf '%s\n' "$branch_name" | grep -Eq '^(feature|refactor|fix|docs|build|chore)/issue-[0-9]+-[A-Za-z0-9._-]+$'; then
+# 작업 브랜치는 숫자-작업내용-작업내용 형식만 허용합니다.
+if printf '%s\n' "$branch_name" | grep -Eq '^[0-9]+-[A-Za-z0-9._]+-[A-Za-z0-9._-]+$'; then
   exit 0
 fi
 
@@ -24,12 +24,17 @@ cat <<EOF
 허용되는 브랜치명:
   main
   develop
-  feature/issue-1-signup-login
-  refactor/issue-1-signup-login
-  fix/issue-6-login-validation
-  docs/issue-5-readme-rule
-  build/issue-26-gradle-dependencies
-  chore/issue-26-branch-convention
+  1-signup-login
+  6-login-validation
+  5-readme-rule
+  26-gradle-dependencies
+  26-branch-convention
+
+브랜치명 형식:
+  숫자-작업내용-작업내용
+
+사용 가능한 문자:
+  영문 대소문자, 숫자, 마침표(.), 밑줄(_), 하이픈(-)
 EOF
 
 exit 1
