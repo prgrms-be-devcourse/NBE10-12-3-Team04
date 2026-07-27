@@ -1,4 +1,4 @@
-package com.triptrace.global.errorCode;
+package com.triptrace.global.error;
 
 public interface ErrorCode {
     public String getCode();
