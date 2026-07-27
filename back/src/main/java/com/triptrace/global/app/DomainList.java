@@ -1,8 +1,7 @@
 package com.triptrace.global.app;
 
-import com.triptrace.global.log.Loggable;
 
-public enum DomainNumber implements Loggable {
+public enum DomainList {
     GLOBAL("01","GLOBAL"),
     AUTH("02","AUTH"),
     IMAGE("03","IMAGE"),
@@ -11,21 +10,19 @@ public enum DomainNumber implements Loggable {
     POST("06","POST"),
     TRIP("07","TRIP");
 
-    DomainNumber(String code, String message) {
+    DomainList(String code, String name) {
         this.code = code;
-        this.message = message;
+        this.name = name;
     }
 
     private final String code;
-    private final String message;
+    private final String name;
 
-    @Override
     public String getCode() {
         return code;
     }
 
-    @Override
-    public String getMessage() {
-        return message;
+    public String getName() {
+        return name;
     }
 }
