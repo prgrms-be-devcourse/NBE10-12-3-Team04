@@ -15,13 +15,9 @@ public enum DefaultErrorCode implements ErrorCode {
     private final String code;
     private final String message;
 
-    DefaultErrorCode(String code, Domain tag, String message) {
-        this.code = String.format("%s-%s",  code, tag.getCode());
-        this.message = message;
-    }
-
     DefaultErrorCode(String code, String message) {
-        this(code, Domain.COMMON, message);
+        this.code = code;
+        this.message = message;
     }
 
     @Override
