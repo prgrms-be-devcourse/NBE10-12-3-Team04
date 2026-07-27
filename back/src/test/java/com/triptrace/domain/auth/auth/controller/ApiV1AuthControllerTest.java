@@ -2,6 +2,8 @@ package com.triptrace.domain.auth.auth.controller;
 
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
 import com.triptrace.domain.auth.auth.service.AuthService;
+import com.triptrace.global.error.DefaultErrorCode;
+
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -86,7 +88,7 @@ class ApiV1AuthControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.resultCode").value("400-1"));
+            .andExpect(jsonPath("$.resultCode").value(DefaultErrorCode.BAD_REQUEST.getCode()));
     }
 
     @Test
