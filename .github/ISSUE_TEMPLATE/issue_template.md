@@ -1,7 +1,7 @@
 ---
 name: 이슈 템플릿
 about: 기능, 수정, 문서 작업 이슈를 작성합니다.
-title: "Prefix: 작업내용"
+title: "Label: 작업내용"
 labels: ""
 assignees: ""
 ---
