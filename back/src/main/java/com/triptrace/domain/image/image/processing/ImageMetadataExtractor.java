@@ -19,6 +19,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.dto.ImageDateTime;
 import com.triptrace.domain.image.image.processing.dto.ImageExifIF;
 import com.triptrace.domain.image.image.processing.dto.ImageLocation;
@@ -30,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class ImageMetadataExtractor {
-    //ERROR CODE, 영역으로 구분
-    private static final String FILE_EXTRACT_ERROR = "400-1";
-
     private void showAllInfoByMetaData(Metadata metadata) {
         if (metadata == null) {
             log.warn("metadata is null");
@@ -54,7 +52,7 @@ public class ImageMetadataExtractor {
             FileType fileType = FileTypeDetector.detectFileType(fis);
             imageInfo.setFileSize(Long.valueOf(bytes.length));
             if (!fileTypeFilter(fileType)) {
-                throw new ImageProcessException(FILE_EXTRACT_ERROR, "파일 유형이 올바르지 않습니다.");
+                throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_TYPE_ERROR);
             }
             Metadata metadata = ImageMetadataReader.readMetadata(fis);
             showAllInfoByMetaData(metadata);
@@ -86,7 +84,7 @@ public class ImageMetadataExtractor {
             }
         } catch (ImageProcessingException | ImageProcessException | IOException e) {
             log.warn(e.getMessage());
-            throw new ImageProcessException(FILE_EXTRACT_ERROR, "메타데이터를 추출할 수 없습니다.", e);
+            throw new ImageProcessException(ImageErrorCode.FILE_EXTRACT_ERROR);
         }
         return imageInfo;
     }
