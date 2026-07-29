@@ -67,10 +67,10 @@ public class ImageFileStorage {
             storedFile = fileStorage.save(imageBytes, directoryPath, fileName);
         } catch (IOException e) {
             log.warn(e.getMessage());
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_SAVE_ERROR);
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         if (storedFile == null) {
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_SAVE_ERROR);
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         return storedFile;
     }
@@ -101,7 +101,7 @@ public class ImageFileStorage {
             fileStorage.delete(resolveStoragePath(imagePath));
         } catch (IOException e) {
             log.warn(imagePath, e);
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_DELETE_ERROR);
+            throw new ImageProcessException(ImageErrorCode.DELETE_ERROR);
         }
         return true;
     }
@@ -124,12 +124,14 @@ public class ImageFileStorage {
         try {
             deleteImage(originFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_REWARD_ERROR);
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
         try {
             deleteImage(thumbnailFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_REWARD_ERROR);
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
     }
 }

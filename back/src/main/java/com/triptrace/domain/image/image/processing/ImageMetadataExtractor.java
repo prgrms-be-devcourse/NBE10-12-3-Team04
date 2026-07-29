@@ -52,7 +52,7 @@ public class ImageMetadataExtractor {
             FileType fileType = FileTypeDetector.detectFileType(fis);
             imageInfo.setFileSize(Long.valueOf(bytes.length));
             if (!fileTypeFilter(fileType)) {
-                throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_TYPE_ERROR);
+                throw new ImageProcessException(ImageErrorCode.TYPE_ERROR);
             }
             Metadata metadata = ImageMetadataReader.readMetadata(fis);
             showAllInfoByMetaData(metadata);

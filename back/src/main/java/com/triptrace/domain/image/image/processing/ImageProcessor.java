@@ -26,7 +26,7 @@ public class ImageProcessor {
         try {
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(image));
             if (bufferedImage == null) {
-                throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
+                throw new ImageProcessException(ImageErrorCode.READ_ERROR);
             }
             return bufferedImage;
         } catch (IOException e) {
@@ -82,12 +82,12 @@ public class ImageProcessor {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             boolean written = ImageIO.write(rgbImage, jpegExt, bytes);
             if (!written) {
-                throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_SAVE_ERROR);
+                throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
             }
             return bytes.toByteArray();
         } catch (IOException e) {
             log.warn(e.getMessage());
-            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_SAVE_ERROR);
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
     }
 
