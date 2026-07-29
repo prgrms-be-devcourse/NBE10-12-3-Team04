@@ -1,6 +1,7 @@
 package com.triptrace.global.exception;
 
-import com.triptrace.domain.image.image.catalog.ErrorCode;
+import com.triptrace.global.app.Domain;
+import com.triptrace.global.error.ErrorCode;
 import com.triptrace.global.rsData.RsData;
 
 public class ServiceException extends RuntimeException {
@@ -13,9 +14,11 @@ public class ServiceException extends RuntimeException {
         this.msg = msg;
     }
     public ServiceException(ErrorCode errorCode) {
-        this(errorCode.getResultCode(), errorCode.getMessage());
+        this(errorCode, errorCode.getDomain());
     }
-
+    public ServiceException(ErrorCode errorCode, Domain domain) {
+        this("%s-%s".formatted(errorCode.getCode(),domain.getCode()), errorCode.getMessage());
+    }
     public RsData<Void> getRsData() {
         return new RsData<>(resultCode, msg, null);
     }

@@ -1,6 +1,9 @@
 package com.triptrace.domain.image.image.application;
 
-import com.triptrace.domain.image.image.catalog.ImageExceptionCatalog;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.service.ImageService;
 import com.triptrace.domain.member.member.entity.Member;
@@ -9,9 +12,9 @@ import com.triptrace.domain.post.post.entity.Post;
 import com.triptrace.domain.post.post.service.PostService;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.service.TripService;
+import com.triptrace.global.exception.ServiceException;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +30,7 @@ public class ImageModifyUseCase {
         Trip trip = tripService.findOwnedTrip(tripId, owner.getId());
         Post post = postService.getPost(trip, postId);
         if (!post.getTrip().getId().equals(trip.getId())) {
-            throw ImageExceptionCatalog.invalid();
+            throw new ServiceException(ImageErrorCode.INVALID);
         }
         return imageService.modifyPost(owner, trip, post, imageId);
     }

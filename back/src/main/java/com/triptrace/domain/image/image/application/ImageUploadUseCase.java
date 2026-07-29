@@ -8,7 +8,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.triptrace.domain.image.image.catalog.ImageExceptionCatalog;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.dto.response.ImageUploadResponse;
 import com.triptrace.domain.image.image.entity.Image;
@@ -26,6 +26,7 @@ import com.triptrace.domain.post.post.entity.Post;
 import com.triptrace.domain.post.post.service.PostService;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.service.TripService;
+import com.triptrace.global.exception.ServiceException;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +70,7 @@ public class ImageUploadUseCase {
             byte[] bytes = imageFile.getBytes();
             savedFileInfo = imageFileStorage.saveImageWithThumbnail(bytes, imageInfo.getOrientation());
             if (savedFileInfo == null) {
-                throw ImageExceptionCatalog.invalid("이미지 파일 저장에 실패했습니다.");
+                throw new ServiceException(ImageErrorCode.FAIL_SAVE);
             }
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo);
         } catch (IOException | ImageProcessException e) {
@@ -120,7 +121,7 @@ public class ImageUploadUseCase {
 
     private void validateImagesRequest(MultipartFile[] images) {
         if (images == null || images.length == 0) {
-            throw ImageExceptionCatalog.invalid("업로드할 이미지가 없습니다.");
+            throw new ServiceException(ImageErrorCode.NO_IMAGE);
         }
     }
 }
