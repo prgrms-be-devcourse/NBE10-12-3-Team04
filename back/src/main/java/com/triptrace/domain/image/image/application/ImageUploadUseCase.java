@@ -16,7 +16,7 @@ import com.triptrace.domain.image.image.mapper.ImageMapper;
 import com.triptrace.domain.image.image.processing.ImageInfo;
 import com.triptrace.domain.image.image.processing.ImageMetadataExtractor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 import com.triptrace.domain.image.image.service.ImageService;
 import com.triptrace.domain.image.image.storage.ImageFileStorage;
 import com.triptrace.domain.image.image.storage.StoredImageFile;

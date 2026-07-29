@@ -12,7 +12,7 @@ import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.ImageProcessor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 
 import lombok.extern.slf4j.Slf4j;
 

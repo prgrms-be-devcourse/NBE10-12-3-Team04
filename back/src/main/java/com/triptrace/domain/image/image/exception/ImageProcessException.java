@@ -1,4 +1,4 @@
-package com.triptrace.domain.image.image.processing.exception;
+package com.triptrace.domain.image.image.exception;
 
 public class ImageProcessException extends RuntimeException {
     private final String resultCode;

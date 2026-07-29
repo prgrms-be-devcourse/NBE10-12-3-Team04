@@ -23,7 +23,7 @@ import com.triptrace.domain.image.image.processing.dto.ImageDateTime;
 import com.triptrace.domain.image.image.processing.dto.ImageExifIF;
 import com.triptrace.domain.image.image.processing.dto.ImageLocation;
 import com.triptrace.domain.image.image.processing.dto.ImageWidthHeight;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 
 import lombok.extern.slf4j.Slf4j;
 

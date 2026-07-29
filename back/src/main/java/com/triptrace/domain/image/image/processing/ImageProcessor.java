@@ -1,6 +1,6 @@
 package com.triptrace.domain.image.image.processing;
 
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
