@@ -80,6 +80,30 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("게시물을 수동 생성하면 전체 게시물의 첫 날짜와 끝 날짜로 여행 기간을 보정한다.")
+    void createRecalculatesTripDateRange() {
+        Member owner = createMember("dateRangeOwner");
+        Trip trip = createTrip(owner, "기간 보정 여행");
+
+        postService.create(trip.getId(), owner.getId(), new PostCreateRequest(
+            LocalDate.of(2026, 4, 5),
+            null,
+            "마지막 날",
+            "마지막 기록"
+        ));
+        postService.create(trip.getId(), owner.getId(), new PostCreateRequest(
+            LocalDate.of(2026, 4, 2),
+            null,
+            "첫날",
+            "첫 기록"
+        ));
+
+        Trip foundTrip = tripRepository.findById(trip.getId()).orElseThrow();
+        assertThat(foundTrip.getStartDate()).isEqualTo(LocalDate.of(2026, 4, 2).atStartOfDay());
+        assertThat(foundTrip.getEndDate()).isEqualTo(LocalDate.of(2026, 4, 5).atStartOfDay());
+    }
+
+    @Test
     @DisplayName("소유자가 아니면 게시물을 생성할 수 없다.")
     void createByNotOwner() {
         Member owner = createMember("owner");
@@ -186,6 +210,26 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("게시물 날짜를 수정하면 여행 기간도 다시 계산한다.")
+    void modifyRecalculatesTripDateRange() {
+        Member owner = createMember("modifyDateRangeOwner");
+        Trip trip = createTrip(owner, "수정 기간 보정 여행");
+        Post first = createPost(trip, LocalDate.of(2026, 3, 1), "첫 기록");
+        Post last = createPost(trip, LocalDate.of(2026, 3, 5), "마지막 기록");
+
+        postService.modifyPost(last.getId(), owner.getId(), new PostModifyRequest(
+            LocalDate.of(2026, 3, 2),
+            null,
+            "수정된 기록",
+            "수정된 메모"
+        ));
+
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.of(2026, 3, 1).atStartOfDay());
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 2).atStartOfDay());
+        assertThat(first.getDate()).isEqualTo(LocalDate.of(2026, 3, 1));
+    }
+
+    @Test
     @DisplayName("소유자는 게시물을 삭제할 수 있다.")
     void deleteByOwner() {
         Member owner = createMember("owner");
@@ -195,6 +239,20 @@ class PostServiceTest {
         postService.deletePost(post.getId(), owner.getId());
 
         assertThat(postRepository.existsById(post.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("게시물을 삭제하면 남은 게시물 기준으로 여행 기간을 다시 계산한다.")
+    void deleteRecalculatesTripDateRange() {
+        Member owner = createMember("deleteDateRangeOwner");
+        Trip trip = createTrip(owner, "삭제 기간 보정 여행");
+        Post first = createPost(trip, LocalDate.of(2026, 2, 1), "삭제할 첫 기록");
+        createPost(trip, LocalDate.of(2026, 2, 3), "남길 기록");
+
+        postService.deletePost(first.getId(), owner.getId());
+
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.of(2026, 2, 3).atStartOfDay());
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2026, 2, 3).atStartOfDay());
     }
 
     @Test

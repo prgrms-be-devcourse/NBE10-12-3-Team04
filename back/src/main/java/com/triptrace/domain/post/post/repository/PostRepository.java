@@ -7,12 +7,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByTripId(Long tripId);
 
     List<Post> findByTripIdOrderByDateAsc(Long tripId);
+
+    Optional<Post> findFirstByTripIdOrderByDateAscIdAsc(Long tripId);
+
+    Optional<Post> findFirstByTripIdOrderByDateDescIdDesc(Long tripId);
 
     @Query("select p from Post p join p.trip t join t.owner m where m.id = :ownerId order by p.date asc, p.id asc")
 	List<Post> findByOwnerId(@Param("ownerId") Long ownerId);

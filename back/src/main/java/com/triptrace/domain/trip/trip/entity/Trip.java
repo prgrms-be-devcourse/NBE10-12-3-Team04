@@ -82,6 +82,11 @@ public class Trip extends BaseEntity {
         this.endDate = endDate;
     }
 
+    public void changeDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
     public Trip(
         Member owner,
         String title,
