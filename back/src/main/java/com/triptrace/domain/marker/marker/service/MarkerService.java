@@ -141,7 +141,6 @@ public class MarkerService {
         return LocalDateTime.of(post.getDate(), visitedAt.toLocalTime());
     }
 
-    @java.lang.SuppressWarnings("all")
     public MarkerService(final MarkerRepository markerRepository, final PostRepository postRepository, final GooglePlacesClient googlePlacesClient) {
         this.markerRepository = markerRepository;
         this.postRepository = postRepository;

@@ -81,42 +81,34 @@ public class Marker extends BaseEntity {
         this.representativeImage = representativeImage;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Post getPost() {
         return this.post;
     }
 
-    @java.lang.SuppressWarnings("all")
     public BigDecimal getCenterLat() {
         return this.centerLat;
     }
 
-    @java.lang.SuppressWarnings("all")
     public BigDecimal getCenterLng() {
         return this.centerLng;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getPlaceName() {
         return this.placeName;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getVisitedAt() {
         return this.visitedAt;
     }
 
-    @java.lang.SuppressWarnings("all")
     public MarkerSource getSource() {
         return this.source;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Image getRepresentativeImage() {
         return this.representativeImage;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Marker() {
     }
 }

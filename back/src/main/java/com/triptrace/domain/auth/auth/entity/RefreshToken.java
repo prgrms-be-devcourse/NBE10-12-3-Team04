@@ -36,27 +36,22 @@ public class RefreshToken extends BaseEntity {
         this.revoked = true;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Member getMember() {
         return this.member;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getToken() {
         return this.token;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getExpiresAt() {
         return this.expiresAt;
     }
 
-    @java.lang.SuppressWarnings("all")
     public boolean isRevoked() {
         return this.revoked;
     }
 
-    @java.lang.SuppressWarnings("all")
     public RefreshToken() {
     }
 }

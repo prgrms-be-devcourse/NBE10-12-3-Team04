@@ -131,7 +131,6 @@ public class ApiV1ImageController {
             imageModifyUseCase.unassign(ownerId, tripId, imageId));
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1ImageController(final ImageUploadUseCase imageUploadUseCase, final ImageDeleteUseCase imageDeleteUseCase, final ImageModifyUseCase imageModifyUseCase, final ImageSearchUseCase imageSearchUseCase) {
         this.imageUploadUseCase = imageUploadUseCase;
         this.imageDeleteUseCase = imageDeleteUseCase;

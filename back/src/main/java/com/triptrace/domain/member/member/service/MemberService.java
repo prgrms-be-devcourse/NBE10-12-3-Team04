@@ -68,7 +68,6 @@ public class MemberService {
         return member;
     }
 
-    @java.lang.SuppressWarnings("all")
     public MemberService(final MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }

@@ -81,7 +81,6 @@ public class SecurityConfig {
         return source;
     }
 
-    @java.lang.SuppressWarnings("all")
     public SecurityConfig(final JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
     }

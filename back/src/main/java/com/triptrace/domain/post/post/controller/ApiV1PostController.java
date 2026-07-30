@@ -89,7 +89,6 @@ public class ApiV1PostController {
             "%d번 게시물이 삭제되었습니다.".formatted(postId));
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1PostController(final PostService postService) {
         this.postService = postService;
     }

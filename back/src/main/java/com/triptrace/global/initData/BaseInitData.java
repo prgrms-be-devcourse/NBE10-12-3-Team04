@@ -18,7 +18,6 @@ public class BaseInitData {
         };
     }
 
-    @java.lang.SuppressWarnings("all")
     public BaseInitData() {
     }
 }

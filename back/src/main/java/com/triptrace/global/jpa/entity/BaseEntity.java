@@ -35,22 +35,18 @@ public abstract class BaseEntity {
         return Objects.hashCode(id);
     }
 
-    @java.lang.SuppressWarnings("all")
     public Long getId() {
         return this.id;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getCreatedAt() {
         return this.createdAt;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getUpdatedAt() {
         return this.updatedAt;
     }
 
-    @java.lang.SuppressWarnings("all")
     protected void setId(final Long id) {
         this.id = id;
     }

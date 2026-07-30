@@ -237,7 +237,6 @@ public class TripAutoRecordService {
             && image.getGpsLng() != null;
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripAutoRecordService(final TripRepository tripRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final ReverseGeocodingClient reverseGeocodingClient) {
         this.tripRepository = tripRepository;
         this.imageRepository = imageRepository;

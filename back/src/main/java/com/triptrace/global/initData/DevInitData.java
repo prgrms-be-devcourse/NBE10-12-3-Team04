@@ -444,7 +444,6 @@ public class DevInitData {
         System.out.println("=====================================");
     }
 
-    @java.lang.SuppressWarnings("all")
     public DevInitData(final MemberRepository memberRepository, final TripRepository tripRepository, final PostRepository postRepository, final PasswordEncoder passwordEncoder, final MarkerRepository markerRepository, final ImageRepository imageRepository, final TripLikeRepository tripLikeRepository, final JdbcTemplate jdbcTemplate) {
         this.memberRepository = memberRepository;
         this.tripRepository = tripRepository;

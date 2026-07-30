@@ -25,7 +25,6 @@ public class RefreshTokenService {
             .forEach(RefreshToken::revoke);
     }
 
-    @java.lang.SuppressWarnings("all")
     public RefreshTokenService(final RefreshTokenRepository refreshTokenRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
     }

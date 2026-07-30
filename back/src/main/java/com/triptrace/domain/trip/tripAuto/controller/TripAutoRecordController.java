@@ -29,7 +29,6 @@ public class TripAutoRecordController {
         );
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripAutoRecordController(final TripAutoRecordService tripAutoRecordService) {
         this.tripAutoRecordService = tripAutoRecordService;
     }

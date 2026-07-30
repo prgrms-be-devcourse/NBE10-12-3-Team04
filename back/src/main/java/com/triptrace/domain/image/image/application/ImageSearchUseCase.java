@@ -14,7 +14,6 @@ public class ImageSearchUseCase {
         return imageService.findWithOwner(ownerId).stream().map(ImageMapper::toImageResponse).toList();
     }
 
-    @java.lang.SuppressWarnings("all")
     public ImageSearchUseCase(final ImageService imageService) {
         this.imageService = imageService;
     }

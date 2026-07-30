@@ -238,7 +238,6 @@ public class PostService {
         return post;
     }
 
-    @java.lang.SuppressWarnings("all")
     public PostService(final PostRepository postRepository, final TripRepository tripRepository, final ImageRepository imageRepository, final MarkerRepository markerRepository) {
         this.postRepository = postRepository;
         this.tripRepository = tripRepository;

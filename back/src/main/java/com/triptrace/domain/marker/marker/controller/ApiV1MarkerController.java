@@ -125,7 +125,6 @@ public class ApiV1MarkerController {
         markerService.deleteMarker(markerId, memberId);
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1MarkerController(final MarkerService markerService) {
         this.markerService = markerService;
     }

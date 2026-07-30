@@ -26,17 +26,14 @@ public class TripLike extends BaseEntity {
         this.trip = trip;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Member getMember() {
         return this.member;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Trip getTrip() {
         return this.trip;
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripLike() {
     }
 }

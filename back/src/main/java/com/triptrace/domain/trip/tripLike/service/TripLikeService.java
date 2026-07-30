@@ -50,7 +50,6 @@ public class TripLikeService {
         return tripLikeRepository.existsByMemberIdAndTripId(memberId, tripId);
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripLikeService(final TripLikeRepository tripLikeRepository, final MemberRepository memberRepository, final TripRepository tripRepository) {
         this.tripLikeRepository = tripLikeRepository;
         this.memberRepository = memberRepository;

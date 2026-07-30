@@ -94,7 +94,6 @@ public class ApiV1AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1AuthController(final AuthService authService) {
         this.authService = authService;
     }

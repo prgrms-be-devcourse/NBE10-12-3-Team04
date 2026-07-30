@@ -116,67 +116,54 @@ public class Image extends BaseEntity {
         this.post = post;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Member getOwner() {
         return this.owner;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Trip getTrip() {
         return this.trip;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Post getPost() {
         return this.post;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getOriginalFileUrl() {
         return this.originalFileUrl;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getThumbnailUrl() {
         return this.thumbnailUrl;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Long getFileSize() {
         return this.fileSize;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getMimeType() {
         return this.mimeType;
     }
 
-    @java.lang.SuppressWarnings("all")
     public BigDecimal getGpsLat() {
         return this.gpsLat;
     }
 
-    @java.lang.SuppressWarnings("all")
     public BigDecimal getGpsLng() {
         return this.gpsLng;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getCapturedAt() {
         return this.capturedAt;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getDeviceInfo() {
         return this.deviceInfo;
     }
 
-    @java.lang.SuppressWarnings("all")
     public UploadStatus getUploadStatus() {
         return this.uploadStatus;
     }
 
-    @java.lang.SuppressWarnings("all")
     protected Image() {
     }
 }

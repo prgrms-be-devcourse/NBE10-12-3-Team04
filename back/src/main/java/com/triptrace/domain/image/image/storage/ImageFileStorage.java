@@ -15,7 +15,6 @@ import com.triptrace.domain.image.image.exception.ImageProcessException;
 
 @Component
 public class ImageFileStorage {
-    @java.lang.SuppressWarnings("all")
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageFileStorage.class);
     private final String uploadDir;
     private final String profileImagesPath;

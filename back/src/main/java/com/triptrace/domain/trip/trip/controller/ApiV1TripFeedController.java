@@ -41,7 +41,6 @@ public class ApiV1TripFeedController {
             tripService.findPublicTripsByCreatedAtDesc(pageable));
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1TripFeedController(final TripService tripService) {
         this.tripService = tripService;
     }

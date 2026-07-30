@@ -100,52 +100,42 @@ public class Trip extends BaseEntity {
         this.visibility = visibility;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Member getOwner() {
         return this.owner;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getTitle() {
         return this.title;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getCountry() {
         return this.country;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getCity() {
         return this.city;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getStartDate() {
         return this.startDate;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDateTime getEndDate() {
         return this.endDate;
     }
 
-    @java.lang.SuppressWarnings("all")
     public boolean isVisibility() {
         return this.visibility;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Long getLikeCount() {
         return this.likeCount;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Image getRepresentativeImage() {
         return this.representativeImage;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Trip() {
     }
 }

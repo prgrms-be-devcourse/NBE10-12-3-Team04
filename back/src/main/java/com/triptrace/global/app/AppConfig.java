@@ -10,7 +10,6 @@ import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 public class AppConfig {
-    @java.lang.SuppressWarnings("all")
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AppConfig.class);
     private static Environment environment;
     private static BuildProperties buildProperties;
@@ -58,7 +57,6 @@ public class AppConfig {
         Ut.json.objectMapper = objectMapper;
     }
 
-    @java.lang.SuppressWarnings("all")
     public static ObjectMapper getObjectMapper() {
         return AppConfig.objectMapper;
     }

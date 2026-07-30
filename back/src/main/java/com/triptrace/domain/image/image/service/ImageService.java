@@ -159,7 +159,6 @@ public class ImageService {
         return ImageMapper.toServiceResponse(image);
     }
 
-    @java.lang.SuppressWarnings("all")
     public ImageService(final ImageRepository imageRepository, final TripRepository tripRepository, final MarkerRepository markerRepository) {
         this.imageRepository = imageRepository;
         this.tripRepository = tripRepository;

@@ -177,7 +177,6 @@ public class TripService {
         }
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripService(final TripRepository tripRepository, final MemberRepository memberRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final TripLikeRepository tripLikeRepository) {
         this.tripRepository = tripRepository;
         this.memberRepository = memberRepository;

@@ -59,7 +59,6 @@ public class ApiV1MemberController {
             new ProfileImageUploadResponse(profileImageUrl));
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1MemberController(final MemberService memberService, final ProfileImageStorage profileImageStorage) {
         this.memberService = memberService;
         this.profileImageStorage = profileImageStorage;

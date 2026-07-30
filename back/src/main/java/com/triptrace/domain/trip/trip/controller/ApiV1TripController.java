@@ -118,7 +118,6 @@ public class ApiV1TripController {
                 request.imageId()));
     }
 
-    @java.lang.SuppressWarnings("all")
     public ApiV1TripController(final TripService tripService) {
         this.tripService = tripService;
     }

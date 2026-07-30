@@ -54,7 +54,6 @@ public class TripLikeController {
         );
     }
 
-    @java.lang.SuppressWarnings("all")
     public TripLikeController(final TripLikeService tripLikeService) {
         this.tripLikeService = tripLikeService;
     }

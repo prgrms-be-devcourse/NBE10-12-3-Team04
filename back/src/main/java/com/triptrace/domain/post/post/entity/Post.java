@@ -38,27 +38,22 @@ public class Post extends BaseEntity {
         this.memo = memo;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Trip getTrip() {
         return this.trip;
     }
 
-    @java.lang.SuppressWarnings("all")
     public LocalDate getDate() {
         return this.date;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getTitle() {
         return this.title;
     }
 
-    @java.lang.SuppressWarnings("all")
     public String getMemo() {
         return this.memo;
     }
 
-    @java.lang.SuppressWarnings("all")
     public Post() {
     }
 }
