@@ -14,7 +14,8 @@ services:
       - frontend
       - backend
   frontend:
-    image: ghcr.io/prgrms-be-devcourse/nbe10-12-2-team04-frontend:latest
+    # CD가 .env.prod에 기록한 고정 버전 이미지만 실행한다.
+    image: ghcr.io/prgrms-be-devcourse/triptrace-frontend:${FRONTEND_VERSION:-latest}
     expose:
       - "3000"
     environment:
@@ -26,7 +27,8 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/prgrms-be-devcourse/nbe10-12-2-team04-backend:latest
+    # latest 대신 릴리스 태그를 사용해 배포한 커밋을 재현할 수 있다.
+    image: ghcr.io/prgrms-be-devcourse/triptrace-backend:${BACKEND_VERSION:-latest}
     expose:
       - "8080"
     environment:
