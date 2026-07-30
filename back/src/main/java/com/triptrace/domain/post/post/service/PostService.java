@@ -60,6 +60,7 @@ public class PostService {
             toVisitedAt(request.date(), request.time()),
             MarkerSource.MANUAL
         ));
+        recalculateTripDateRange(trip);
 
         return toResponse(post);
     }
@@ -101,6 +102,7 @@ public class PostService {
             request.memo()
         );
         syncMarkerDate(post);
+        recalculateTripDateRange(post.getTrip());
 
         return toResponse(post);
     }
@@ -125,6 +127,8 @@ public class PostService {
         }
 
         postRepository.delete(post);
+        postRepository.flush();
+        recalculateTripDateRange(post.getTrip());
     }
 
     private void validateOwner(Trip trip, Long ownerId) {
@@ -204,6 +208,20 @@ public class PostService {
             marker.getPlaceName(),
             LocalDateTime.of(post.getDate(), marker.getVisitedAt().toLocalTime()),
             marker.getSource()
+        );
+    }
+
+    private void recalculateTripDateRange(Trip trip) {
+        LocalDate firstDate = postRepository.findFirstByTripIdOrderByDateAscIdAsc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+        LocalDate lastDate = postRepository.findFirstByTripIdOrderByDateDescIdDesc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+
+        trip.changeDateRange(
+            firstDate == null ? null : firstDate.atStartOfDay(),
+            lastDate == null ? null : lastDate.atStartOfDay()
         );
     }
 
