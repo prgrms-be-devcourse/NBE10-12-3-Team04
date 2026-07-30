@@ -1,6 +1,9 @@
 package com.triptrace.domain.trip.trip.controller;
 
 import com.triptrace.domain.trip.trip.dto.TripResponse;
+import com.triptrace.domain.trip.trip.dto.TripSearchResponse;
+import com.triptrace.domain.trip.trip.dto.TripSearchScope;
+import com.triptrace.domain.trip.trip.service.TripSearchService;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.rsData.RsData;
 import org.springframework.data.domain.Page;
@@ -13,6 +16,7 @@ import java.util.List;
 @RequestMapping("/api/v1/feed/trips")
 public class ApiV1TripFeedController {
     private final TripService tripService;
+    private final TripSearchService tripSearchService;
 
     @GetMapping("/top-liked")
     public RsData<List<TripResponse>> getTop10PublicTripsByLikeCount() {
@@ -41,7 +45,32 @@ public class ApiV1TripFeedController {
             tripService.findPublicTripsByCreatedAtDesc(pageable));
     }
 
-    public ApiV1TripFeedController(final TripService tripService) {
+    @GetMapping("/search")
+    public RsData<Page<TripSearchResponse>> searchTrips(
+        @RequestParam(required = false) final String keyword,
+        @RequestParam(defaultValue = "ALL") final TripSearchScope scope,
+        @RequestParam(required = false) final String country,
+        @RequestParam(required = false) final String city,
+        @PageableDefault(size = 20) final Pageable pageable
+    ) {
+        return new RsData<>(
+            "200-08",
+            "여행기 검색에 성공했습니다.",
+            tripSearchService.search(
+                keyword,
+                scope,
+                country,
+                city,
+                pageable
+            )
+        );
+    }
+
+    public ApiV1TripFeedController(
+        final TripService tripService,
+        final TripSearchService tripSearchService
+    ) {
         this.tripService = tripService;
+        this.tripSearchService = tripSearchService;
     }
 }
