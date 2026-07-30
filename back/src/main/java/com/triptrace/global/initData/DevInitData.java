@@ -41,6 +41,7 @@ import java.util.Map;
 public class DevInitData {
 
     private static final int MEMBER_COUNT = 10;
+    private static final int GENERATED_TRIP_COUNT = 100;
 
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
@@ -66,6 +67,7 @@ public class DevInitData {
 
             // POSTS + IMAGES + MARKERS (게시글 스펙 하나에 좌표/장소/이미지를 묶어 함께 생성)
             createContent(members, trips, postSpecs());
+            createGeneratedContent(trips, 20);
 
             // LIKES (여행기마다 좋아요 수를 다양하게)
             createLikes(members, trips);
@@ -132,15 +134,15 @@ public class DevInitData {
         };
 
         boolean[] visibility = {
-            true, false,
             true, true,
-            true, false,
             true, true,
-            true, false,
             true, true,
-            true, false,
             true, true,
-            true, false,
+            true, true,
+            true, true,
+            true, true,
+            true, true,
+            true, true,
             true, true
         };
 
@@ -166,7 +168,65 @@ public class DevInitData {
             );
         }
 
+        List<Destination> destinations = destinations();
+        String[] themes = {
+            "주말 산책", "맛집 탐방", "가족 여행", "혼자 떠난 여행", "우정 여행",
+            "사진 여행", "여름 휴가", "겨울 여행", "힐링 여행", "도시 투어"
+        };
+
+        for (int i = 0; i < GENERATED_TRIP_COUNT; i++) {
+            Destination destination = destinations.get(i % destinations.size());
+            Member owner = members.get(i % members.size());
+            int year = 2024 + (i % 3);
+            int month = (i % 12) + 1;
+            int day = (i % 20) + 1;
+            LocalDateTime startDate = LocalDateTime.of(year, month, day, 0, 0);
+
+            trips.add(tripRepository.save(new Trip(
+                owner,
+                "%s %s #%03d".formatted(destination.city(), themes[i % themes.length], i + 1),
+                destination.country(),
+                destination.city(),
+                startDate,
+                startDate.plusDays(2 + (i % 6)),
+                true
+            )));
+        }
+
         return trips;
+    }
+
+    private record Destination(
+        String country,
+        String city,
+        String placeName,
+        String lat,
+        String lng
+    ) {}
+
+    private List<Destination> destinations() {
+        return List.of(
+            new Destination("한국", "서울", "경복궁", "37.5796170", "126.9770410"),
+            new Destination("한국", "부산", "해운대", "35.1586970", "129.1603840"),
+            new Destination("한국", "제주", "성산일출봉", "33.4586120", "126.9424430"),
+            new Destination("한국", "강릉", "경포대", "37.7955680", "128.8966010"),
+            new Destination("한국", "여수", "돌산공원", "34.7363750", "127.7626100"),
+            new Destination("일본", "도쿄", "시부야", "35.6595000", "139.7005000"),
+            new Destination("일본", "교토", "기온", "35.0037000", "135.7750000"),
+            new Destination("일본", "오사카", "도톤보리", "34.6687000", "135.5013000"),
+            new Destination("일본", "후쿠오카", "다자이후", "33.5209000", "130.5350000"),
+            new Destination("대만", "타이베이", "타이베이101", "25.0339000", "121.5645000"),
+            new Destination("베트남", "다낭", "미케비치", "16.0600000", "108.2470000"),
+            new Destination("태국", "방콕", "왓포", "13.7465000", "100.4927000"),
+            new Destination("싱가포르", "싱가포르", "마리나베이", "1.2834000", "103.8607000"),
+            new Destination("프랑스", "파리", "에펠탑", "48.8584000", "2.2945000"),
+            new Destination("이탈리아", "로마", "콜로세움", "41.8902000", "12.4922000"),
+            new Destination("영국", "런던", "빅벤", "51.5007000", "-0.1246000"),
+            new Destination("미국", "뉴욕", "타임스퀘어", "40.7580000", "-73.9855000"),
+            new Destination("호주", "시드니", "오페라하우스", "-33.8568000", "151.2153000"),
+            new Destination("인도네시아", "발리", "우붓", "-8.5069000", "115.2625000"),
+            new Destination("스페인", "바르셀로나", "사그라다 파밀리아", "41.4036000", "2.1744000")
+        );
     }
 
 
@@ -284,21 +344,64 @@ public class DevInitData {
         tripRepository.saveAll(trips);
     }
 
+    private void createGeneratedContent(List<Trip> trips, int startIndex) {
+        List<Destination> destinations = destinations();
 
-    // LIKE (여행기마다 좋아요 수를 다양하게. 비공개 여행은 0)
+        for (int tripIndex = startIndex; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            Destination destination = destinations.get((tripIndex - startIndex) % destinations.size());
+            LocalDate postDate = trip.getStartDate().toLocalDate();
+            String slug = "generated-trip-" + (tripIndex - startIndex + 1);
+
+            Post post = postRepository.save(new Post(
+                trip,
+                postDate,
+                destination.city() + " 여행 기록",
+                destination.placeName() + "을 방문하고 남긴 테스트 여행 기록입니다."
+            ));
+
+            Image image = imageRepository.save(new Image(
+                trip.getOwner(),
+                trip,
+                post,
+                "https://picsum.photos/seed/" + slug + "/1600/1000",
+                "https://picsum.photos/seed/" + slug + "/640/400",
+                1024L,
+                "image/jpeg",
+                UploadStatus.STORED
+            ));
+
+            markerRepository.save(new Marker(
+                post,
+                new BigDecimal(destination.lat()),
+                new BigDecimal(destination.lng()),
+                destination.placeName(),
+                postDate.atTime(10 + (tripIndex % 8), 0),
+                tripIndex % 3 == 0 ? MarkerSource.AUTO : MarkerSource.MANUAL,
+                image
+            ));
+
+            trip.changeRepresentativeImage(image);
+        }
+
+        tripRepository.saveAll(trips);
+    }
+
+
+    // LIKE (여행기마다 좋아요 수를 다양하게)
     private void createLikes(List<Member> members, List<Trip> trips) {
 
         // 여행기 인덱스별 목표 좋아요 수
         int[] likeCounts = {
-            8, 0,   // 교토 / 서울(비공개)
+            8, 4,   // 교토 / 서울
             3, 6,   // 부산 / 강릉
-            9, 0,   // 제주 / 오사카(비공개)
+            9, 5,   // 제주 / 오사카
             2, 5,   // 도쿄 / 타이베이
-            7, 0,   // 다낭 / 방콕(비공개)
+            7, 3,   // 다낭 / 방콕
             4, 1,   // 홍콩 / 싱가포르
-            6, 0,   // 여수 / 후쿠오카(비공개)
+            6, 4,   // 여수 / 후쿠오카
             9, 3,   // 파리 / 로마
-            8, 0,   // 뉴욕 / 런던(비공개)
+            8, 5,   // 뉴욕 / 런던
             5, 2    // 시드니 / 발리
         };
 
@@ -307,7 +410,9 @@ public class DevInitData {
         for (int t = 0; t < trips.size(); t++) {
 
             Trip trip = trips.get(t);
-            int target = likeCounts[t];
+            int target = t < likeCounts.length
+                ? likeCounts[t]
+                : (t * 7 + 3) % MEMBER_COUNT;
             int added = 0;
 
             // 여행기마다 좋아요를 누르는 멤버가 겹치지 않도록 시작 지점을 회전시킨다
