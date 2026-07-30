@@ -10,7 +10,6 @@ import com.triptrace.domain.auth.auth.service.AuthService;
 import com.triptrace.global.rsData.RsData;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,6 @@ import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class ApiV1AuthController {
     private final AuthService authService;
 
@@ -59,7 +57,6 @@ public class ApiV1AuthController {
     ) {
         TokenPair tokens = authService.reissue(refreshToken);
         addRefreshTokenCookie(response, tokens.refreshToken());
-
         return new RsData<>("200-1", "토큰 재발급 성공", new ReissueResponse(tokens.accessToken()));
     }
 
@@ -70,7 +67,6 @@ public class ApiV1AuthController {
     ) {
         authService.logout(refreshToken);
         expireRefreshTokenCookie(response);
-
         return new RsData<>("200-1", "로그아웃 성공");
     }
 
@@ -96,5 +92,9 @@ public class ApiV1AuthController {
             .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    public ApiV1AuthController(final AuthService authService) {
+        this.authService = authService;
     }
 }

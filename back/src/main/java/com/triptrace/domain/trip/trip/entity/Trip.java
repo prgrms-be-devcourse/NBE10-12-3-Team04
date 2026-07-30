@@ -8,14 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor
 public class Trip extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -103,5 +98,44 @@ public class Trip extends BaseEntity {
         this.startDate = startDate;
         this.endDate = endDate;
         this.visibility = visibility;
+    }
+
+    public Member getOwner() {
+        return this.owner;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public LocalDateTime getStartDate() {
+        return this.startDate;
+    }
+
+    public LocalDateTime getEndDate() {
+        return this.endDate;
+    }
+
+    public boolean isVisibility() {
+        return this.visibility;
+    }
+
+    public Long getLikeCount() {
+        return this.likeCount;
+    }
+
+    public Image getRepresentativeImage() {
+        return this.representativeImage;
+    }
+
+    public Trip() {
     }
 }

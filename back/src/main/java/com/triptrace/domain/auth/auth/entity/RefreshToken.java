@@ -8,15 +8,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "refresh_token")
-@Getter
-@NoArgsConstructor
 public class RefreshToken extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -39,5 +34,24 @@ public class RefreshToken extends BaseEntity {
 
     public void revoke() {
         this.revoked = true;
+    }
+
+    public Member getMember() {
+        return this.member;
+    }
+
+    public String getToken() {
+        return this.token;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return this.expiresAt;
+    }
+
+    public boolean isRevoked() {
+        return this.revoked;
+    }
+
+    public RefreshToken() {
     }
 }

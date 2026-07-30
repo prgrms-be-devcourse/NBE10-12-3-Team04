@@ -8,14 +8,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 
 @Entity
-@Getter
-@NoArgsConstructor
 public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
@@ -41,5 +36,24 @@ public class Post extends BaseEntity {
         this.date = date;
         this.title = title;
         this.memo = memo;
+    }
+
+    public Trip getTrip() {
+        return this.trip;
+    }
+
+    public LocalDate getDate() {
+        return this.date;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getMemo() {
+        return this.memo;
+    }
+
+    public Post() {
     }
 }

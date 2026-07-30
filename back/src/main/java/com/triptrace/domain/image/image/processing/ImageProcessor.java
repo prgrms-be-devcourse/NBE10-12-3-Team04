@@ -3,7 +3,6 @@ package com.triptrace.domain.image.image.processing;
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 import org.springframework.stereotype.Component;
-
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -14,11 +13,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class ImageProcessor {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageProcessor.class);
+
     public BufferedImage read(byte[] image) {
         if (image == null) {
             throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
@@ -67,7 +65,6 @@ public class ImageProcessor {
         ratio = Math.min(ratio, 1.0);
         int scaleHeight = (int) (height * ratio);
         int scaleWidth = (int) (width * ratio);
-
         BufferedImage resized = new BufferedImage(scaleWidth, scaleHeight, image.getType());
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -98,9 +95,7 @@ public class ImageProcessor {
         if (!image.getColorModel().hasAlpha()) {
             return image;
         }
-        BufferedImage rgbImage = new BufferedImage(
-            image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB
-        );
+        BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = rgbImage.createGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();

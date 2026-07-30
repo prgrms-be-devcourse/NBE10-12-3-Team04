@@ -3,17 +3,14 @@ package com.triptrace.domain.trip.trip.controller;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.rsData.RsData;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/feed/trips")
-@RequiredArgsConstructor
 public class ApiV1TripFeedController {
     private final TripService tripService;
 
@@ -37,12 +34,14 @@ public class ApiV1TripFeedController {
 
     @GetMapping(value = "/recent", params = {"page", "size"})
     public RsData<Page<TripResponse>> getVisibilityTrueOrderByCreatedAtDesc(
-        @PageableDefault(size = 20) Pageable pageable
-    ) {
-        return new RsData<> (
+        @PageableDefault(size = 20) Pageable pageable) {
+        return new RsData<>(
             "200-07",
             "여행기 최신순 조회에 성공했습니다.",
-            tripService.findPublicTripsByCreatedAtDesc(pageable)
-        );
+            tripService.findPublicTripsByCreatedAtDesc(pageable));
+    }
+
+    public ApiV1TripFeedController(final TripService tripService) {
+        this.tripService = tripService;
     }
 }
