@@ -13,9 +13,6 @@ RUN ./gradlew bootJar --no-daemon -x test
 
 FROM eclipse-temurin:25-jre-noble AS runner
 
-LABEL project="trip-trace-be1204"
-LABEL version="1.0"
-
 WORKDIR /app
 
 ARG LOG_DIR=$LOG_DIR
