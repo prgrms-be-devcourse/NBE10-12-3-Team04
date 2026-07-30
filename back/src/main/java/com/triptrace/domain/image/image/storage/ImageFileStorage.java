@@ -8,20 +8,18 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.ImageProcessor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class ImageFileStorage {
-    private static final String IMAGE_PROCESSING_SAVE_ERROR = "400-4";
-    private static final String IMAGE_PROCESSING_DELETE_ERROR = "400-5";
-
     private final String uploadDir;
     private final String profileImagesPath;
     private final String servingImagesPath;
@@ -68,10 +66,11 @@ public class ImageFileStorage {
             byte[] imageBytes = imageProcessor.encodeJpeg(image, jpegExt);
             storedFile = fileStorage.save(imageBytes, directoryPath, fileName);
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.", e);
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         if (storedFile == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         return storedFile;
     }
@@ -102,7 +101,7 @@ public class ImageFileStorage {
             fileStorage.delete(resolveStoragePath(imagePath));
         } catch (IOException e) {
             log.warn(imagePath, e);
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "파일 삭제에 실패했습니다.");
+            throw new ImageProcessException(ImageErrorCode.DELETE_ERROR);
         }
         return true;
     }
@@ -125,12 +124,14 @@ public class ImageFileStorage {
         try {
             deleteImage(originFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "보상 트랜잭션 실패");
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
         try {
             deleteImage(thumbnailFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "보상 트랜잭션 실패");
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
     }
 }

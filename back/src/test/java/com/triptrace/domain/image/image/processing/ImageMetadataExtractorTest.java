@@ -1,6 +1,6 @@
 package com.triptrace.domain.image.image.processing;
 
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

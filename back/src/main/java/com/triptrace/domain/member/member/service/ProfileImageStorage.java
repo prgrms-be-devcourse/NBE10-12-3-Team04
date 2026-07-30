@@ -11,7 +11,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.triptrace.domain.image.image.processing.ImageProcessor;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 import com.triptrace.domain.image.image.storage.ImageStorageProperties;
 import com.triptrace.global.exception.ServiceException;
 

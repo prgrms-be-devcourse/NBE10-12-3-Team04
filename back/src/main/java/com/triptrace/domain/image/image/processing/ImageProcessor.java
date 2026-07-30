@@ -1,6 +1,7 @@
 package com.triptrace.domain.image.image.processing;
 
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -13,24 +14,24 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class ImageProcessor {
-    private static final String IMAGE_PROCESSING_ERROR = "400-2";
-    private static final String IMAGE_PROCESSING_READ_ERROR = "400-3";
-    private static final String IMAGE_PROCESSING_SAVE_ERROR = "400-4";
-
     public BufferedImage read(byte[] image) {
         if (image == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_ERROR, "이미지를 읽을 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
         try {
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(image));
             if (bufferedImage == null) {
-                throw new ImageProcessException(IMAGE_PROCESSING_READ_ERROR, "이미지를 읽을 수 없습니다.");
+                throw new ImageProcessException(ImageErrorCode.READ_ERROR);
             }
             return bufferedImage;
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_READ_ERROR, "이미지를 읽을 수 없습니다.", e);
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
     }
 
@@ -81,17 +82,18 @@ public class ImageProcessor {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             boolean written = ImageIO.write(rgbImage, jpegExt, bytes);
             if (!written) {
-                throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.");
+                throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
             }
             return bytes.toByteArray();
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.", e);
+            log.warn(e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
     }
 
     private BufferedImage convertToRGB(BufferedImage image) {
         if (image == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_ERROR, "이미지를 읽을 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
         if (!image.getColorModel().hasAlpha()) {
             return image;
