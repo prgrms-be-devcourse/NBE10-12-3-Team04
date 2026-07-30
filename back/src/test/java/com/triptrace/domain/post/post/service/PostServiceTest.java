@@ -13,9 +13,11 @@ import com.triptrace.domain.post.post.dto.PostCreateRequest;
 import com.triptrace.domain.post.post.dto.PostModifyRequest;
 import com.triptrace.domain.post.post.dto.PostResponse;
 import com.triptrace.domain.post.post.entity.Post;
+import com.triptrace.domain.post.post.error.PostErrorCode;
 import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.exception.ServiceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -91,7 +93,11 @@ class PostServiceTest {
             "아라시야마에 갔다."
         )))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-06 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                PostErrorCode.FORBIDDEN.getCode(),
+                Domain.POST.getCode(),
+                PostErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -153,7 +159,11 @@ class PostServiceTest {
 
         assertThatThrownBy(() -> postService.findAccessiblePost(post.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-06 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                PostErrorCode.FORBIDDEN.getCode(),
+                Domain.POST.getCode(),
+                PostErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test

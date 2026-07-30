@@ -6,7 +6,9 @@ import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
+import com.triptrace.domain.trip.tripLike.error.TripLikeErrorCode;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.exception.ServiceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -144,7 +146,11 @@ public class TripLikeControllerTest {
 
         assertThatThrownBy(() -> tripLikeService.createLike(member.getId(), trip.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("409-07 : 이미 좋아요한 여행기입니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripLikeErrorCode.ALREADY_LIKED.getCode(),
+                Domain.TRIP.getCode(),
+                TripLikeErrorCode.ALREADY_LIKED.getMessage()
+            ));
     }
 
     @Test
@@ -175,7 +181,7 @@ public class TripLikeControllerTest {
                 .get("/api/v1/trips/" + trip.getId() + "/likes/me")
                 .with(authentication(auth(member))))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-07"))
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.TRIP.getCode()))
             .andExpect(jsonPath("$.msg").value("좋아요 여부 조회 성공했습니다."))
             .andExpect(jsonPath("$.data.liked").value(true))
             .andDo(print());
@@ -208,7 +214,9 @@ public class TripLikeControllerTest {
                 .with(authentication(auth(member)))
                 .with(csrf()))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.resultCode").value("409-07"))
+            .andExpect(jsonPath("$.resultCode").value(
+                TripLikeErrorCode.ALREADY_LIKED.getCode() + "-" + Domain.TRIP.getCode()
+            ))
             .andExpect(jsonPath("$.msg").value("좋아요한 적이 없는 여행기입니다."))
             .andDo(print());
     }

@@ -15,9 +15,11 @@ import com.triptrace.domain.trip.trip.dto.TripCreateRequest;
 import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.entity.Trip;
+import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.exception.ServiceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -143,7 +145,11 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findAccessibleTrip(trip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -167,7 +173,11 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findOwnedTrip(publicTrip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -207,7 +217,11 @@ class TripServiceTest {
             true
         )))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -274,7 +288,11 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.changeRepresentativeImage(trip.getId(), other.getId(), image.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     private Member createMember(String username) {

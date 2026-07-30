@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
-public class MarkerController {
+public class ApiV1MarkerController {
 
     private final MarkerService markerService;
 
@@ -121,11 +121,10 @@ public class MarkerController {
     }
 
     @DeleteMapping("/posts/markers/{markerId}")
-    public RsData<Void> deleteMarker (
+    public void deleteMarker(
         @PathVariable Long markerId,
         @AuthenticationPrincipal Long memberId
     ) {
         markerService.deleteMarker(markerId, memberId);
-        return new RsData<>("400-04", "마커는 삭제할 수 없습니다.", null);
     }
 }
