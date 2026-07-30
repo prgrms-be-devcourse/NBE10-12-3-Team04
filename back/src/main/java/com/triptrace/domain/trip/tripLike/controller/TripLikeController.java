@@ -22,7 +22,7 @@ public class TripLikeController {
         tripLikeService.createLike(memberId, tripId);
 
         return new RsData<>(
-            "201-1",
+            "201-07",
             "좋아요가 등록되었습니다."
         );
     }
@@ -36,7 +36,7 @@ public class TripLikeController {
         tripLikeService.deleteLike(memberId, tripId);
 
         return new RsData<>(
-            "200-1",
+            "200-07",
             "좋아요가 취소되었습니다."
         );
     }
@@ -50,7 +50,7 @@ public class TripLikeController {
         boolean liked = tripLikeService.isLiked(memberId, tripId);
 
         return new RsData<>(
-            "200-1",
+            "200-07",
             "좋아요 여부 조회 성공했습니다.",
             new TripLikeStatusResponse(liked)
         );

@@ -27,7 +27,7 @@ public class ApiV1PostController {
         PostResponse response = postService.create(tripId, memberId, request);
 
         return new RsData<>(
-            "201-1",
+            "201-06",
             "%d번 게시물이 생성되었습니다.".formatted(response.id()),
             response
         );
@@ -39,7 +39,7 @@ public class ApiV1PostController {
         @AuthenticationPrincipal Long memberId
     ) {
         return new RsData<>(
-            "200-1",
+            "200-06",
             "게시물 목록 조회에 성공했습니다.",
             postService.findPostsByTripId(tripId, memberId)
         );
@@ -49,7 +49,7 @@ public class ApiV1PostController {
         @AuthenticationPrincipal Long memberId
     ) {
         return new RsData<>(
-            "200-1",
+            "200-06",
             "게시물 목록 조회에 성공했습니다.",
             postService.getPosts(memberId)
         );
@@ -61,7 +61,7 @@ public class ApiV1PostController {
         @AuthenticationPrincipal Long memberId
     ) {
         return new RsData<>(
-            "200-1",
+            "200-06",
             "%d번 게시물 조회에 성공했습니다.".formatted(postId),
             postService.findAccessiblePost(postId, memberId)
         );
@@ -74,7 +74,7 @@ public class ApiV1PostController {
         @RequestBody @Valid PostModifyRequest request
     ) {
         return new RsData<>(
-            "200-1",
+            "200-06",
             "%d번 게시물이 수정되었습니다.".formatted(postId),
             postService.modifyPost(postId, memberId, request)
         );
@@ -88,7 +88,7 @@ public class ApiV1PostController {
         postService.deletePost(postId, memberId);
 
         return new RsData<>(
-            "200-1",
+            "200-06",
             "%d번 게시물이 삭제되었습니다.".formatted(postId)
         );
     }

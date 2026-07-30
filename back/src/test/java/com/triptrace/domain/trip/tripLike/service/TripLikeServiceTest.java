@@ -5,6 +5,8 @@ import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.domain.trip.tripLike.error.TripLikeErrorCode;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.exception.ServiceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,6 +65,10 @@ public class TripLikeServiceTest {
         tripLikeService.createLike(member.getId(), trip.getId());
         assertThatThrownBy(() -> tripLikeService.createLike(member.getId(), trip.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("409-1 : 이미 좋아요한 여행기입니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripLikeErrorCode.ALREADY_LIKED.getCode(),
+                Domain.TRIP.getCode(),
+                TripLikeErrorCode.ALREADY_LIKED.getMessage()
+            ));
     }
 }

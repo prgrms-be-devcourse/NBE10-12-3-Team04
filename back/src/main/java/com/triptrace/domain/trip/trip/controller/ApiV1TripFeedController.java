@@ -20,7 +20,7 @@ public class ApiV1TripFeedController {
     @GetMapping("/top-liked")
     public RsData<List<TripResponse>> getTop10PublicTripsByLikeCount() {
         return new RsData<> (
-            "200-1",
+            "200-07",
             "좋아요 상위 10개 여행기 조회에 성공했습니다.",
             tripService.findTop10PublicTripsByLikeCount()
         );
@@ -29,7 +29,7 @@ public class ApiV1TripFeedController {
     @GetMapping("/recent")
     public RsData<List<TripResponse>> getVisibilityTrueOrderByCreatedAtDesc() {
         return new RsData<> (
-            "200-1",
+            "200-07",
             "여행기 최신순 조회에 성공했습니다.",
             tripService.findPublicTripsByCreatedAtDesc()
         );
@@ -40,7 +40,7 @@ public class ApiV1TripFeedController {
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return new RsData<> (
-            "200-1",
+            "200-07",
             "여행기 최신순 조회에 성공했습니다.",
             tripService.findPublicTripsByCreatedAtDesc(pageable)
         );

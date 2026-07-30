@@ -7,7 +7,9 @@ import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
+import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.global.app.Domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +72,7 @@ class ApiV1TripControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.resultCode").value("201-1"))
+            .andExpect(jsonPath("$.resultCode").value("201-" + Domain.TRIP.getCode()))
             .andExpect(jsonPath("$.data.ownerId").value(member.getId()))
             .andExpect(jsonPath("$.data.title").value("교토 여행"));
     }
@@ -149,7 +151,9 @@ class ApiV1TripControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                TripErrorCode.FORBIDDEN.getCode() + "-" + Domain.TRIP.getCode()
+            ));
     }
 
     @Test
@@ -192,7 +196,9 @@ class ApiV1TripControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                TripErrorCode.FORBIDDEN.getCode() + "-" + Domain.TRIP.getCode()
+            ));
 
         assertThat(tripRepository.existsById(trip.getId())).isTrue();
     }
@@ -216,7 +222,7 @@ class ApiV1TripControllerTest {
                     """.formatted(image.getId())))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-1"))
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.TRIP.getCode()))
             .andExpect(jsonPath("$.data.thumbnailUrl").value("/images/thumbnail/representative.jpg"));
     }
 

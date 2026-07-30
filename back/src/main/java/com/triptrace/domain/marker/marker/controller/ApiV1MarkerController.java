@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
-public class MarkerController {
+public class ApiV1MarkerController {
 
     private final MarkerService markerService;
 
@@ -32,7 +32,7 @@ public class MarkerController {
         MarkerResponse response = markerService.createMarker(postId, memberId, request);
 
         return new RsData<>(
-            "201-1",
+            "201-04",
             "마커가 생성되었습니다.",
             response
         );
@@ -45,7 +45,7 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "마커 목록 조회에 성공했습니다.",
             markerService.getMarkers(postId)
         );
@@ -58,7 +58,7 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "마커 조회에 성공했습니다.",
             markerService.getMarker(markerId)
         );
@@ -72,7 +72,7 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "마커 장소명 후보 조회에 성공했습니다.",
             markerService.getPlaceCandidates(markerId, memberId)
         );
@@ -85,7 +85,7 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "장소 검색에 성공했습니다.",
             markerService.searchPlaces(keyword)
         );
@@ -99,7 +99,7 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "주변 장소 조회에 성공했습니다.",
             markerService.findNearbyPlaces(latitude, longitude)
         );
@@ -114,18 +114,17 @@ public class MarkerController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            "200-04",
             "마커가 수정되었습니다.",
             markerService.modifyMarker(markerId, memberId, request)
         );
     }
 
     @DeleteMapping("/posts/markers/{markerId}")
-    public RsData<Void> deleteMarker (
+    public void deleteMarker(
         @PathVariable Long markerId,
         @AuthenticationPrincipal Long memberId
     ) {
         markerService.deleteMarker(markerId, memberId);
-        return new RsData<>("400-1", "마커는 삭제할 수 없습니다.", null);
     }
 }

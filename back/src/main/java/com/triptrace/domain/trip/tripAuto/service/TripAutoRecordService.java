@@ -12,6 +12,7 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripAuto.dto.TripAutoRecordResponse;
+import com.triptrace.domain.trip.tripAuto.error.TripAutoErrorCode;
 import com.triptrace.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class TripAutoRecordService {
     public TripAutoRecordResponse createAutoRecords(Long tripId, Long ownerId) {
         // 자동 생성 대상 여행기를 조회하고, 요청자가 해당 여행기의 소유자인지 확인
         Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(TripAutoErrorCode.TRIP_NOT_FOUND));
 
         validateOwner(trip, ownerId);
 
@@ -231,7 +232,7 @@ public class TripAutoRecordService {
 
     private void validateOwner(Trip trip, Long ownerId) {
         if (!trip.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "권한이 없습니다.");
+            throw new ServiceException(TripAutoErrorCode.FORBIDDEN);
         }
     }
 

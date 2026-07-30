@@ -4,9 +4,11 @@ import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.post.post.entity.Post;
+import com.triptrace.domain.post.post.error.PostErrorCode;
 import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.global.app.Domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +71,7 @@ class ApiV1PostControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.resultCode").value("201-1"))
+            .andExpect(jsonPath("$.resultCode").value("201-" + Domain.POST.getCode()))
             .andExpect(jsonPath("$.data.tripId").value(trip.getId()))
             .andExpect(jsonPath("$.data.title").value("둘째 날"));
     }
@@ -120,7 +122,9 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                PostErrorCode.FORBIDDEN.getCode() + "-" + Domain.POST.getCode()
+            ));
     }
 
     @Test
@@ -162,7 +166,9 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                PostErrorCode.FORBIDDEN.getCode() + "-" + Domain.POST.getCode()
+            ));
 
         assertThat(postRepository.existsById(post.getId())).isTrue();
     }
