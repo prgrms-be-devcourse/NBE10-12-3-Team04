@@ -91,7 +91,7 @@ class PostServiceTest {
             "아라시야마에 갔다."
         )))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-06 : 여행기에 대한 권한이 없습니다.");
     }
 
     @Test
@@ -153,7 +153,7 @@ class PostServiceTest {
 
         assertThatThrownBy(() -> postService.findAccessiblePost(post.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-06 : 여행기에 대한 권한이 없습니다.");
     }
 
     @Test

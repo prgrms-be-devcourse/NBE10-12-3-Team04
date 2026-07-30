@@ -11,6 +11,7 @@ import com.triptrace.domain.trip.trip.dto.TripCreateRequest;
 import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.entity.Trip;
+import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
@@ -35,7 +36,8 @@ public class TripService {
 
     @Transactional
     public TripResponse create(Long ownerId, TripCreateRequest request) {
-        Member owner = memberRepository.findById(ownerId).orElseThrow(() -> new ServiceException("404-1", "회원을 찾을 수 없습니다."));
+        Member owner = memberRepository.findById(ownerId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.MEMBER_NOT_FOUND));
 
         Trip trip = tripRepository.save(new Trip(
             owner,
@@ -74,7 +76,8 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public TripResponse findAccessibleTrip(Long tripId, Long ownerId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.NOT_FOUND));
 
         if (!trip.isVisibility()) {
             validateOwner(trip, ownerId);
@@ -85,7 +88,8 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public Trip findOwnedTrip(Long tripId, Long ownerId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.NOT_FOUND));
         // 이미지 업로드처럼 여행기 내부 데이터를 변경하는 로직은 공개 여부와 무관하게 소유자만 접근 가능
         validateOwner(trip, ownerId);
 
@@ -132,10 +136,10 @@ public class TripService {
     public TripResponse changeRepresentativeImage(Long tripId, Long ownerId, Long imageId) {
         Trip trip = findOwnedTrip(tripId, ownerId);
         Image image = imageRepository.findById(imageId)
-            .orElseThrow(() -> new ServiceException("404-1", "이미지를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(TripErrorCode.IMAGE_NOT_FOUND));
 
         if (!image.getTrip().getId().equals(trip.getId()) || !image.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "이미지에 대한 권한이 없습니다.");
+            throw new ServiceException(TripErrorCode.IMAGE_FORBIDDEN);
         }
 
         trip.changeRepresentativeImage(image);
@@ -175,7 +179,7 @@ public class TripService {
 
     private void validateOwner(Trip trip, Long ownerId) {
         if (!trip.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "여행기에 대한 권한이 없습니다.");
+            throw new ServiceException(TripErrorCode.FORBIDDEN);
         }
     }
 }

@@ -70,7 +70,7 @@ class ApiV1TripControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.resultCode").value("201-1"))
+            .andExpect(jsonPath("$.resultCode").value("201-07"))
             .andExpect(jsonPath("$.data.ownerId").value(member.getId()))
             .andExpect(jsonPath("$.data.title").value("교토 여행"));
     }
@@ -149,7 +149,7 @@ class ApiV1TripControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value("403-07"));
     }
 
     @Test
@@ -192,7 +192,7 @@ class ApiV1TripControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value("403-07"));
 
         assertThat(tripRepository.existsById(trip.getId())).isTrue();
     }
@@ -216,7 +216,7 @@ class ApiV1TripControllerTest {
                     """.formatted(image.getId())))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-1"))
+            .andExpect(jsonPath("$.resultCode").value("200-07"))
             .andExpect(jsonPath("$.data.thumbnailUrl").value("/images/thumbnail/representative.jpg"));
     }
 

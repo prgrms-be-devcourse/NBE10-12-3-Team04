@@ -26,7 +26,7 @@ public class TripAutoRecordController {
         TripAutoRecordResponse response = tripAutoRecordService.createAutoRecords(tripId, memberId);
 
         return new RsData<>(
-            "201-1",
+            "201-07",
             "이미지 메타데이터 기반 여행 기록이 자동 생성되었습니다.",
             response
         );

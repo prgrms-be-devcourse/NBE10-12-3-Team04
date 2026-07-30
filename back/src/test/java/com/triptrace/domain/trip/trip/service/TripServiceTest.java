@@ -143,7 +143,7 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findAccessibleTrip(trip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
     }
 
     @Test
@@ -167,7 +167,7 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findOwnedTrip(publicTrip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
     }
 
     @Test
@@ -207,7 +207,7 @@ class TripServiceTest {
             true
         )))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
     }
 
     @Test
@@ -274,7 +274,7 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.changeRepresentativeImage(trip.getId(), other.getId(), image.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("403-07 : 여행기에 대한 권한이 없습니다.");
     }
 
     private Member createMember(String username) {

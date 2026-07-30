@@ -5,6 +5,7 @@ import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.entity.TripLike;
+import com.triptrace.domain.trip.tripLike.error.TripLikeErrorCode;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,13 @@ public class TripLikeService {
     @Transactional
     public void createLike(Long memberId, Long tripId) {
         if (tripLikeRepository.existsByMemberIdAndTripId(memberId, tripId)) {
-            throw new ServiceException("409-1", "이미 좋아요한 여행기입니다.");
+            throw new ServiceException(TripLikeErrorCode.ALREADY_LIKED);
         }
 
-        Member member = memberRepository.findById(memberId).orElseThrow();
-        Trip trip = tripRepository.findById(tripId).orElseThrow();
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new ServiceException(TripLikeErrorCode.MEMBER_NOT_FOUND));
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripLikeErrorCode.TRIP_NOT_FOUND));
 
         TripLike tripLike = new TripLike(member, trip);
 
@@ -35,10 +38,11 @@ public class TripLikeService {
 
     @Transactional
     public void deleteLike(Long memberId, Long tripId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow();
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripLikeErrorCode.TRIP_NOT_FOUND));
 
         TripLike tripLike = tripLikeRepository.findByMemberIdAndTripId(memberId, tripId)
-            .orElseThrow(() -> new ServiceException("409-1", "좋아요한 적이 없는 여행기입니다."));
+            .orElseThrow(() -> new ServiceException(TripLikeErrorCode.NOT_LIKED));
 
         tripLikeRepository.delete(tripLike);
         trip.decreaseLikeCount();

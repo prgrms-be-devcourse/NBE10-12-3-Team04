@@ -5,6 +5,7 @@ import com.triptrace.domain.marker.marker.dto.MarkerModifyRequest;
 import com.triptrace.domain.marker.marker.dto.MarkerResponse;
 import com.triptrace.domain.marker.marker.dto.PlaceCandidateResponse;
 import com.triptrace.domain.marker.marker.entity.Marker;
+import com.triptrace.domain.marker.marker.error.MarkerErrorCode;
 import com.triptrace.domain.marker.marker.place.GooglePlacesClient;
 import com.triptrace.domain.marker.marker.repository.MarkerRepository;
 import com.triptrace.domain.post.post.entity.Post;
@@ -32,7 +33,7 @@ public class MarkerService {
         Long ownerId = post.getTrip().getOwner().getId();
 
         if (!ownerId.equals(memberId)) {
-            throw new ServiceException("403-1", "권한이 없습니다.");
+            throw new ServiceException(MarkerErrorCode.FORBIDDEN);
         }
     }
 
@@ -41,7 +42,7 @@ public class MarkerService {
     public MarkerResponse createMarker(Long postId, Long memberId, MarkerCreateRequest request) {
 
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new ServiceException("404-1", "게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.POST_NOT_FOUND));
 
         validateOwner(post, memberId);
 
@@ -63,7 +64,7 @@ public class MarkerService {
     public List<MarkerResponse> getMarkers(Long postId) {
 
         postRepository.findById(postId)
-            .orElseThrow(() -> new ServiceException("404-1", "게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.POST_NOT_FOUND));
 
         return markerRepository.findByPostId(postId)
             .stream()
@@ -75,7 +76,7 @@ public class MarkerService {
     public MarkerResponse getMarker(Long markerId) {
 
         Marker marker = markerRepository.findById(markerId)
-            .orElseThrow(() -> new ServiceException("404-1", "마커를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.NOT_FOUND));
 
         return new MarkerResponse(marker);
     }
@@ -84,7 +85,7 @@ public class MarkerService {
     public List<PlaceCandidateResponse> getPlaceCandidates(Long markerId, Long memberId) {
 
         Marker marker = markerRepository.findById(markerId)
-            .orElseThrow(() -> new ServiceException("404-1", "마커를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.NOT_FOUND));
 
         validateOwner(marker.getPost(), memberId);
 
@@ -94,7 +95,7 @@ public class MarkerService {
 
     public List<PlaceCandidateResponse> searchPlaces(String keyword) {
         if (!StringUtils.hasText(keyword)) {
-            throw new ServiceException("400-1", "검색어를 입력해주세요.");
+            throw new ServiceException(MarkerErrorCode.KEYWORD_REQUIRED);
         }
 
         return googlePlacesClient.searchPlaces(keyword);
@@ -102,7 +103,7 @@ public class MarkerService {
 
     public List<PlaceCandidateResponse> findNearbyPlaces(BigDecimal latitude, BigDecimal longitude) {
         if (latitude == null || longitude == null) {
-            throw new ServiceException("400-1", "좌표를 입력해주세요.");
+            throw new ServiceException(MarkerErrorCode.COORDINATES_REQUIRED);
         }
 
         return googlePlacesClient.findNearbyPlaces(latitude, longitude);
@@ -113,7 +114,7 @@ public class MarkerService {
     public MarkerResponse modifyMarker(Long markerId, Long memberId, MarkerModifyRequest request) {
 
         Marker marker = markerRepository.findById(markerId)
-            .orElseThrow(() -> new ServiceException("404-1", "마커를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.NOT_FOUND));
 
         validateOwner(marker.getPost(), memberId);
 
@@ -131,10 +132,10 @@ public class MarkerService {
     // 삭제
     public void deleteMarker(Long markerId, Long memberId) {
         Marker marker = markerRepository.findById(markerId)
-            .orElseThrow(() -> new ServiceException("404-1", "마커를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(MarkerErrorCode.NOT_FOUND));
 
         validateOwner(marker.getPost(), memberId);
-        throw new ServiceException("400-1", "마커는 삭제할 수 없습니다.");
+        throw new ServiceException(MarkerErrorCode.DELETE_NOT_ALLOWED);
     }
 
     private LocalDateTime alignVisitedAtWithPostDate(Post post, LocalDateTime visitedAt) {

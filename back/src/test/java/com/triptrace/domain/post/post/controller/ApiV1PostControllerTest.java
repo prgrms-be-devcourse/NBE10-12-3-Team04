@@ -69,7 +69,7 @@ class ApiV1PostControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.resultCode").value("201-1"))
+            .andExpect(jsonPath("$.resultCode").value("201-06"))
             .andExpect(jsonPath("$.data.tripId").value(trip.getId()))
             .andExpect(jsonPath("$.data.title").value("둘째 날"));
     }
@@ -120,7 +120,7 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value("403-06"));
     }
 
     @Test
@@ -162,7 +162,7 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value("403-06"));
 
         assertThat(postRepository.existsById(post.getId())).isTrue();
     }

@@ -144,7 +144,7 @@ public class TripLikeControllerTest {
 
         assertThatThrownBy(() -> tripLikeService.createLike(member.getId(), trip.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("409-1 : 이미 좋아요한 여행기입니다.");
+            .hasMessage("409-07 : 이미 좋아요한 여행기입니다.");
     }
 
     @Test
@@ -175,7 +175,7 @@ public class TripLikeControllerTest {
                 .get("/api/v1/trips/" + trip.getId() + "/likes/me")
                 .with(authentication(auth(member))))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-1"))
+            .andExpect(jsonPath("$.resultCode").value("200-07"))
             .andExpect(jsonPath("$.msg").value("좋아요 여부 조회 성공했습니다."))
             .andExpect(jsonPath("$.data.liked").value(true))
             .andDo(print());
@@ -208,7 +208,7 @@ public class TripLikeControllerTest {
                 .with(authentication(auth(member)))
                 .with(csrf()))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.resultCode").value("409-1"))
+            .andExpect(jsonPath("$.resultCode").value("409-07"))
             .andExpect(jsonPath("$.msg").value("좋아요한 적이 없는 여행기입니다."))
             .andDo(print());
     }

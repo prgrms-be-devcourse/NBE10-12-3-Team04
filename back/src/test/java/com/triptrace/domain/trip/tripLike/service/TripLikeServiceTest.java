@@ -63,6 +63,6 @@ public class TripLikeServiceTest {
         tripLikeService.createLike(member.getId(), trip.getId());
         assertThatThrownBy(() -> tripLikeService.createLike(member.getId(), trip.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("409-1 : 이미 좋아요한 여행기입니다.");
+            .hasMessage("409-07 : 이미 좋아요한 여행기입니다.");
     }
 }
