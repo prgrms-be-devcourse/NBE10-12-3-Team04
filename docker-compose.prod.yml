@@ -30,7 +30,7 @@ services:
     expose:
       - "8080"
     environment:
-      SPRING_PROFILES_ACTIVE: prod,image-processor
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
