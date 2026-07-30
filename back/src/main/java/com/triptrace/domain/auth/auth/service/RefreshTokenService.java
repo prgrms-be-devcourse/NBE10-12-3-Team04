@@ -3,7 +3,6 @@ package com.triptrace.domain.auth.auth.service;
 import com.triptrace.domain.auth.auth.entity.RefreshToken;
 import com.triptrace.domain.auth.auth.repository.RefreshTokenRepository;
 import com.triptrace.domain.member.member.entity.Member;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
  * AuthService(재발급) 내부 호출로는 REQUIRES_NEW가 동작하지 않으므로 별도 빈으로 분리했다.
  */
 @Service
-@RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -25,5 +23,9 @@ public class RefreshTokenService {
     public void revokeAllByMember(Member member) {
         refreshTokenRepository.findAllByMember(member)
             .forEach(RefreshToken::revoke);
+    }
+
+    public RefreshTokenService(final RefreshTokenRepository refreshTokenRepository) {
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 }

@@ -8,12 +8,10 @@ import com.triptrace.domain.trip.tripLike.entity.TripLike;
 import com.triptrace.domain.trip.tripLike.error.TripLikeErrorCode;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class TripLikeService {
     public final TripLikeRepository tripLikeRepository;
     private final MemberRepository memberRepository;
@@ -50,5 +48,11 @@ public class TripLikeService {
 
     public boolean isLiked(Long memberId, Long tripId) {
         return tripLikeRepository.existsByMemberIdAndTripId(memberId, tripId);
+    }
+
+    public TripLikeService(final TripLikeRepository tripLikeRepository, final MemberRepository memberRepository, final TripRepository tripRepository) {
+        this.tripLikeRepository = tripLikeRepository;
+        this.memberRepository = memberRepository;
+        this.tripRepository = tripRepository;
     }
 }

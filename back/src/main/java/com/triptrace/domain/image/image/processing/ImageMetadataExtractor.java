@@ -4,9 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 import org.springframework.stereotype.Component;
-
 import com.drew.imaging.FileType;
 import com.drew.imaging.FileTypeDetector;
 import com.drew.imaging.ImageMetadataReader;
@@ -26,11 +24,10 @@ import com.triptrace.domain.image.image.processing.dto.ImageLocation;
 import com.triptrace.domain.image.image.processing.dto.ImageWidthHeight;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class ImageMetadataExtractor {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageMetadataExtractor.class);
+
     private void showAllInfoByMetaData(Metadata metadata) {
         if (metadata == null) {
             log.warn("metadata is null");

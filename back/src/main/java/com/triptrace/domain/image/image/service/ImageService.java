@@ -1,10 +1,8 @@
 package com.triptrace.domain.image.image.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.entity.Image;
@@ -17,10 +15,7 @@ import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.global.exception.ServiceException;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ImageService {
     private final ImageRepository imageRepository;
     private final TripRepository tripRepository;
@@ -86,13 +81,13 @@ public class ImageService {
     @Transactional(readOnly = true)
     public Image getById(Long id) {
         return imageRepository.findById(id)
-            .orElseThrow(()-> new ServiceException(ImageErrorCode.NOT_FOUND));
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public Image getByUrl(String originalFileUrl) {
         return imageRepository.findByOriginalFileUrl(originalFileUrl)
-            .orElseThrow(()-> new ServiceException(ImageErrorCode.NOT_FOUND));
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -106,11 +101,13 @@ public class ImageService {
         Image image = getByUrl(imageUrl);
         return ImageMapper.toServiceResponse(image);
     }
+
     @Transactional(readOnly = true)
     public List<ImageServiceResponse> findWithOwner(Long ownerId) {
         List<Image> images = imageRepository.findByOwnerId(ownerId);
         return images.stream().map(ImageMapper::toServiceResponse).toList();
     }
+
     @Transactional(readOnly = true)
     public List<ImageServiceResponse> findByTripId(Trip trip) {
         List<Image> images = imageRepository.findByTripId(trip.getId());
@@ -152,11 +149,19 @@ public class ImageService {
         }
         return post.getId().equals(image.getPost().getId());
     }
+
     @Transactional
     public ImageServiceResponse unassign(Long ownerId, Long tripId, Long imageId) {
-        Image image = imageRepository.findByIdAndOwnerIdAndTripId(imageId,ownerId,tripId)
-            .orElseThrow( () -> new ServiceException(ImageErrorCode.NOT_FOUND) );
+        Image image = imageRepository
+            .findByIdAndOwnerIdAndTripId(imageId, ownerId, tripId)
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
         image.modifyPost(null);
-        return  ImageMapper.toServiceResponse(image);
+        return ImageMapper.toServiceResponse(image);
+    }
+
+    public ImageService(final ImageRepository imageRepository, final TripRepository tripRepository, final MarkerRepository markerRepository) {
+        this.imageRepository = imageRepository;
+        this.tripRepository = tripRepository;
+        this.markerRepository = markerRepository;
     }
 }

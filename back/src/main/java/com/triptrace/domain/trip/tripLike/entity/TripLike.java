@@ -9,15 +9,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+// 복합 유니크 설정. 같은 사용자가 같은 여행기에 좋아요를 중복x
 @Entity
-@Table(name = "trip_like",
-    // 복합 유니크 설정. 같은 사용자가 같은 여행기에 좋아요를 중복x
-    uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "trip_id"}))
-@Getter
-@NoArgsConstructor
+@Table(name = "trip_like", uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "trip_id"}))
 public class TripLike extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -30,5 +24,16 @@ public class TripLike extends BaseEntity {
     public TripLike(Member member, Trip trip) {
         this.member = member;
         this.trip = trip;
+    }
+
+    public Member getMember() {
+        return this.member;
+    }
+
+    public Trip getTrip() {
+        return this.trip;
+    }
+
+    public TripLike() {
     }
 }

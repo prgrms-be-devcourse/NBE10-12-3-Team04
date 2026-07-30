@@ -42,3 +42,4 @@ Thumbs.db
 *.jpeg
 *.JPG
 !test-a-mail.jpg
+!application-local.yaml

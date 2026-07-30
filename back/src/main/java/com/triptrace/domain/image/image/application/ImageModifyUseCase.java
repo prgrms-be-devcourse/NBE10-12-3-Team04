@@ -2,7 +2,6 @@ package com.triptrace.domain.image.image.application;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.service.ImageService;
@@ -14,10 +13,7 @@ import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.exception.ServiceException;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ImageModifyUseCase {
     private final ImageService imageService;
     private final TripService tripService;
@@ -36,8 +32,14 @@ public class ImageModifyUseCase {
     }
 
     public ImageServiceResponse unassign(Long ownerId, Long tripId, Long imageId) {
-        ImageServiceResponse imageServiceResponse = imageService.unassign(ownerId,tripId, imageId);
+        ImageServiceResponse imageServiceResponse = imageService.unassign(ownerId, tripId, imageId);
         return imageServiceResponse;
+    }
 
+    public ImageModifyUseCase(final ImageService imageService, final TripService tripService, final PostService postService, final MemberService memberService) {
+        this.imageService = imageService;
+        this.tripService = tripService;
+        this.postService = postService;
+        this.memberService = memberService;
     }
 }

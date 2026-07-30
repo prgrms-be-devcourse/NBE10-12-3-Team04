@@ -10,21 +10,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor
 public class Marker extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false, unique = true)
     private Post post;
-
-    @Column(precision = 10, scale = 7)    // 정수 3자리, 소수 7자리
+    // 정수 3자리, 소수 7자리
+    @Column(precision = 10, scale = 7)
     private BigDecimal centerLat;
 
     @Column(precision = 10, scale = 7)
@@ -46,7 +41,7 @@ public class Marker extends BaseEntity {
 
     public Marker(Post post, BigDecimal centerLat, BigDecimal centerLng, String placeName, LocalDateTime visitedAt, MarkerSource source) {
         this(post, centerLat, centerLng, placeName, visitedAt, source, null);
-    }  // 수동 마커의 경우 대표이미지 없이 들어올 수 있어 생성자 오버로딩 처리.
+    } // 수동 마커의 경우 대표이미지 없이 들어올 수 있어 생성자 오버로딩 처리.
 
     public Marker(
         Post post,
@@ -84,5 +79,36 @@ public class Marker extends BaseEntity {
     // 변경 이유가 달라 modify와 분리
     public void changeRepresentativeImage(Image representativeImage) {
         this.representativeImage = representativeImage;
+    }
+
+    public Post getPost() {
+        return this.post;
+    }
+
+    public BigDecimal getCenterLat() {
+        return this.centerLat;
+    }
+
+    public BigDecimal getCenterLng() {
+        return this.centerLng;
+    }
+
+    public String getPlaceName() {
+        return this.placeName;
+    }
+
+    public LocalDateTime getVisitedAt() {
+        return this.visitedAt;
+    }
+
+    public MarkerSource getSource() {
+        return this.source;
+    }
+
+    public Image getRepresentativeImage() {
+        return this.representativeImage;
+    }
+
+    public Marker() {
     }
 }

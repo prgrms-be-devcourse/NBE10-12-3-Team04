@@ -14,10 +14,8 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final TripRepository tripRepository;
@@ -60,6 +57,7 @@ public class PostService {
             toVisitedAt(request.date(), request.time()),
             MarkerSource.MANUAL
         ));
+        recalculateTripDateRange(trip);
 
         return toResponse(post);
     }
@@ -101,6 +99,7 @@ public class PostService {
             request.memo()
         );
         syncMarkerDate(post);
+        recalculateTripDateRange(post.getTrip());
 
         return toResponse(post);
     }
@@ -125,6 +124,8 @@ public class PostService {
         }
 
         postRepository.delete(post);
+        postRepository.flush();
+        recalculateTripDateRange(post.getTrip());
     }
 
     private void validateOwner(Trip trip, Long ownerId) {
@@ -207,6 +208,20 @@ public class PostService {
         );
     }
 
+    private void recalculateTripDateRange(Trip trip) {
+        LocalDate firstDate = postRepository.findFirstByTripIdOrderByDateAscIdAsc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+        LocalDate lastDate = postRepository.findFirstByTripIdOrderByDateDescIdDesc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+
+        trip.changeDateRange(
+            firstDate == null ? null : firstDate.atStartOfDay(),
+            lastDate == null ? null : lastDate.atStartOfDay()
+        );
+    }
+
     @Transactional(readOnly = true)
     public Post getPost(Long postId) {
         Post post = postRepository.findById(postId)
@@ -221,5 +236,12 @@ public class PostService {
             throw new ServiceException(PostErrorCode.NOT_FOUND);
         }
         return post;
+    }
+
+    public PostService(final PostRepository postRepository, final TripRepository tripRepository, final ImageRepository imageRepository, final MarkerRepository markerRepository) {
+        this.postRepository = postRepository;
+        this.tripRepository = tripRepository;
+        this.imageRepository = imageRepository;
+        this.markerRepository = markerRepository;
     }
 }
