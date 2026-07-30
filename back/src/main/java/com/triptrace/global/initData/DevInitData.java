@@ -1,5 +1,20 @@
 package com.triptrace.global.initData;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.triptrace.domain.image.image.entity.Image;
 import com.triptrace.domain.image.image.entity.UploadStatus;
 import com.triptrace.domain.image.image.repository.ImageRepository;
@@ -15,29 +30,9 @@ import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.entity.TripLike;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 @Profile("dev")
 @Configuration
-@RequiredArgsConstructor
 public class DevInitData {
 
     private static final int MEMBER_COUNT = 10;
@@ -228,7 +223,6 @@ public class DevInitData {
             new Destination("스페인", "바르셀로나", "사그라다 파밀리아", "41.4036000", "2.1744000")
         );
     }
-
 
     // POST 스펙 (게시글 + 이미지 + 마커를 함께 만들기 위한 데이터)
     private record PostSpec(
@@ -448,6 +442,18 @@ public class DevInitData {
         }
 
         System.out.println("=====================================");
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public DevInitData(final MemberRepository memberRepository, final TripRepository tripRepository, final PostRepository postRepository, final PasswordEncoder passwordEncoder, final MarkerRepository markerRepository, final ImageRepository imageRepository, final TripLikeRepository tripLikeRepository, final JdbcTemplate jdbcTemplate) {
+        this.memberRepository = memberRepository;
+        this.tripRepository = tripRepository;
+        this.postRepository = postRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.markerRepository = markerRepository;
+        this.imageRepository = imageRepository;
+        this.tripLikeRepository = tripLikeRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 }
 

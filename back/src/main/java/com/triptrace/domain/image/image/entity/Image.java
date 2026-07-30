@@ -11,51 +11,35 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Image extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-
     @Column(nullable = false)
     private String originalFileUrl;
-
     private String thumbnailUrl;
-
     @Column(nullable = false)
     private Long fileSize;
-
     @Column(length = 50, nullable = false)
     private String mimeType;
-
     // EXIF 분석 완료 후 채워지는 이미지 메타데이터
-    @Column(precision = 10, scale = 7) // 정수 3자리, 소수 7자리
+    // 정수 3자리, 소수 7자리
+    @Column(precision = 10, scale = 7)
     private BigDecimal gpsLat;
-
     @Column(precision = 10, scale = 7)
     private BigDecimal gpsLng;
-
     private LocalDateTime capturedAt;
-
     private String deviceInfo;
-
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
     private UploadStatus uploadStatus;
@@ -88,6 +72,7 @@ public class Image extends BaseEntity {
         this.deviceInfo = deviceInfo;
         this.uploadStatus = uploadStatus;
     }
+
     // 업로드 시점에 알 수 있는 기본 이미지 정보만 먼저 저장
     public Image(
         Member owner,
@@ -121,7 +106,7 @@ public class Image extends BaseEntity {
         this.post = null;
     }
 
-    public void modifyStatus(UploadStatus uploadStatus){
+    public void modifyStatus(UploadStatus uploadStatus) {
         this.uploadStatus = uploadStatus;
     }
 
@@ -129,5 +114,69 @@ public class Image extends BaseEntity {
     // 추후 이미지 관계 테이블 도입 시 관계 테이블로 이전
     public void connectPost(Post post) {
         this.post = post;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Member getOwner() {
+        return this.owner;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Trip getTrip() {
+        return this.trip;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Post getPost() {
+        return this.post;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getOriginalFileUrl() {
+        return this.originalFileUrl;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getThumbnailUrl() {
+        return this.thumbnailUrl;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Long getFileSize() {
+        return this.fileSize;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getMimeType() {
+        return this.mimeType;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public BigDecimal getGpsLat() {
+        return this.gpsLat;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public BigDecimal getGpsLng() {
+        return this.gpsLng;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public LocalDateTime getCapturedAt() {
+        return this.capturedAt;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getDeviceInfo() {
+        return this.deviceInfo;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public UploadStatus getUploadStatus() {
+        return this.uploadStatus;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    protected Image() {
     }
 }

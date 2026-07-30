@@ -5,14 +5,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor
 public class Member extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
@@ -60,5 +55,44 @@ public class Member extends BaseEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getEmail() {
+        return this.email;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getUsername() {
+        return this.username;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getPasswordHash() {
+        return this.passwordHash;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getProfileImageUrl() {
+        return this.profileImageUrl;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getIntro() {
+        return this.intro;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public MemberStatus getStatus() {
+        return this.status;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public LocalDateTime getDeletedAt() {
+        return this.deletedAt;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Member() {
     }
 }

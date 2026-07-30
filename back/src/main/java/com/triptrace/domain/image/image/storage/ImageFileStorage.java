@@ -4,10 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.ImageProcessor;
@@ -15,11 +13,10 @@ import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class ImageFileStorage {
+    @java.lang.SuppressWarnings("all")
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageFileStorage.class);
     private final String uploadDir;
     private final String profileImagesPath;
     private final String servingImagesPath;
@@ -51,12 +48,20 @@ public class ImageFileStorage {
 
     public String saveProfileImage(byte[] image) throws ImageProcessException {
         BufferedImage bufferedImage = imageProcessor.read(image);
-        StoredFile stored = saveImage(bufferedImage, resolveUploadPath(profileImagesPath), generateFileName(jpegExt),
-            false);
+        StoredFile stored = saveImage(
+            bufferedImage,
+            resolveUploadPath(profileImagesPath),
+            generateFileName(jpegExt),
+            false
+        );
         return profileImagesPath + "/" + stored.name();
     }
 
-    private StoredFile saveImage(BufferedImage image, String directoryPath, String fileName, boolean isThumbnail)
+    private StoredFile saveImage(
+        BufferedImage image,
+        String directoryPath,
+        String fileName,
+        boolean isThumbnail)
         throws ImageProcessException {
         StoredFile storedFile = null;
         try {
@@ -75,15 +80,24 @@ public class ImageFileStorage {
         return storedFile;
     }
 
-    public SavedFileInfo saveImageWithThumbnail(byte[] image, ExifOrientation orientation)
+    public SavedFileInfo saveImageWithThumbnail(
+        byte[] image,
+        ExifOrientation orientation)
         throws ImageProcessException {
         BufferedImage bufferedImage = imageProcessor.read(image);
         bufferedImage = imageProcessor.rotate(bufferedImage, orientation);
-        StoredFile origin = saveImage(bufferedImage, resolveUploadPath(servingImagesPath), generateFileName(jpegExt),
-            false);
+        StoredFile origin = saveImage(
+            bufferedImage,
+            resolveUploadPath(servingImagesPath),
+            generateFileName(jpegExt),
+            false
+        );
         StoredFile thumbnail;
         try {
-            thumbnail = saveImage(bufferedImage, resolveUploadPath(thumbnailImagesPath), generateFileName(jpegExt),
+            thumbnail = saveImage(
+                bufferedImage,
+                resolveUploadPath(thumbnailImagesPath),
+                generateFileName(jpegExt),
                 true);
         } catch (ImageProcessException e) {
             deleteImage(servingImagesPath + "/" + origin.name());
@@ -93,7 +107,8 @@ public class ImageFileStorage {
             servingImagesPath + "/" + origin.name(),
             thumbnailImagesPath + "/" + thumbnail.name(),
             origin.size(),
-            "image/" + jpegExt);
+            "image/" + jpegExt
+        );
     }
 
     public boolean deleteImage(String imagePath) throws ImageProcessException {

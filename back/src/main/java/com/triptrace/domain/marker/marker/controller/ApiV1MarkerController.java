@@ -7,7 +7,6 @@ import com.triptrace.domain.marker.marker.dto.PlaceCandidateResponse;
 import com.triptrace.domain.marker.marker.service.MarkerService;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +14,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class ApiV1MarkerController {
-
     private final MarkerService markerService;
 
     // 마커 생성
@@ -126,5 +123,10 @@ public class ApiV1MarkerController {
         @AuthenticationPrincipal Long memberId
     ) {
         markerService.deleteMarker(markerId, memberId);
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public ApiV1MarkerController(final MarkerService markerService) {
+        this.markerService = markerService;
     }
 }

@@ -20,12 +20,9 @@ import com.triptrace.domain.image.image.exception.ImageProcessException;
 import com.triptrace.global.error.DefaultErrorCode;
 import com.triptrace.global.exception.ServiceException;
 import com.triptrace.global.rsData.RsData;
-
 import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<RsData<Void>> handle(NoSuchElementException ex) {

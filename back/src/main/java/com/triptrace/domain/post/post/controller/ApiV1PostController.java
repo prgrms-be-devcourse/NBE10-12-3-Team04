@@ -6,15 +6,12 @@ import com.triptrace.domain.post.post.dto.PostResponse;
 import com.triptrace.domain.post.post.service.PostService;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class ApiV1PostController {
     private final PostService postService;
 
@@ -44,6 +41,7 @@ public class ApiV1PostController {
             postService.findPostsByTripId(tripId, memberId)
         );
     }
+
     @GetMapping("/posts")
     public RsData<List<PostResponse>> getPosts(
         @AuthenticationPrincipal Long memberId
@@ -86,10 +84,13 @@ public class ApiV1PostController {
         @AuthenticationPrincipal Long memberId
     ) {
         postService.deletePost(postId, memberId);
-
         return new RsData<>(
             "200-06",
-            "%d번 게시물이 삭제되었습니다.".formatted(postId)
-        );
+            "%d번 게시물이 삭제되었습니다.".formatted(postId));
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public ApiV1PostController(final PostService postService) {
+        this.postService = postService;
     }
 }

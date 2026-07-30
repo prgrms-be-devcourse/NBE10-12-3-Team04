@@ -8,14 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor
 public class Trip extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -103,5 +98,54 @@ public class Trip extends BaseEntity {
         this.startDate = startDate;
         this.endDate = endDate;
         this.visibility = visibility;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Member getOwner() {
+        return this.owner;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getTitle() {
+        return this.title;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getCountry() {
+        return this.country;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public String getCity() {
+        return this.city;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public LocalDateTime getStartDate() {
+        return this.startDate;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public LocalDateTime getEndDate() {
+        return this.endDate;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public boolean isVisibility() {
+        return this.visibility;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Long getLikeCount() {
+        return this.likeCount;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Image getRepresentativeImage() {
+        return this.representativeImage;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public Trip() {
     }
 }

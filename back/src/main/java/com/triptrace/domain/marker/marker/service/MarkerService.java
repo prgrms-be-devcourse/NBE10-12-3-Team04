@@ -11,19 +11,15 @@ import com.triptrace.domain.marker.marker.repository.MarkerRepository;
 import com.triptrace.domain.post.post.entity.Post;
 import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class MarkerService {
-
     private final MarkerRepository markerRepository;
     private final PostRepository postRepository;
     private final GooglePlacesClient googlePlacesClient;
@@ -143,5 +139,12 @@ public class MarkerService {
             return null;
         }
         return LocalDateTime.of(post.getDate(), visitedAt.toLocalTime());
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public MarkerService(final MarkerRepository markerRepository, final PostRepository postRepository, final GooglePlacesClient googlePlacesClient) {
+        this.markerRepository = markerRepository;
+        this.postRepository = postRepository;
+        this.googlePlacesClient = googlePlacesClient;
     }
 }

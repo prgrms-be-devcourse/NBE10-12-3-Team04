@@ -7,18 +7,15 @@ import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class ApiV1TripController {
     private final TripService tripService;
 
@@ -115,7 +112,14 @@ public class ApiV1TripController {
         return new RsData<>(
             "200-07",
             "%d번 여행기 대표이미지가 수정되었습니다.".formatted(tripId),
-            tripService.changeRepresentativeImage(tripId, memberId, request.imageId())
-        );
+            tripService.changeRepresentativeImage(
+                tripId,
+                memberId,
+                request.imageId()));
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public ApiV1TripController(final TripService tripService) {
+        this.tripService = tripService;
     }
 }

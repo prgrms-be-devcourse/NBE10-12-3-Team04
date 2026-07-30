@@ -14,11 +14,9 @@ import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripAuto.dto.TripAutoRecordResponse;
 import com.triptrace.domain.trip.tripAuto.error.TripAutoErrorCode;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -28,17 +26,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
-@RequiredArgsConstructor
 public class TripAutoRecordService {
-
     // 같은 날짜 안에서도 클러스터 첫 사진과 2시간을 넘게 차이나면 다른 묶음으로 분리
     private static final long CLUSTER_TIME_GAP_MINUTES = 120;
     private static final int MARKER_COORDINATE_SCALE = 7;
-
     private final TripRepository tripRepository;
     private final ImageRepository imageRepository;
     private final PostRepository postRepository;
@@ -241,5 +235,14 @@ public class TripAutoRecordService {
         return image.getCapturedAt() != null
             && image.getGpsLat() != null
             && image.getGpsLng() != null;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public TripAutoRecordService(final TripRepository tripRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final ReverseGeocodingClient reverseGeocodingClient) {
+        this.tripRepository = tripRepository;
+        this.imageRepository = imageRepository;
+        this.postRepository = postRepository;
+        this.markerRepository = markerRepository;
+        this.reverseGeocodingClient = reverseGeocodingClient;
     }
 }

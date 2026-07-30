@@ -8,7 +8,6 @@ import com.triptrace.domain.member.member.service.MemberService;
 import com.triptrace.domain.member.member.service.ProfileImageStorage;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class ApiV1MemberController {
     private final MemberService memberService;
     private final ProfileImageStorage profileImageStorage;
@@ -58,7 +56,12 @@ public class ApiV1MemberController {
         return new RsData<>(
             "201-1",
             "프로필 이미지 업로드에 성공했습니다.",
-            new ProfileImageUploadResponse(profileImageUrl)
-        );
+            new ProfileImageUploadResponse(profileImageUrl));
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public ApiV1MemberController(final MemberService memberService, final ProfileImageStorage profileImageStorage) {
+        this.memberService = memberService;
+        this.profileImageStorage = profileImageStorage;
     }
 }

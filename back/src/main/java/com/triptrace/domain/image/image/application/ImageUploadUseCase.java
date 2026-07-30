@@ -3,11 +3,9 @@ package com.triptrace.domain.image.image.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.dto.response.ImageUploadResponse;
@@ -27,19 +25,15 @@ import com.triptrace.domain.post.post.service.PostService;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.exception.ServiceException;
-
 import jakarta.validation.constraints.NotEmpty;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ImageUploadUseCase {
+    @java.lang.SuppressWarnings("all")
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageUploadUseCase.class);
     private final ImageService imageService;
     private final ImageMetadataExtractor imageMetadataExtractor;
     private final ImageFileStorage imageFileStorage;
-
     private final TripService tripService;
     private final MemberService memberService;
     private final PostService postService;
@@ -123,5 +117,15 @@ public class ImageUploadUseCase {
         if (images == null || images.length == 0) {
             throw new ServiceException(ImageErrorCode.NO_IMAGE);
         }
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public ImageUploadUseCase(final ImageService imageService, final ImageMetadataExtractor imageMetadataExtractor, final ImageFileStorage imageFileStorage, final TripService tripService, final MemberService memberService, final PostService postService) {
+        this.imageService = imageService;
+        this.imageMetadataExtractor = imageMetadataExtractor;
+        this.imageFileStorage = imageFileStorage;
+        this.tripService = tripService;
+        this.memberService = memberService;
+        this.postService = postService;
     }
 }

@@ -15,17 +15,14 @@ import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class TripService {
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
@@ -38,7 +35,6 @@ public class TripService {
     public TripResponse create(Long ownerId, TripCreateRequest request) {
         Member owner = memberRepository.findById(ownerId)
             .orElseThrow(() -> new ServiceException(TripErrorCode.MEMBER_NOT_FOUND));
-
         Trip trip = tripRepository.save(new Trip(
             owner,
             request.title(),
@@ -141,9 +137,7 @@ public class TripService {
         if (!image.getTrip().getId().equals(trip.getId()) || !image.getOwner().getId().equals(ownerId)) {
             throw new ServiceException(TripErrorCode.IMAGE_FORBIDDEN);
         }
-
         trip.changeRepresentativeImage(image);
-
         return toResponse(trip);
     }
 
@@ -181,5 +175,15 @@ public class TripService {
         if (!trip.getOwner().getId().equals(ownerId)) {
             throw new ServiceException(TripErrorCode.FORBIDDEN);
         }
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public TripService(final TripRepository tripRepository, final MemberRepository memberRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final TripLikeRepository tripLikeRepository) {
+        this.tripRepository = tripRepository;
+        this.memberRepository = memberRepository;
+        this.imageRepository = imageRepository;
+        this.postRepository = postRepository;
+        this.markerRepository = markerRepository;
+        this.tripLikeRepository = tripLikeRepository;
     }
 }

@@ -3,13 +3,11 @@ package com.triptrace.domain.trip.tripLike.controller;
 import com.triptrace.domain.trip.tripLike.dto.TripLikeStatusResponse;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
 import com.triptrace.global.rsData.RsData;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/trips")
-@RequiredArgsConstructor
 public class TripLikeController {
     private final TripLikeService tripLikeService;
 
@@ -54,5 +52,10 @@ public class TripLikeController {
             "좋아요 여부 조회 성공했습니다.",
             new TripLikeStatusResponse(liked)
         );
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public TripLikeController(final TripLikeService tripLikeService) {
+        this.tripLikeService = tripLikeService;
     }
 }

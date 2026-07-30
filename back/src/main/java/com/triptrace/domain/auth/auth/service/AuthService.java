@@ -10,12 +10,10 @@ import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.service.MemberService;
 import com.triptrace.global.exception.ServiceException;
 import com.triptrace.global.security.JwtProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 
 /**
@@ -23,14 +21,12 @@ import java.time.LocalDateTime;
  * 회원 데이터의 중복검사·저장·조회는 MemberService에 위임한다.
  */
 @Service
-@RequiredArgsConstructor
 public class AuthService {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
-
     @Value("${custom.refreshToken.expirationSeconds}")
     private long refreshTokenExpirationSeconds;
 
@@ -52,11 +48,9 @@ public class AuthService {
     @Transactional
     public TokenPair login(LoginRequest request) {
         Member member = memberService.findByEmail(request.email());
-
         if (!passwordEncoder.matches(request.password(), member.getPasswordHash())) {
             throw new ServiceException("401-1", "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
-
         return issueTokens(member);
     }
 
@@ -102,5 +96,14 @@ public class AuthService {
         refreshTokenRepository.save(new RefreshToken(member, refreshToken, expiresAt));
 
         return new TokenPair(accessToken, refreshToken);
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public AuthService(final MemberService memberService, final PasswordEncoder passwordEncoder, final JwtProvider jwtProvider, final RefreshTokenRepository refreshTokenRepository, final RefreshTokenService refreshTokenService) {
+        this.memberService = memberService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 }

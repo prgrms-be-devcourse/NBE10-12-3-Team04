@@ -14,10 +14,8 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final TripRepository tripRepository;
@@ -239,5 +236,13 @@ public class PostService {
             throw new ServiceException(PostErrorCode.NOT_FOUND);
         }
         return post;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public PostService(final PostRepository postRepository, final TripRepository tripRepository, final ImageRepository imageRepository, final MarkerRepository markerRepository) {
+        this.postRepository = postRepository;
+        this.tripRepository = tripRepository;
+        this.imageRepository = imageRepository;
+        this.markerRepository = markerRepository;
     }
 }

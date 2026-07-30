@@ -4,18 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-
 import com.triptrace.standard.util.Ut;
-
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 
-
-@Slf4j
 @Configuration
 public class AppConfig {
+    @java.lang.SuppressWarnings("all")
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AppConfig.class);
     private static Environment environment;
     private static BuildProperties buildProperties;
 
@@ -23,10 +19,11 @@ public class AppConfig {
     public void setEnvironment(Environment environment) {
         AppConfig.environment = environment;
     }
+
     @Autowired
     public void setBuildProperties(BuildProperties buildProperties) {
         AppConfig.buildProperties = buildProperties;
-        log.info("backend-version: {}",(buildProperties.getVersion()));
+        log.info("backend-version: {}", (buildProperties.getVersion()));
     }
 
     public static boolean isDev() {
@@ -45,11 +42,10 @@ public class AppConfig {
         return !isProd();
     }
 
-    public String getVersion(){
+    public String getVersion() {
         return buildProperties.getVersion();
     }
 
-    @Getter
     private static ObjectMapper objectMapper;
 
     @Autowired
@@ -60,5 +56,10 @@ public class AppConfig {
     @PostConstruct
     public void postConstruct() {
         Ut.json.objectMapper = objectMapper;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public static ObjectMapper getObjectMapper() {
+        return AppConfig.objectMapper;
     }
 }
