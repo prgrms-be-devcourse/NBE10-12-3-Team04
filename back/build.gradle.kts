@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com"
-version = "0.0.1-SNAPSHOT"
+version = providers.gradleProperty("appVersion").orElse("0.0.1-SNAPSHOT").get()
 description = "triptrace"
 
 java {
@@ -69,4 +69,8 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+springBoot {
+    buildInfo()
 }

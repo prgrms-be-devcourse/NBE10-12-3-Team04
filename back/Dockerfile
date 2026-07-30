@@ -9,12 +9,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 RUN chmod +x gradlew
 RUN ./gradlew dependencies --no-daemon
 COPY src ./src
-RUN ./gradlew bootJar --no-daemon -x test
+# CD가 전달한 앱 버전을 JAR의 build-info.properties에 기록한다.
+# TODO: 캐싱 추후 고려
+ARG APP_VERSION=0.0.1-SNAPSHOT
+RUN ./gradlew -PappVersion=${APP_VERSION} bootJar --no-daemon -x test
 
 FROM eclipse-temurin:25-jre-noble AS runner
-
-LABEL project="trip-trace-be1204"
-LABEL version="1.0"
 
 WORKDIR /app
 

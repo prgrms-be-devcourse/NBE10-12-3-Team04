@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut, User } from 'lucide-react';
 import { isAuthenticated, userApi } from '@/lib/api';
+import { appVersion } from '@/lib/version';
 
 interface HeaderProps {
   rightSlot?: React.ReactNode;
@@ -14,6 +15,10 @@ export default function Header({ rightSlot }: HeaderProps) {
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState('');
+
+  useEffect(() => {
+    console.info(`[TripTrace] version: ${appVersion}`);
+  }, []);
 
   useEffect(() => {
     const syncAuthState = () => {
