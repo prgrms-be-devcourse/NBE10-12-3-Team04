@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MapPin, Home, User, Settings, Image } from 'lucide-react';
+import { appVersion } from '@/lib/version';
 
 const navItems = [
   { href: '/', icon: Home, label: '홈' },
@@ -16,10 +17,13 @@ export default function Sidebar() {
   return (
     <>
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-[72px] flex-col items-center border-r border-gray-200 bg-white py-4 md:flex">
-      <Link href="/" className="mb-6">
+      <Link href="/" className="group relative mb-6" aria-label={`TripTrace v${appVersion}`}>
         <div className="w-10 h-10 flex items-center justify-center rounded-2xl border border-gray-200 text-gray-900 shadow-sm">
           <MapPin size={22} strokeWidth={2.3} />
         </div>
+        <span className="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white opacity-0 group-hover:opacity-100">
+          v{appVersion}
+        </span>
       </Link>
 
       <nav className="flex flex-col items-center gap-1 flex-1">
