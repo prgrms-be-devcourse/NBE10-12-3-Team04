@@ -1,4 +1,4 @@
-package com.triptrace.domain.image.image.storage;
+package com.triptrace.domain.image.image.dto.response.storage;
 
 
 public record StoredImageFile(
