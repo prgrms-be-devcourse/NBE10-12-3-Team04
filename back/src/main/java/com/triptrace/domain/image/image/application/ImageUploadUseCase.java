@@ -17,7 +17,7 @@ import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 import com.triptrace.domain.image.image.service.ImageService;
 import com.triptrace.domain.image.image.storage.ImageFileStorage;
-import com.triptrace.domain.image.image.storage.StoredImageFile;
+import com.triptrace.domain.image.image.dto.response.storage.StoredImageFile;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.service.MemberService;
 import com.triptrace.domain.post.post.entity.Post;
