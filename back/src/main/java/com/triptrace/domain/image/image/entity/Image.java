@@ -19,27 +19,38 @@ public class Image extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
     @Column(nullable = false)
     private String originalFileUrl;
+
     private String thumbnailUrl;
+
     @Column(nullable = false)
     private Long fileSize;
+
     @Column(length = 50, nullable = false)
     private String mimeType;
+
     // EXIF 분석 완료 후 채워지는 이미지 메타데이터
     // 정수 3자리, 소수 7자리
     @Column(precision = 10, scale = 7)
     private BigDecimal gpsLat;
+
     @Column(precision = 10, scale = 7)
     private BigDecimal gpsLng;
+
     private LocalDateTime capturedAt;
+
     private String deviceInfo;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
     private UploadStatus uploadStatus;

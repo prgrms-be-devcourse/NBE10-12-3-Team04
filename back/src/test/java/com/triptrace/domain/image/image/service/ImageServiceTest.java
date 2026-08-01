@@ -256,4 +256,32 @@ class ImageServiceTest {
         assertThatThrownBy(() -> imageService.findByUrl("https://example.com/none.jpg"))
             .isInstanceOf(ServiceException.class);
     }
+
+    // create
+    // 1. 모든 값을 가진 Image 가 주어지면 DB에 저장된다.
+    // 2. 모든 값을 가진 Image 가 주어지면 ImageServiceResponse와 공통된 값이 다르지 않다.
+    // 3. owner, trip, originalFileUrl, fileSize, mimeType uploadStatus를 갖춘 이미지가 주어지면 DB에 저장된다.
+    // 4. 3에서 값이 하나라도 없는 경우 저장될 수 없다.(6개의 케이스)
+
+    // delete
+    // delete(Member owner, Trip trip, Post post, Long id)
+    // delete(Member owner, Trip trip, Long id) {
+    // public ImageServiceResponse delete(Member owner, Trip trip, Post post, String imageUrl)
+    // delete(Image image)
+
+    // modifyPost
+    // FORBBIDEN
+    // INVALID_TRIP
+    // Image getById(Long id)
+    // Image getByUrl(String originalFileUrl)
+    // ImageServiceResponse findById(Long id)
+    // List<ImageServiceResponse> findWithOwner(Long ownerId)
+    // List<ImageServiceResponse> findByTripId(Trip trip)
+    // List<ImageServiceResponse> findByPostId(Post post)
+    // private void validate(Member owner, Trip trip, Post post, Image image)
+    // FORBIDDEN
+    // INVALID_TRIP
+    // IVALID_POST
+    // unassign
+    // disconnectRepresentativeReferences imageId
 }
