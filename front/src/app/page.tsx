@@ -15,9 +15,10 @@ import {
   Minimize2,
   MapPin,
   Plus,
+  TrendingUp,
 } from 'lucide-react';
 import { feedApi, isAuthenticated, likeApi, postApi, userApi } from '@/lib/api';
-import type { AlbumPost, Trip } from '@/types';
+import type { AlbumPost, PopularDestination, Trip, WeeklyTrendingTrip } from '@/types';
 
 type HomeTrayTab = 'mine' | 'popular' | 'recent';
 
@@ -747,6 +748,125 @@ function TopLikedCarousel({ trips }: { trips: Trip[] }) {
   );
 }
 
+function PopularDiscoveryGrid({
+  weeklyTrending,
+  destinations,
+}: {
+  weeklyTrending: WeeklyTrendingTrip[];
+  destinations: PopularDestination[];
+}) {
+  const [page, setPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(weeklyTrending.length / 3));
+  const risingTrips = weeklyTrending.slice(page * 3, page * 3 + 3);
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-base font-bold text-gray-900 sm:text-lg">
+            <TrendingUp size={20} className="text-emerald-600" />
+            이번 주 급상승 여행
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-400">{page + 1} / {pageCount}</span>
+            <button
+              type="button"
+              disabled={page === 0}
+              onClick={() => setPage((current) => Math.max(0, current - 1))}
+              aria-label="이전 급상승 여행"
+              className="grid h-8 w-8 place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-35"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              disabled={page >= pageCount - 1}
+              onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}
+              aria-label="다음 급상승 여행"
+              className="grid h-8 w-8 place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-35"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {risingTrips.length === 0 ? (
+          <div className="grid min-h-60 place-items-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-400">
+            급상승 여행을 집계하고 있습니다.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {risingTrips.map(({ trip, weeklyLikeCount }, index) => (
+              <Link
+                key={trip.id}
+                href={`/trips/${trip.id}`}
+                className="group flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 transition hover:border-emerald-200 hover:bg-emerald-50/40"
+              >
+                <span className="w-6 shrink-0 text-center text-lg font-black text-emerald-700">
+                  {page * 3 + index + 1}
+                </span>
+                <TripVisual
+                  trip={trip}
+                  index={index}
+                  showMeta={false}
+                  className="h-16 w-24 shrink-0 rounded-lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-1 text-sm font-bold text-gray-900 group-hover:text-emerald-700">
+                    {trip.title}
+                  </p>
+                  <p className="mt-1 truncate text-xs text-gray-500">
+                    {trip.country} · {trip.city}
+                  </p>
+                </div>
+                <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-emerald-600">
+                  <TrendingUp size={15} />
+                  +{weeklyLikeCount}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-gray-900 sm:text-lg">인기 여행지</h2>
+        </div>
+
+        {destinations.length === 0 ? (
+          <div className="grid min-h-60 place-items-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-400">
+            인기 여행지를 집계하고 있습니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            {destinations.map((destination) => (
+              <Link
+                key={`${destination.country}:${destination.city}`}
+                href={`/search?country=${encodeURIComponent(destination.country)}&city=${encodeURIComponent(destination.city)}`}
+                className="group relative h-28 overflow-hidden rounded-lg bg-gray-200 sm:h-[118px]"
+              >
+                {destination.thumbnailUrl && (
+                  <img
+                    src={destination.thumbnailUrl}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                <div className="absolute inset-x-3 bottom-2.5 text-white">
+                  <p className="truncate text-sm font-bold">{destination.city}</p>
+                  <p className="mt-0.5 text-xs text-white/85">{destination.tripCount}개 여행</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function RecentTripsList({
   trips,
   onLike,
@@ -919,6 +1039,8 @@ export default function HomePage() {
   const minSheetHeight = 150;
   const trayHeaderHeight = 92;
   const [topLiked, setTopLiked] = useState<Trip[]>([]);
+  const [weeklyTrending, setWeeklyTrending] = useState<WeeklyTrendingTrip[]>([]);
+  const [popularDestinations, setPopularDestinations] = useState<PopularDestination[]>([]);
   const [recent, setRecent] = useState<Trip[]>([]);
   const [recentPage, setRecentPage] = useState(0);
   const [recentHasMore, setRecentHasMore] = useState(true);
@@ -978,10 +1100,18 @@ export default function HomePage() {
   }, []);
 
   const loadFeeds = useCallback(async () => {
-    const [topLikedResult, recentResult, monthlyCandidateResult] = await Promise.allSettled([
+    const [
+      topLikedResult,
+      recentResult,
+      monthlyCandidateResult,
+      weeklyTrendingResult,
+      popularDestinationsResult,
+    ] = await Promise.allSettled([
       feedApi.getTopLiked(),
       feedApi.getRecent({ page: 0, size: 6 }),
       feedApi.getRecent({ page: 0, size: 50 }),
+      feedApi.getWeeklyTrending(),
+      feedApi.getPopularDestinations(),
     ]);
 
     if (topLikedResult.status === 'fulfilled') {
@@ -997,6 +1127,14 @@ export default function HomePage() {
         .sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0))
         .slice(0, 10);
       setTopLiked(nextTopLiked);
+    }
+
+    if (weeklyTrendingResult.status === 'fulfilled') {
+      setWeeklyTrending(weeklyTrendingResult.value);
+    }
+
+    if (popularDestinationsResult.status === 'fulfilled') {
+      setPopularDestinations(popularDestinationsResult.value);
     }
 
     if (recentResult.status === 'fulfilled') {
@@ -1237,7 +1375,15 @@ export default function HomePage() {
               loading={myDashboardLoading}
             />
           )}
-          {activeTrayTab === 'popular' && <TopLikedCarousel trips={topLiked} />}
+          {activeTrayTab === 'popular' && (
+            <>
+              <TopLikedCarousel trips={topLiked} />
+              <PopularDiscoveryGrid
+                weeklyTrending={weeklyTrending}
+                destinations={popularDestinations}
+              />
+            </>
+          )}
           {activeTrayTab === 'recent' && (
             <RecentTripsList
               trips={recent}
