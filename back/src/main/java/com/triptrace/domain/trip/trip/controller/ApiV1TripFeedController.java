@@ -43,7 +43,7 @@ public class ApiV1TripFeedController {
     @GetMapping("/trending-weekly")
     public RsData<List<WeeklyTrendingTripResponse>> getWeeklyTrendingTrips() {
         return new RsData<>(
-            "200-10",
+            "200-07",
             "이번 주 급상승 여행 조회에 성공했습니다.",
             tripService.findWeeklyTrendingTrips()
         );
@@ -52,7 +52,7 @@ public class ApiV1TripFeedController {
     @GetMapping("/popular-destinations")
     public RsData<List<PopularDestinationResponse>> getPopularDestinations() {
         return new RsData<>(
-            "200-11",
+            "200-07",
             "인기 여행지 조회에 성공했습니다.",
             tripService.findPopularDestinations()
         );
@@ -77,7 +77,7 @@ public class ApiV1TripFeedController {
         @PageableDefault(size = 12) final Pageable pageable
     ) {
         return new RsData<>(
-            "200-08",
+            "200-07",
             "여행기 검색에 성공했습니다.",
             tripSearchService.search(
                 keyword,
@@ -93,7 +93,7 @@ public class ApiV1TripFeedController {
     @GetMapping("/search/locations")
     public RsData<List<TripSearchLocationResponse>> getSearchLocations() {
         return new RsData<>(
-            "200-09",
+            "200-07",
             "여행기 검색 지역 조회에 성공했습니다.",
             tripSearchService.findLocations()
         );
