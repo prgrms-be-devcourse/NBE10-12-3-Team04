@@ -9,6 +9,8 @@ import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.dto.response.ImageUploadResponse;
 import com.triptrace.domain.image.image.entity.UploadStatus;
 import java.util.List;
+
+import com.triptrace.global.app.Domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +68,7 @@ class ApiV1ImageControllerTest {
 
         mvc.perform(get("/api/v1/images").with(authentication(auth(1L))))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-1"))
+            .andExpect(jsonPath("$.resultCode").value("200-"+Domain.IMAGE.getCode()))
             .andExpect(jsonPath("$.data[0].id").value(10L))
             .andExpect(jsonPath("$.data[0].originalUrl").value("/images/origin.jpg"));
 
