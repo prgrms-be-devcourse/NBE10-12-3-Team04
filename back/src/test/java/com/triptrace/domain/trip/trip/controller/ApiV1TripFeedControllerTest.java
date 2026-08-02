@@ -61,11 +61,21 @@ public class ApiV1TripFeedControllerTest {
     }
 
     private Trip createTrip(Member owner, String title, boolean visibility) {
+        return createTrip(owner, title, "일본", "교토", visibility);
+    }
+
+    private Trip createTrip(
+        Member owner,
+        String title,
+        String country,
+        String city,
+        boolean visibility
+    ) {
         return tripRepository.save(new Trip(
             owner,
             title,
-            "일본",
-            "교토",
+            country,
+            city,
             LocalDateTime.of(2026, 1, 1, 0, 0),
             LocalDateTime.of(2026, 1, 5, 0, 0),
             visibility
@@ -321,5 +331,68 @@ public class ApiV1TripFeedControllerTest {
             .andExpect(jsonPath("$.data[9]").exists())
             .andExpect(jsonPath("$.data[10]").doesNotExist())
             .andExpect(jsonPath("$.data[19]").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("검색에 사용할 공개 트립의 국가와 도시 목록을 조회한다")
+    public void getSearchLocations() throws Exception {
+        Member owner = createMember("locationOwner-" + UUID.randomUUID());
+        createTrip(owner, "위치 옵션 여행");
+
+        mvc.perform(get("/api/v1/feed/trips/search/locations"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-09"))
+            .andExpect(jsonPath("$.data").isArray())
+            .andExpect(jsonPath("$.data[0].country").isNotEmpty())
+            .andExpect(jsonPath("$.data[0].cities").isArray());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("최근 7일 좋아요 수를 기준으로 급상승 여행을 조회한다")
+    public void getWeeklyTrendingTrips() throws Exception {
+        Member owner = createMember("weeklyOwner-" + UUID.randomUUID());
+        Member firstMember = createMember("weeklyFirst-" + UUID.randomUUID());
+        Member secondMember = createMember("weeklySecond-" + UUID.randomUUID());
+        Trip first = createTrip(owner, "주간 1위 여행");
+        Trip second = createTrip(owner, "주간 2위 여행");
+        Trip privateTrip = createTrip(owner, "비공개 인기 여행", false);
+
+        tripLikeService.createLike(firstMember.getId(), first.getId());
+        tripLikeService.createLike(secondMember.getId(), first.getId());
+        tripLikeService.createLike(firstMember.getId(), second.getId());
+        tripLikeService.createLike(firstMember.getId(), privateTrip.getId());
+        tripLikeService.createLike(secondMember.getId(), privateTrip.getId());
+
+        mvc.perform(get("/api/v1/feed/trips/trending-weekly"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-10"))
+            .andExpect(jsonPath("$.data.length()").value(2))
+            .andExpect(jsonPath("$.data[0].trip.title").value("주간 1위 여행"))
+            .andExpect(jsonPath("$.data[0].weeklyLikeCount").value(2))
+            .andExpect(jsonPath("$.data[1].trip.title").value("주간 2위 여행"))
+            .andExpect(jsonPath("$.data[1].weeklyLikeCount").value(1));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("공개 트립을 집계해 인기 여행지를 조회한다")
+    public void getPopularDestinations() throws Exception {
+        Member owner = createMember("dest-" + UUID.randomUUID());
+        createTrip(owner, "도쿄 첫 여행", "일본", "도쿄", true);
+        createTrip(owner, "도쿄 둘째 여행", "일본", "도쿄", true);
+        createTrip(owner, "파리 여행", "프랑스", "파리", true);
+        createTrip(owner, "비공개 런던 여행", "영국", "런던", false);
+
+        mvc.perform(get("/api/v1/feed/trips/popular-destinations"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-11"))
+            .andExpect(jsonPath("$.data[0].country").value("일본"))
+            .andExpect(jsonPath("$.data[0].city").value("도쿄"))
+            .andExpect(jsonPath("$.data[0].tripCount").value(2));
     }
 }
