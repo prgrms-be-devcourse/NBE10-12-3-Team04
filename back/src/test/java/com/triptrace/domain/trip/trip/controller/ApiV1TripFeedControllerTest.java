@@ -8,6 +8,7 @@ import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.entity.TripLike;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
+import com.triptrace.global.app.Domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ public class ApiV1TripFeedControllerTest {
     private TripLikeRepository tripLikeRepository;
     @Autowired
     private MockMvc mvc;
+
+    private final String SUCCESS_CODE ="200-"+ Domain.TRIP.getCode();
 
     private Member createMember(String username) {
         return memberRepository.save(new Member(
@@ -343,7 +346,7 @@ public class ApiV1TripFeedControllerTest {
         mvc.perform(get("/api/v1/feed/trips/search/locations"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-09"))
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS_CODE))
             .andExpect(jsonPath("$.data").isArray())
             .andExpect(jsonPath("$.data[0].country").isNotEmpty())
             .andExpect(jsonPath("$.data[0].cities").isArray());
@@ -369,7 +372,7 @@ public class ApiV1TripFeedControllerTest {
         mvc.perform(get("/api/v1/feed/trips/trending-weekly"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-10"))
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS_CODE))
             .andExpect(jsonPath("$.data.length()").value(2))
             .andExpect(jsonPath("$.data[0].trip.title").value("주간 1위 여행"))
             .andExpect(jsonPath("$.data[0].weeklyLikeCount").value(2))
@@ -390,7 +393,7 @@ public class ApiV1TripFeedControllerTest {
         mvc.perform(get("/api/v1/feed/trips/popular-destinations"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.resultCode").value("200-11"))
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS_CODE))
             .andExpect(jsonPath("$.data[0].country").value("일본"))
             .andExpect(jsonPath("$.data[0].city").value("도쿄"))
             .andExpect(jsonPath("$.data[0].tripCount").value(2));
