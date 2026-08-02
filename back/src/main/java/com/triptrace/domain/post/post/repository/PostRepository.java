@@ -15,6 +15,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByTripIdOrderByDateAsc(Long tripId);
 
+    List<Post> findByTripIdInOrderByDateAscIdAsc(List<Long> tripIds);
+
     Optional<Post> findFirstByTripIdOrderByDateAscIdAsc(Long tripId);
 
     Optional<Post> findFirstByTripIdOrderByDateDescIdDesc(Long tripId);

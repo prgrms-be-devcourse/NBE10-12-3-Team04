@@ -9,8 +9,8 @@ public enum TripErrorCode implements ErrorCode {
     NOT_FOUND(DefaultErrorCode.NOT_FOUND.getCode(), "여행기를 찾을 수 없습니다."),
     IMAGE_NOT_FOUND(DefaultErrorCode.NOT_FOUND.getCode(), "이미지를 찾을 수 없습니다."),
     FORBIDDEN(DefaultErrorCode.FORBIDDEN.getCode(), "여행기에 대한 권한이 없습니다."),
-    IMAGE_FORBIDDEN(DefaultErrorCode.FORBIDDEN.getCode(), "이미지에 대한 권한이 없습니다.");
-
+    IMAGE_FORBIDDEN(DefaultErrorCode.FORBIDDEN.getCode(), "이미지에 대한 권한이 없습니다."),
+    CITY_REQUIRES_COUNTRY(DefaultErrorCode.BAD_REQUEST.getCode(), "도시를 검색하려면 국가를 함께 지정해주세요.");
     private final String code;
     private final String message;
 
