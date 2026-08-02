@@ -2,6 +2,7 @@ package com.triptrace.domain.image.image.controller;
 
 import java.util.List;
 
+import com.triptrace.global.app.Domain;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class ApiV1ImageController {
     private final ImageDeleteUseCase imageDeleteUseCase;
     private final ImageModifyUseCase imageModifyUseCase;
     private final ImageSearchUseCase imageSearchUseCase;
+    private final String SUCCESS_CODE = "200-"+ Domain.IMAGE.getCode();
 
     @PostMapping("/trips/{tripId}/images")
     public RsData<List<ImageUploadResponse>> upload(
@@ -36,7 +38,7 @@ public class ApiV1ImageController {
         @RequestParam MultipartFile[] images
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "업로드 되었습니다.",
             imageUploadUseCase.uploadImages(ownerId, tripId, images)
         );
@@ -50,7 +52,7 @@ public class ApiV1ImageController {
         @RequestParam MultipartFile[] images
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "업로드 되었습니다.",
             imageUploadUseCase.uploadImages(ownerId, tripId, postId, images)
         );
@@ -64,7 +66,7 @@ public class ApiV1ImageController {
     ) {
         imageDeleteUseCase.deleteById(ownerId, tripId, postId, imageId);
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "삭제 되었습니다.",
             null
         );
@@ -78,7 +80,7 @@ public class ApiV1ImageController {
     ) {
         imageDeleteUseCase.deleteById(ownerId, tripId, imageId);
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "삭제 되었습니다.",
             null
         );
@@ -93,7 +95,7 @@ public class ApiV1ImageController {
     ) {
         imageDeleteUseCase.deleteByUrl(ownerId, tripId, postId, imageUrl);
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "삭제 되었습니다.",
             null
         );
@@ -107,7 +109,7 @@ public class ApiV1ImageController {
     ) {
 
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "수정 되었습니다.",
             imageModifyUseCase.modifyById(ownerId, tripId, postId, imageId)
         );
@@ -118,7 +120,7 @@ public class ApiV1ImageController {
     public RsData<List<ImageResponse>> list(
         @AuthenticationPrincipal Long ownerId) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "SUCCESS",
             imageSearchUseCase.getImages(ownerId));
     }
@@ -126,7 +128,7 @@ public class ApiV1ImageController {
     @PatchMapping("/trips/{tripId}/images/{imageId}/unassign")
     public RsData<?> unassign(@AuthenticationPrincipal Long ownerId, @PathVariable Long tripId, @PathVariable Long imageId) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "수정 되었습니다.",
             imageModifyUseCase.unassign(ownerId, tripId, imageId));
     }
