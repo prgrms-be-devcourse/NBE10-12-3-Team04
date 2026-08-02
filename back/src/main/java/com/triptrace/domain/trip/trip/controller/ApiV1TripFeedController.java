@@ -2,7 +2,11 @@ package com.triptrace.domain.trip.trip.controller;
 
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.dto.TripSearchResponse;
+import com.triptrace.domain.trip.trip.dto.TripSearchLocationResponse;
+import com.triptrace.domain.trip.trip.dto.PopularDestinationResponse;
+import com.triptrace.domain.trip.trip.dto.WeeklyTrendingTripResponse;
 import com.triptrace.domain.trip.trip.dto.TripSearchScope;
+import com.triptrace.domain.trip.trip.dto.TripSearchSort;
 import com.triptrace.domain.trip.trip.service.TripSearchService;
 import com.triptrace.domain.trip.trip.service.TripService;
 import com.triptrace.global.rsData.RsData;
@@ -36,6 +40,24 @@ public class ApiV1TripFeedController {
         );
     }
 
+    @GetMapping("/trending-weekly")
+    public RsData<List<WeeklyTrendingTripResponse>> getWeeklyTrendingTrips() {
+        return new RsData<>(
+            "200-10",
+            "이번 주 급상승 여행 조회에 성공했습니다.",
+            tripService.findWeeklyTrendingTrips()
+        );
+    }
+
+    @GetMapping("/popular-destinations")
+    public RsData<List<PopularDestinationResponse>> getPopularDestinations() {
+        return new RsData<>(
+            "200-11",
+            "인기 여행지 조회에 성공했습니다.",
+            tripService.findPopularDestinations()
+        );
+    }
+
     @GetMapping(value = "/recent", params = {"page", "size"})
     public RsData<Page<TripResponse>> getVisibilityTrueOrderByCreatedAtDesc(
         @PageableDefault(size = 20) Pageable pageable) {
@@ -51,7 +73,8 @@ public class ApiV1TripFeedController {
         @RequestParam(defaultValue = "ALL") final TripSearchScope scope,
         @RequestParam(required = false) final String country,
         @RequestParam(required = false) final String city,
-        @PageableDefault(size = 20) final Pageable pageable
+        @RequestParam(defaultValue = "LATEST") final TripSearchSort sort,
+        @PageableDefault(size = 12) final Pageable pageable
     ) {
         return new RsData<>(
             "200-08",
@@ -61,8 +84,18 @@ public class ApiV1TripFeedController {
                 scope,
                 country,
                 city,
+                sort,
                 pageable
             )
+        );
+    }
+
+    @GetMapping("/search/locations")
+    public RsData<List<TripSearchLocationResponse>> getSearchLocations() {
+        return new RsData<>(
+            "200-09",
+            "여행기 검색 지역 조회에 성공했습니다.",
+            tripSearchService.findLocations()
         );
     }
 

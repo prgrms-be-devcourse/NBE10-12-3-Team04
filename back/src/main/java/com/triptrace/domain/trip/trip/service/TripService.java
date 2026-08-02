@@ -10,6 +10,8 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.dto.TripCreateRequest;
 import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
+import com.triptrace.domain.trip.trip.dto.PopularDestinationResponse;
+import com.triptrace.domain.trip.trip.dto.WeeklyTrendingTripResponse;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
@@ -17,6 +19,7 @@ import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -149,6 +152,45 @@ public class TripService {
         return tripRepository.findTop10PublicTripsByRecentLikeCount(likedSince)
             .stream()
             .map(this::toResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeeklyTrendingTripResponse> findWeeklyTrendingTrips() {
+        LocalDateTime likedSince = LocalDateTime.now().minusDays(7);
+        return tripRepository.findWeeklyTrendingTrips(likedSince, PageRequest.of(0, 9))
+            .stream()
+            .map(row -> new WeeklyTrendingTripResponse(
+                toResponse((Trip) row[0]),
+                ((Number) row[1]).longValue()
+            ))
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PopularDestinationResponse> findPopularDestinations() {
+        return tripRepository.findPopularDestinations(PageRequest.of(0, 6))
+            .stream()
+            .map(row -> {
+                String country = ((String) row[0]).trim();
+                String city = ((String) row[1]).trim();
+                Trip representative = tripRepository
+                    .findFirstByVisibilityTrueAndCountryAndCityOrderByLikeCountDescCreatedAtDescIdDesc(
+                        (String) row[0],
+                        (String) row[1]
+                    )
+                    .orElse(null);
+                String thumbnailUrl = representative == null || representative.getRepresentativeImage() == null
+                    ? null
+                    : representative.getRepresentativeImage().getThumbnailUrl();
+                return new PopularDestinationResponse(
+                    country,
+                    city,
+                    ((Number) row[2]).longValue(),
+                    thumbnailUrl,
+                    representative == null ? null : representative.getId()
+                );
+            })
             .toList();
     }
 

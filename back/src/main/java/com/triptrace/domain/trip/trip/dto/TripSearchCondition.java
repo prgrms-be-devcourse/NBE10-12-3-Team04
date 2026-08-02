@@ -7,7 +7,8 @@ public record TripSearchCondition (
     List<String> tokens,
     TripSearchScope scope,
     String country,
-    String city
+    String city,
+    TripSearchSort sort
     ){
     public  boolean hasKeyword(){
         return tokens != null && !tokens.isEmpty();
