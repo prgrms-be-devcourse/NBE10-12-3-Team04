@@ -9,6 +9,14 @@ spring:
       ddl-auto: update
     show-sql: false
 
+가management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
 
 logging:
   file:
