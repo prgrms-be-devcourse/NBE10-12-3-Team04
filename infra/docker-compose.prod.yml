@@ -35,6 +35,8 @@ services:
       - "8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      JAVA_TOOL_OPTIONS: -Duser.timezone=${APP_TIME_ZONE:-Asia/Seoul}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -64,6 +66,7 @@ services:
   db:
     image: mysql:8.4
     environment:
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
