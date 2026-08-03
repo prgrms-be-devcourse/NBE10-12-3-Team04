@@ -47,7 +47,10 @@ public class SecurityConfig {
                     "/h2-console/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/images/**"
+                    "/images/**",
+                    "/actuator/health",
+                    "/actuator/info",
+                    "/actuator/prometheus"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/trips").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/trips/*").permitAll()
