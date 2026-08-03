@@ -5,6 +5,7 @@ import com.triptrace.domain.marker.marker.dto.MarkerModifyRequest
 import com.triptrace.domain.marker.marker.dto.MarkerResponse
 import com.triptrace.domain.marker.marker.dto.PlaceCandidateResponse
 import com.triptrace.domain.marker.marker.service.MarkerService
+import com.triptrace.global.app.Domain
 import com.triptrace.global.rsData.RsData
 import jakarta.validation.Valid
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -14,6 +15,11 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/api/v1")
 class ApiV1MarkerController(private val markerService: MarkerService) {
+    private companion object {
+        val SUCCESS_CODE = "200-${Domain.MARKER.code}"
+        val CREATED_CODE = "201-${Domain.MARKER.code}"
+    }
+
     // 마커 생성
     @PostMapping("/posts/{postId}/markers")
     fun createMarker(
@@ -24,7 +30,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         val response = markerService.createMarker(postId, memberId, request)
 
         return RsData(
-            "201-04",
+            CREATED_CODE,
             "마커가 생성되었습니다.",
             response
         )
@@ -36,7 +42,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @PathVariable postId: Long
     ): RsData<List<MarkerResponse>> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "마커 목록 조회에 성공했습니다.",
             markerService.getMarkers(postId)
         )
@@ -48,7 +54,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @PathVariable markerId: Long
     ): RsData<MarkerResponse> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "마커 조회에 성공했습니다.",
             markerService.getMarker(markerId)
         )
@@ -61,7 +67,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @AuthenticationPrincipal memberId: Long?
     ): RsData<List<PlaceCandidateResponse>> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "마커 장소명 후보 조회에 성공했습니다.",
             markerService.getPlaceCandidates(markerId, memberId)
         )
@@ -73,7 +79,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @RequestParam keyword: String?
     ): RsData<List<PlaceCandidateResponse>> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "장소 검색에 성공했습니다.",
             markerService.searchPlaces(keyword)
         )
@@ -86,7 +92,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @RequestParam longitude: BigDecimal
     ): RsData<List<PlaceCandidateResponse>> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "주변 장소 조회에 성공했습니다.",
             markerService.findNearbyPlaces(latitude, longitude)
         )
@@ -100,7 +106,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
         @Valid @RequestBody request: MarkerModifyRequest
     ): RsData<MarkerResponse> {
         return RsData(
-            "200-04",
+            SUCCESS_CODE,
             "마커가 수정되었습니다.",
             markerService.modifyMarker(markerId, memberId, request)
         )
@@ -110,7 +116,11 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     fun deleteMarker(
         @PathVariable markerId: Long,
         @AuthenticationPrincipal memberId: Long?
-    ) {
+    ): RsData<Void> {
         markerService.deleteMarker(markerId, memberId)
+        return RsData(
+            SUCCESS_CODE,
+            "마커가 삭제되었습니다."
+        )
     }
 }

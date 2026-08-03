@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -245,10 +244,11 @@ class ApiV1MarkerControllerTest {
     void deleteMarker() throws Exception {
         mvc.perform(delete("/api/v1/posts/markers/{markerId}", MARKER_ID)
                 .with(csrf())
-                .with(authentication(memberAuthentication())))
+            .with(authentication(memberAuthentication())))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().string(""));
+            .andExpect(jsonPath("$.resultCode").value(SUCCESS_CODE))
+            .andExpect(jsonPath("$.msg").value("마커가 삭제되었습니다."));
 
         verify(markerService).deleteMarker(MARKER_ID, MEMBER_ID);
     }
