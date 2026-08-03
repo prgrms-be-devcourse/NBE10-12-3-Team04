@@ -15,6 +15,8 @@ import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.global.exception.ServiceException;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostService {
+    private static final Logger log = LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final TripRepository tripRepository;
     private final ImageRepository imageRepository;
@@ -58,6 +61,11 @@ public class PostService {
             MarkerSource.MANUAL
         ));
         recalculateTripDateRange(trip);
+
+        log.info(
+            "[POST] create completed postId={} tripId={} ownerId={}",
+            post.getId(), tripId, ownerId
+        );
 
         return toResponse(post);
     }
@@ -101,6 +109,11 @@ public class PostService {
         syncMarkerDate(post);
         recalculateTripDateRange(post.getTrip());
 
+        log.info(
+            "[POST] modify completed postId={} tripId={} ownerId={}",
+            postId, post.getTrip().getId(), ownerId
+        );
+
         return toResponse(post);
     }
 
@@ -126,6 +139,11 @@ public class PostService {
         postRepository.delete(post);
         postRepository.flush();
         recalculateTripDateRange(post.getTrip());
+
+        log.info(
+            "[POST] delete completed postId={} tripId={} ownerId={}",
+            postId, post.getTrip().getId(), ownerId
+        );
     }
 
     private void validateOwner(Trip trip, Long ownerId) {

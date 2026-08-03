@@ -9,10 +9,13 @@ import com.triptrace.domain.trip.tripLike.error.TripLikeErrorCode;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TripLikeService {
+    private static final Logger log = LoggerFactory.getLogger(TripLikeService.class);
     public final TripLikeRepository tripLikeRepository;
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
@@ -32,6 +35,8 @@ public class TripLikeService {
 
         tripLikeRepository.save(tripLike);
         trip.increaseLikeCount();
+
+        log.info("[TRIP] like created tripId={} memberId={}", tripId, memberId);
     }
 
     @Transactional
@@ -44,6 +49,8 @@ public class TripLikeService {
 
         tripLikeRepository.delete(tripLike);
         trip.decreaseLikeCount();
+
+        log.info("[TRIP] like deleted tripId={} memberId={}", tripId, memberId);
     }
 
     public boolean isLiked(Long memberId, Long tripId) {

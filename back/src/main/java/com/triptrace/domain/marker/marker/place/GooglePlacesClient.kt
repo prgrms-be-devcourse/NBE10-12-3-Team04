@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.slf4j.LoggerFactory
 import org.springframework.util.StringUtils
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -16,6 +17,8 @@ class GooglePlacesClient(
     private val apiKey: String,
     private val restClient: RestClient
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
 
     @Autowired
     constructor(
@@ -43,7 +46,8 @@ class GooglePlacesClient(
                 .body(JsonNode::class.java)
 
             extractPlaceCandidates(response)
-        } catch (_: RestClientException) {
+        } catch (e: RestClientException) {
+            log.warn("[MARKER] nearby place search fallback reason={}", e.message)
             emptyList()
         }
     }
@@ -64,7 +68,12 @@ class GooglePlacesClient(
                 .body(JsonNode::class.java)
 
             extractPlaceCandidates(response)
-        } catch (_: RestClientException) {
+        } catch (e: RestClientException) {
+            log.warn(
+                "[MARKER] text place search fallback keywordLength={} reason={}",
+                keyword?.length ?: 0,
+                e.message
+            )
             emptyList()
         }
     }

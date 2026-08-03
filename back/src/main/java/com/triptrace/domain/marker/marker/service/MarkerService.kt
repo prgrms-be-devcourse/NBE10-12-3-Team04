@@ -12,6 +12,7 @@ import com.triptrace.domain.post.post.entity.Post
 import com.triptrace.domain.post.post.repository.PostRepository
 import com.triptrace.global.exception.ServiceException
 import org.springframework.stereotype.Service
+import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StringUtils
 import java.math.BigDecimal
@@ -23,6 +24,8 @@ class MarkerService(
     private val postRepository: PostRepository,
     private val googlePlacesClient: GooglePlacesClient
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     // 권한 체크
     private fun validateOwner(post: Post, memberId: Long?) {
         val ownerId = post.getTrip().getOwner().getId()
@@ -50,6 +53,14 @@ class MarkerService(
         )
 
         val saved = markerRepository.save(marker)
+
+        log.info(
+            "[MARKER] create completed markerId={} postId={} ownerId={} source={}",
+            saved.id,
+            postId,
+            memberId,
+            saved.source
+        )
 
         return MarkerResponse(saved)
     }
@@ -114,6 +125,14 @@ class MarkerService(
             request.placeName,
             alignVisitedAtWithPostDate(marker.post, request.visitedAt),
             requireNotNull(request.source)
+        )
+
+        log.info(
+            "[MARKER] modify completed markerId={} postId={} ownerId={} source={}",
+            markerId,
+            marker.post.id,
+            memberId,
+            marker.source
         )
 
         return MarkerResponse(marker)
