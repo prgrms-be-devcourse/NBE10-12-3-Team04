@@ -18,6 +18,10 @@ FROM eclipse-temurin:25-jre-noble AS runner
 
 WORKDIR /app
 
+# JVM·로그·JPA가 컨테이너 기본값에 의존하지 않도록 서비스 시간대를 명시한다.
+ENV TZ=Asia/Seoul
+ENV JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul
+
 ARG LOG_DIR=$LOG_DIR
 ARG IMAGE_UPLOAD=$IMAGE_UPLOAD
 

@@ -43,6 +43,11 @@ dependencies {
     // OpenAPI / Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
 
+    // Actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // Micrometer가 등록한 JVM·HTTP·DB 등의 메트릭을 /actuator/prometheus 형식으로 제공한다.
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
     // Database
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
@@ -66,6 +71,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

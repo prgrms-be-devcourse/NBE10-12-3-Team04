@@ -2,10 +2,14 @@ services:
   caddy:
     image: caddy:2
     ports:
-      - "80:80"
-      - "443:443"
+      # host 포트만 환경별로 바꾸고 Caddy 컨테이너 내부 포트는 표준 80/443을 유지한다.
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
     environment:
       SITE_ADDR: ${SITE_ADDR}
+      # Compose 네트워크 안의 서비스 주소. 홈서버·운영에서 분리 배치할 때만 바꾼다.
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:8080}
+      FRONTEND_UPSTREAM: ${FRONTEND_UPSTREAM:-frontend:3000}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
@@ -16,7 +20,8 @@ services:
 
   frontend:
     build:
-      context: ./front
+      # Compose 파일은 infra/에 있으므로 애플리케이션 소스는 한 단계 위에서 찾는다.
+      context: ../front
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
@@ -35,9 +40,12 @@ services:
 
   backend:
     build:
-      context: ./back
+      # Compose 파일은 infra/에 있으므로 애플리케이션 소스는 한 단계 위에서 찾는다.
+      context: ../back
       dockerfile: Dockerfile
       args:
+        # Dockerfile의 APP_VERSION은 JAR build-info.properties에 기록된다.
+        APP_VERSION: ${BACKEND_VERSION:-0.0.1-SNAPSHOT}
         LOG_DIR: ${LOG_DIR}
         IMAGE_UPLOAD: ${IMAGE_UPLOAD}
     image: triptrace-backend:local
@@ -45,6 +53,8 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      JAVA_TOOL_OPTIONS: -Duser.timezone=${APP_TIME_ZONE:-Asia/Seoul}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://db:3306/triptrace}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -70,11 +80,29 @@ services:
       - backend-images-local:${IMAGE_UPLOAD}
       - backend-logs-local:${LOG_DIR}
 
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    ports:
+      # Prometheus UI/API는 로컬 호스트에서만 확인한다.
+      - "127.0.0.1:${PROMETHEUS_HOST_PORT:-9090}:9090"
+    volumes:
+      # backend 서비스명은 Compose 내부 DNS로 backend:8080에 해석된다.
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data-local:/prometheus
+    depends_on:
+      - backend
+    restart: unless-stopped
+
   db:
     image: mysql:8.4
     ports:
       - "3306:3306"
     environment:
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -92,5 +120,6 @@ volumes:
   mysql-data-local:
   backend-images-local:
   backend-logs-local:
+  prometheus-data-local:
   caddy_data:
   caddy_config:
