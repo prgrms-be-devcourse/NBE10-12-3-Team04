@@ -5,6 +5,7 @@ import com.triptrace.domain.marker.marker.dto.MarkerModifyRequest;
 import com.triptrace.domain.marker.marker.dto.MarkerResponse;
 import com.triptrace.domain.marker.marker.dto.PlaceCandidateResponse;
 import com.triptrace.domain.marker.marker.service.MarkerService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 public class ApiV1MarkerController {
+    private static final String SUCCESS_CODE = "200-" + Domain.MARKER.getCode();
+    private static final String CREATED_CODE = "201-" + Domain.MARKER.getCode();
     private final MarkerService markerService;
 
     // 마커 생성
@@ -29,7 +32,7 @@ public class ApiV1MarkerController {
         MarkerResponse response = markerService.createMarker(postId, memberId, request);
 
         return new RsData<>(
-            "201-04",
+            CREATED_CODE,
             "마커가 생성되었습니다.",
             response
         );
@@ -42,7 +45,7 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "마커 목록 조회에 성공했습니다.",
             markerService.getMarkers(postId)
         );
@@ -55,7 +58,7 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "마커 조회에 성공했습니다.",
             markerService.getMarker(markerId)
         );
@@ -69,7 +72,7 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "마커 장소명 후보 조회에 성공했습니다.",
             markerService.getPlaceCandidates(markerId, memberId)
         );
@@ -82,7 +85,7 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "장소 검색에 성공했습니다.",
             markerService.searchPlaces(keyword)
         );
@@ -96,7 +99,7 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "주변 장소 조회에 성공했습니다.",
             markerService.findNearbyPlaces(latitude, longitude)
         );
@@ -111,18 +114,22 @@ public class ApiV1MarkerController {
     ) {
 
         return new RsData<>(
-            "200-04",
+            SUCCESS_CODE,
             "마커가 수정되었습니다.",
             markerService.modifyMarker(markerId, memberId, request)
         );
     }
 
     @DeleteMapping("/posts/markers/{markerId}")
-    public void deleteMarker(
+    public RsData<Void> deleteMarker(
         @PathVariable Long markerId,
         @AuthenticationPrincipal Long memberId
     ) {
         markerService.deleteMarker(markerId, memberId);
+        return new RsData<>(
+            SUCCESS_CODE,
+            "마커가 삭제되었습니다."
+        );
     }
 
     public ApiV1MarkerController(final MarkerService markerService) {
