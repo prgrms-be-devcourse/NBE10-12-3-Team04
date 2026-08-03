@@ -96,6 +96,23 @@ class ApiV1PostControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("내 게시물 목록 조회 API")
+    void getMyPosts() throws Exception {
+        Member owner = createMember("myPostOwner");
+        Trip trip = createTrip(owner, "내 여행기");
+        createPost(trip, LocalDate.of(2026, 1, 1), "내 첫 게시물");
+
+        mvc.perform(get("/api/v1/posts")
+                .with(authentication(auth(owner))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.POST.getCode()))
+            .andExpect(jsonPath("$.data.length()").value(1))
+            .andExpect(jsonPath("$.data[0].title").value("내 첫 게시물"));
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("공개 여행기 게시물 상세 조회 API")
     void getPost() throws Exception {
         Member owner = createMember("owner");
@@ -171,6 +188,25 @@ class ApiV1PostControllerTest {
             ));
 
         assertThat(postRepository.existsById(post.getId())).isTrue();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("게시물 삭제 API")
+    void deletePost() throws Exception {
+        Member owner = createMember("deleteOwner");
+        Trip trip = createTrip(owner, "삭제 여행기");
+        Post post = createPost(trip, LocalDate.of(2026, 1, 1), "삭제할 게시물");
+
+        mvc.perform(delete("/api/v1/posts/{postId}", post.getId())
+                .with(csrf())
+                .with(authentication(auth(owner))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.POST.getCode()))
+            .andExpect(jsonPath("$.msg").value("%d번 게시물이 삭제되었습니다.".formatted(post.getId())));
+
+        assertThat(postRepository.existsById(post.getId())).isFalse();
     }
 
     private Member createMember(String username) {

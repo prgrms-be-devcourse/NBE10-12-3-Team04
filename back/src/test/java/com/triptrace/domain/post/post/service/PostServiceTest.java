@@ -150,6 +150,46 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("비공개 여행기의 소유자는 게시물 목록을 조회할 수 있다.")
+    void findPrivatePostsByOwner() {
+        Member owner = createMember("privateListOwner");
+        Trip trip = createTrip(owner, "비공개 여행기", false);
+        createPost(trip, LocalDate.of(2026, 1, 1), "첫째 날");
+
+        List<PostResponse> responses = postService.findPostsByTripId(trip.getId(), owner.getId());
+
+        assertThat(responses)
+            .extracting(PostResponse::title)
+            .containsExactly("첫째 날");
+    }
+
+    @Test
+    @DisplayName("비공개 여행기의 소유자가 아니면 게시물 목록을 조회할 수 없다.")
+    void findPrivatePostsByNotOwner() {
+        Member owner = createMember("privateListOwner");
+        Member other = createMember("privateListOther");
+        Trip trip = createTrip(owner, "비공개 여행기", false);
+
+        assertThatThrownBy(() -> postService.findPostsByTripId(trip.getId(), other.getId()))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                PostErrorCode.FORBIDDEN.getCode(),
+                Domain.POST.getCode(),
+                PostErrorCode.FORBIDDEN.getMessage()
+            ));
+    }
+
+    @Test
+    @DisplayName("게시물이 없는 회원의 게시물 목록은 빈 목록이다.")
+    void getPostsReturnsEmptyList() {
+        Member owner = createMember("emptyPostOwner");
+
+        List<PostResponse> responses = postService.getPosts(owner.getId());
+
+        assertThat(responses).isEmpty();
+    }
+
+    @Test
     @DisplayName("공개 여행기의 게시물은 ownerId 없이 상세 조회할 수 있다.")
     void findPublicPost() {
         Member owner = createMember("owner");
@@ -230,6 +270,32 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("게시물 날짜를 수정하면 기존 마커의 방문 날짜도 변경한다.")
+    void modifySynchronizesMarkerDate() {
+        Member owner = createMember("markerDateOwner");
+        Trip trip = createTrip(owner, "마커 날짜 여행");
+        Post post = createPost(trip, LocalDate.of(2026, 3, 1), "수정 전");
+        markerRepository.save(new Marker(
+            post,
+            BigDecimal.valueOf(35.0116363),
+            BigDecimal.valueOf(135.7680294),
+            "교토역",
+            LocalDateTime.of(2026, 3, 1, 10, 30),
+            MarkerSource.AUTO
+        ));
+
+        postService.modifyPost(post.getId(), owner.getId(), new PostModifyRequest(
+            LocalDate.of(2026, 3, 4),
+            null,
+            "수정 후",
+            "수정된 메모"
+        ));
+
+        Marker marker = markerRepository.findByPostId(post.getId()).orElseThrow();
+        assertThat(marker.getVisitedAt()).isEqualTo(LocalDateTime.of(2026, 3, 4, 10, 30));
+    }
+
+    @Test
     @DisplayName("소유자는 게시물을 삭제할 수 있다.")
     void deleteByOwner() {
         Member owner = createMember("owner");
@@ -281,6 +347,38 @@ class PostServiceTest {
         Image foundImage = imageRepository.findById(image.getId()).orElseThrow();
         assertThat(foundImage.getPost()).isNull();
         assertThat(tripRepository.findById(trip.getId()).orElseThrow().getRepresentativeImage()).isNull();
+    }
+
+    @Test
+    @DisplayName("게시물과 연결되지 않은 여행 대표 이미지는 게시물 삭제 후에도 유지한다.")
+    void deleteKeepsTripRepresentativeImageNotConnectedToPost() {
+        Member owner = createMember("representativeOwner");
+        Trip trip = createTrip(owner, "대표 이미지 여행");
+        Post post = createPost(trip, LocalDate.of(2026, 1, 1), "삭제할 게시물");
+        Image representativeImage = toEntity(owner, trip, null, "trip-cover.jpg");
+        trip.changeRepresentativeImage(representativeImage);
+
+        postService.deletePost(post.getId(), owner.getId());
+
+        Trip foundTrip = tripRepository.findById(trip.getId()).orElseThrow();
+        assertThat(foundTrip.getRepresentativeImage()).isEqualTo(representativeImage);
+    }
+
+    @Test
+    @DisplayName("다른 여행기의 게시물은 해당 여행기에서 조회할 수 없다.")
+    void getPostFromOtherTrip() {
+        Member owner = createMember("otherTripOwner");
+        Trip trip = createTrip(owner, "조회 기준 여행");
+        Trip otherTrip = createTrip(owner, "다른 여행");
+        Post otherPost = createPost(otherTrip, LocalDate.of(2026, 1, 1), "다른 게시물");
+
+        assertThatThrownBy(() -> postService.getPost(trip, otherPost.getId()))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                PostErrorCode.NOT_FOUND.getCode(),
+                Domain.POST.getCode(),
+                PostErrorCode.NOT_FOUND.getMessage()
+            ));
     }
 
     private Member createMember(String username) {
