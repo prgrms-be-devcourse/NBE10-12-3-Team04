@@ -64,3 +64,19 @@ docker run --rm --entrypoint promtool \
 ```
 
 Compose 구성과 Prometheus scrape 설정 문법은 모두 통과했다. 실제 수집은 로컬 Compose를 기동한 뒤 Prometheus Targets 화면에서 `triptrace-backend` 상태가 `UP`인지 확인한다.
+
+## 현재 수집되는 메트릭
+
+아래는 2026-08-03에 로컬 백엔드의 `/actuator/prometheus` 응답에서 확인한 메트릭이다. 라이브러리 추가, 애플리케이션 요청량, 실행 환경에 따라 항목은 달라질 수 있다.
+
+| 분류 | 의미 | 메트릭 |
+| --- | --- | --- |
+| JVM 클래스 | JVM에 적재·해제된 클래스 수 | `jvm_classes_loaded_classes`, `jvm_classes_loaded_count_classes_total`, `jvm_classes_unloaded_classes_total` |
+| JVM 가비지 컬렉션 | GC 이후 살아 있는 데이터 크기, 메모리 할당·승격량, GC 점유율 | `jvm_gc_live_data_size_bytes`, `jvm_gc_max_data_size_bytes`, `jvm_gc_memory_allocated_bytes_total`, `jvm_gc_memory_promoted_bytes_total`, `jvm_gc_overhead` |
+| JVM 스레드 | 현재·최대·데몬 스레드 수와 누적 생성 수 | `jvm_threads_daemon_threads`, `jvm_threads_live_threads`, `jvm_threads_peak_threads`, `jvm_threads_started_threads_total` |
+| 프로세스 | 애플리케이션 프로세스의 CPU 사용량, 열린 파일 수, 시작 시각, 가동 시간 | `process_cpu_time_ns_total`, `process_cpu_usage`, `process_files_max_files`, `process_files_open_files`, `process_start_time_seconds`, `process_uptime_seconds` |
+| 시스템 | 컨테이너가 보는 CPU 개수·사용률·1분 평균 부하 | `system_cpu_count`, `system_cpu_usage`, `system_load_average_1m` |
+| Spring Security | 보안 필터를 거친 활성 HTTP 요청의 개수·최대 시간·누적 시간 | `spring_security_http_secured_requests_active_seconds_count`, `spring_security_http_secured_requests_active_seconds_max`, `spring_security_http_secured_requests_active_seconds_sum` |
+| Tomcat 세션 | 현재·최대 활성 세션, 세션 최장 유지 시간, 생성·만료·거절 세션 수 | `tomcat_sessions_active_current_sessions`, `tomcat_sessions_active_max_sessions`, `tomcat_sessions_alive_max_seconds`, `tomcat_sessions_created_sessions_total`, `tomcat_sessions_expired_sessions_total`, `tomcat_sessions_rejected_sessions_total` |
+
+현재 응답에는 일반 HTTP 요청 건수·응답 시간이나 DB 커넥션 풀 메트릭이 없었다. 필요한 메트릭이 있으면 별도로 계측을 추가한 뒤 이 목록을 갱신한다.
