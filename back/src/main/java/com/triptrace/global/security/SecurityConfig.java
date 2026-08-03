@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers( // 비로그인 허용 경로
                     "/api/v1/auth/signup",
                     "/api/v1/auth/login",
+                    "/api/v1/auth/oauth/google",
                     "/api/v1/auth/reissue",
                     "/api/v1/auth/logout",
                     "/api/v1/profile-images",
