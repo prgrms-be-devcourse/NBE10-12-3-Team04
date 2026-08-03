@@ -43,6 +43,9 @@ dependencies {
     // OpenAPI / Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
 
+    // Actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
     // Database
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
