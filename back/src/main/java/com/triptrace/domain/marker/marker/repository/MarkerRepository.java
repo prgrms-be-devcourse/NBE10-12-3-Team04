@@ -1,13 +1,16 @@
-package com.triptrace.domain.marker.marker.repository
+package com.triptrace.domain.marker.marker.repository;
 
-import com.triptrace.domain.marker.marker.entity.Marker
-import org.springframework.data.jpa.repository.JpaRepository
-import java.util.*
+import com.triptrace.domain.marker.marker.entity.Marker;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-interface MarkerRepository : JpaRepository<Marker?, Long?> {
-    fun findByPostId(postId: Long?): Optional<Marker?>?
+import java.util.List;
+import java.util.Optional;
 
-    fun findByPostIdIn(postIds: MutableList<Long?>?): MutableList<Marker?>?
+public interface MarkerRepository extends JpaRepository<Marker, Long> {
 
-    fun findByRepresentativeImageId(representativeImageId: Long?): MutableList<Marker?>?
+    Optional<Marker> findByPostId(Long postId);
+
+    List<Marker> findByPostIdIn(List<Long> postIds);
+
+    List<Marker> findByRepresentativeImageId(Long representativeImageId);
 }

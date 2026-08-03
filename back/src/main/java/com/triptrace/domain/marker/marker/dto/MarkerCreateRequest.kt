@@ -12,9 +12,11 @@ data class MarkerCreateRequest(
 
     val centerLng: BigDecimal?,
 
-    val placeName: @Size(max = 100) String?,
+    @field:Size(max = 100)
+    val placeName: String?,
 
     val visitedAt: LocalDateTime?,
 
-    val source: @NotNull MarkerSource?
+    @field:NotNull
+    val source: MarkerSource?
 )

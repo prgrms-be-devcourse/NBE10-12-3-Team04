@@ -17,13 +17,13 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 마커 생성
     @PostMapping("/posts/{postId}/markers")
     fun createMarker(
-        @PathVariable postId: Long?,
+        @PathVariable postId: Long,
         @AuthenticationPrincipal memberId: Long?,
-        @Valid @RequestBody request: @Valid MarkerCreateRequest
-    ): RsData<MarkerResponse?> {
+        @Valid @RequestBody request: MarkerCreateRequest
+    ): RsData<MarkerResponse> {
         val response = markerService.createMarker(postId, memberId, request)
 
-        return RsData<MarkerResponse?>(
+        return RsData(
             "201-04",
             "마커가 생성되었습니다.",
             response
@@ -33,9 +33,9 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 마커 목록 조회
     @GetMapping("/posts/{postId}/markers")
     fun getMarkers(
-        @PathVariable postId: Long?
-    ): RsData<MutableList<MarkerResponse?>?> {
-        return RsData<MutableList<MarkerResponse?>?>(
+        @PathVariable postId: Long
+    ): RsData<List<MarkerResponse>> {
+        return RsData(
             "200-04",
             "마커 목록 조회에 성공했습니다.",
             markerService.getMarkers(postId)
@@ -45,9 +45,9 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 마커 상세 조회
     @GetMapping("/posts/markers/{markerId}")
     fun getMarker(
-        @PathVariable markerId: Long?
-    ): RsData<MarkerResponse?> {
-        return RsData<MarkerResponse?>(
+        @PathVariable markerId: Long
+    ): RsData<MarkerResponse> {
+        return RsData(
             "200-04",
             "마커 조회에 성공했습니다.",
             markerService.getMarker(markerId)
@@ -57,10 +57,10 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 마커 장소명 후보 조회
     @GetMapping("/posts/markers/{markerId}/place-candidates")
     fun getPlaceCandidates(
-        @PathVariable markerId: Long?,
+        @PathVariable markerId: Long,
         @AuthenticationPrincipal memberId: Long?
-    ): RsData<MutableList<PlaceCandidateResponse?>?> {
-        return RsData<MutableList<PlaceCandidateResponse?>?>(
+    ): RsData<List<PlaceCandidateResponse>> {
+        return RsData(
             "200-04",
             "마커 장소명 후보 조회에 성공했습니다.",
             markerService.getPlaceCandidates(markerId, memberId)
@@ -71,8 +71,8 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     @GetMapping("/places/search")
     fun searchPlaces(
         @RequestParam keyword: String?
-    ): RsData<MutableList<PlaceCandidateResponse?>?> {
-        return RsData<MutableList<PlaceCandidateResponse?>?>(
+    ): RsData<List<PlaceCandidateResponse>> {
+        return RsData(
             "200-04",
             "장소 검색에 성공했습니다.",
             markerService.searchPlaces(keyword)
@@ -82,10 +82,10 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 좌표 기준 주변 장소 조회
     @GetMapping("/places/nearby")
     fun findNearbyPlaces(
-        @RequestParam latitude: BigDecimal?,
-        @RequestParam longitude: BigDecimal?
-    ): RsData<MutableList<PlaceCandidateResponse?>?> {
-        return RsData<MutableList<PlaceCandidateResponse?>?>(
+        @RequestParam latitude: BigDecimal,
+        @RequestParam longitude: BigDecimal
+    ): RsData<List<PlaceCandidateResponse>> {
+        return RsData(
             "200-04",
             "주변 장소 조회에 성공했습니다.",
             markerService.findNearbyPlaces(latitude, longitude)
@@ -95,11 +95,11 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
     // 마커 수정
     @PatchMapping("/posts/markers/{markerId}")
     fun modifyMarker(
-        @PathVariable markerId: Long?,
+        @PathVariable markerId: Long,
         @AuthenticationPrincipal memberId: Long?,
-        @Valid @RequestBody request: @Valid MarkerModifyRequest
-    ): RsData<MarkerResponse?> {
-        return RsData<MarkerResponse?>(
+        @Valid @RequestBody request: MarkerModifyRequest
+    ): RsData<MarkerResponse> {
+        return RsData(
             "200-04",
             "마커가 수정되었습니다.",
             markerService.modifyMarker(markerId, memberId, request)
@@ -108,7 +108,7 @@ class ApiV1MarkerController(private val markerService: MarkerService) {
 
     @DeleteMapping("/posts/markers/{markerId}")
     fun deleteMarker(
-        @PathVariable markerId: Long?,
+        @PathVariable markerId: Long,
         @AuthenticationPrincipal memberId: Long?
     ) {
         markerService.deleteMarker(markerId, memberId)
