@@ -9,7 +9,7 @@ spring:
       ddl-auto: update
     show-sql: false
 
-가management:
+management:
   endpoints:
     web:
       exposure:
