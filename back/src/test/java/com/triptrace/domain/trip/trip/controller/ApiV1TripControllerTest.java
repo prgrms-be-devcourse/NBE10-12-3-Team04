@@ -205,6 +205,24 @@ class ApiV1TripControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("여행기 삭제 API")
+    void deleteTrip() throws Exception {
+        Member owner = createMember("deleteOwner");
+        Trip trip = createTrip(owner, "삭제할 여행기");
+
+        mvc.perform(delete("/api/v1/trips/{tripId}", trip.getId())
+                .with(csrf())
+                .with(authentication(auth(owner))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.TRIP.getCode()))
+            .andExpect(jsonPath("$.msg").value("%d번 여행기가 삭제되었습니다.".formatted(trip.getId())));
+
+        assertThat(tripRepository.existsById(trip.getId())).isFalse();
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("여행기 대표이미지 변경 API")
     void changeRepresentativeImage() throws Exception {
         Member owner = createMember("owner");
