@@ -1,0 +1,11 @@
+global:
+  # 로컬에서 지표가 갱신되는지 빠르게 확인할 수 있는 기본 간격이다.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: triptrace-backend
+    # Prometheus는 Caddy를 거치지 않고 Compose 내부 네트워크로 backend에 접근한다.
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8080"]
