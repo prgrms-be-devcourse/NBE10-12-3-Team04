@@ -10,7 +10,7 @@ import com.triptrace.domain.image.image.entity.Image;
 import com.triptrace.domain.image.image.entity.UploadStatus;
 import com.triptrace.domain.image.image.processing.ImageInfo;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
-import com.triptrace.domain.image.image.storage.StoredImageFile;
+import com.triptrace.domain.image.image.dto.response.storage.StoredImageFile;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.post.post.entity.Post;
 import com.triptrace.domain.trip.trip.entity.Trip;

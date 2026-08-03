@@ -97,27 +97,11 @@ public class ImageService {
     }
 
     @Transactional(readOnly = true)
-    public ImageServiceResponse findByUrl(String imageUrl) {
-        Image image = getByUrl(imageUrl);
-        return ImageMapper.toServiceResponse(image);
-    }
-
-    @Transactional(readOnly = true)
     public List<ImageServiceResponse> findWithOwner(Long ownerId) {
-        List<Image> images = imageRepository.findByOwnerId(ownerId);
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ImageServiceResponse> findByTripId(Trip trip) {
-        List<Image> images = imageRepository.findByTripId(trip.getId());
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ImageServiceResponse> findByPostId(Post post) {
-        List<Image> images = imageRepository.findByPostId(post.getId());
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
+        return imageRepository.findByOwnerId(ownerId)
+            .stream()
+            .map(ImageMapper::toServiceResponse)
+            .toList();
     }
 
     private void validate(Member owner, Trip trip, Post post, Image image) {

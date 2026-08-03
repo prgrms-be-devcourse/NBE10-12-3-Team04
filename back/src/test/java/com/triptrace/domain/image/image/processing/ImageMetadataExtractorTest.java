@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ImageMetadataExtractorTest {
-
+    // extract, getImageDateTime, getExifIF, getWidthHeight, getLocation, fileTypeFilter
     ImageMetadataExtractor imageMetadataExtractor;
 
     String imageFileName = "/test-a-mail.jpg";
