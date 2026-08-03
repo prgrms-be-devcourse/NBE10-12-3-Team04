@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class ImageMetadataExtractorTest {
-
+    // extract, getImageDateTime, getExifIF, getWidthHeight, getLocation, fileTypeFilter
     ImageMetadataExtractor imageMetadataExtractor;
 
     String imageFileName = "/test-a-mail.jpg";

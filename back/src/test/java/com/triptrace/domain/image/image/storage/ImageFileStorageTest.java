@@ -2,7 +2,9 @@ package com.triptrace.domain.image.image.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,12 +19,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 
 public class ImageFileStorageTest {
+    //saveProfileImage, saveImage, saveImageWithThumbnail, deleteImage
+    //generateFileName, resolveUploadPath, resolveStoragePath
+    //cleanUp
 
+    //LocalFileStorage save delete
     @TempDir
     Path tempDir;
 
@@ -130,6 +137,22 @@ public class ImageFileStorageTest {
 
         assertThatThrownBy(() -> imageFileStorage.saveImageWithThumbnail(invalid, ExifOrientation.NORMAL))
             .isInstanceOf(ImageProcessException.class);
+    }
+
+    @Test
+    @DisplayName("null 이미지를 저장하려 하면 READ_ERROR 예외를 던진다.")
+    void test09() {
+        ImageProcessException exception = assertThrows(
+            ImageProcessException.class,
+            () -> imageFileStorage.saveImageWithThumbnail(null, ExifOrientation.NORMAL)
+        );
+        assertThat(exception.getResultCode())
+            .isEqualTo(
+                "%s-%s".formatted(
+                    ImageErrorCode.READ_ERROR.getCode(),
+                    ImageErrorCode.READ_ERROR.getDomain().getCode()
+                ));
+        assertThat(exception.getMessage()).isEqualTo(ImageErrorCode.READ_ERROR.getMessage());
     }
 
     private Path diskPath(String storedUrl) {
