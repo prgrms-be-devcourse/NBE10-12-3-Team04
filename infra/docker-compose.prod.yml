@@ -17,7 +17,8 @@ services:
       - frontend
       - backend
   frontend:
-    image: ghcr.io/prgrms-be-devcourse/triptrace-frontend:${FRONTEND_VERSION:-latest}
+    # CD가 .env.prod에 기록한 고정 버전 이미지만 실행한다.
+    image: ghcr.io/prgrms-be-devcourse/frontend:${FRONTEND_VERSION:-latest}
     expose:
       - "3000"
     environment:
@@ -30,7 +31,7 @@ services:
 
   backend:
     # latest 대신 릴리스 태그를 사용해 배포한 커밋을 재현할 수 있다.
-    image: ghcr.io/prgrms-be-devcourse/triptrace-backend:${BACKEND_VERSION:-latest}
+    image: ghcr.io/prgrms-be-devcourse/backend:${BACKEND_VERSION:-latest}
     expose:
       - "8080"
     environment:
@@ -43,11 +44,11 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-      LOG_DIR: ${LOG_DIR}
-      IMAGE_UPLOAD: ${IMAGE_UPLOAD}
-      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH}
-      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH}
-      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH}
+      LOG_DIR: /app/logs
+      IMAGE_UPLOAD: /app/images
+      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH:-/images/serving}
+      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH:-/images/thumbnail}
+      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH:-/images/profile}
       PUBLIC_PREFIX: ${PUBLIC_PREFIX}
       IMAGE_FILE_SIZE: ${IMAGE_FILE_SIZE}
       MAX_IMAGE_FILES_SIZE: ${MAX_IMAGE_FILES_SIZE}
@@ -59,8 +60,8 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - backend-images:${IMAGE_UPLOAD}
-      - backend-logs:${LOG_DIR}
+      - backend-images:/app/images
+      - backend-logs:/app/logs
     restart: always
 
   db:

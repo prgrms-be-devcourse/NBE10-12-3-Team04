@@ -20,7 +20,7 @@ management:
 
 logging:
   file:
-    name: ${LOG_DIR:/app/log}/app.log
+    name: ${LOG_DIR:/app/logs}/app.log
   level:
     org.hibernate.orm.jdbc.bind: WARN
     org.hibernate.orm.jdbc.extract: WARN
