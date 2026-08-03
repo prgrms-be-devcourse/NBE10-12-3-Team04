@@ -68,6 +68,30 @@ public class Member extends BaseEntity {
         this.status = status;
     }
 
+    /**
+     * 소셜 로그인으로 처음 들어온 회원을 만든다.
+     * 비밀번호가 없으므로 passwordHash는 항상 null이고, 온보딩 전이라 status는 PENDING_PROFILE이다.
+     * username은 호출하는 쪽에서 중복되지 않는 임시값을 만들어 넘겨준다.
+     */
+    public static Member ofOAuth(
+        String email,
+        LoginType provider,
+        String providerId,
+        String username,
+        String profileImageUrl
+    ) {
+        Member member = new Member();
+        member.email = email;
+        member.username = username;
+        member.passwordHash = null;
+        member.profileImageUrl = profileImageUrl;
+        member.status = MemberStatus.PENDING_PROFILE;
+        member.provider = provider;
+        member.providerId = providerId;
+
+        return member;
+    }
+
     // 부분 수정: null 인 값은 "변경하지 않음"으로 보고, 넘어온 값만 반영한다.
     public void modifyInfo(String username, String intro, String profileImageUrl) {
         if (username != null) {
