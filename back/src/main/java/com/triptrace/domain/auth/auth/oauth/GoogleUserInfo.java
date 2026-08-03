@@ -12,17 +12,20 @@ public final class GoogleUserInfo implements OAuth2UserInfo {
 
     private final String providerId;
     private final String email;
+    private final boolean emailVerified;
     private final String name;
     private final String profileImageUrl;
 
     private GoogleUserInfo(
         String providerId,
         String email,
+        boolean emailVerified,
         String name,
         String profileImageUrl
     ) {
         this.providerId = providerId;
         this.email = email;
+        this.emailVerified = emailVerified;
         this.name = name;
         this.profileImageUrl = profileImageUrl;
     }
@@ -47,6 +50,7 @@ public final class GoogleUserInfo implements OAuth2UserInfo {
         return new GoogleUserInfo(
             sub,
             email,
+            attributes.path("email_verified").asBoolean(false),
             attributes.path("name").asString(null),
             attributes.path("picture").asString(null)
         );
@@ -60,6 +64,11 @@ public final class GoogleUserInfo implements OAuth2UserInfo {
     @Override
     public String getEmail() {
         return this.email;
+    }
+
+    // 구글이 이메일 소유를 확인했는지 여부. 값만 노출하고, 이걸로 막을지 말지는 정책을 아는 쪽에서 판단한다.
+    public boolean isEmailVerified() {
+        return this.emailVerified;
     }
 
     @Override
