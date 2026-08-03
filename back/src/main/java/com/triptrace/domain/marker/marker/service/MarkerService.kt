@@ -46,7 +46,7 @@ class MarkerService(
             request.centerLng,
             request.placeName,
             request.visitedAt,
-            request.source
+            requireNotNull(request.source)
         )
 
         val saved = markerRepository.save(marker)
@@ -78,10 +78,10 @@ class MarkerService(
         val marker = markerRepository.findById(markerId)
             .orElseThrow { ServiceException(MarkerErrorCode.NOT_FOUND) }
 
-        validateOwner(marker.getPost(), memberId)
+        validateOwner(marker.post, memberId)
 
         // 자동 생성 때는 지역명만 저장하고, 사용자가 수정 화면에서 펼칠 때만 주변 상호명을 조회한다.
-        return googlePlacesClient.findNearbyPlaces(marker.getCenterLat(), marker.getCenterLng())
+        return googlePlacesClient.findNearbyPlaces(marker.centerLat, marker.centerLng)
     }
 
     fun searchPlaces(keyword: String?): List<PlaceCandidateResponse> {
@@ -106,14 +106,14 @@ class MarkerService(
         val marker = markerRepository.findById(markerId)
             .orElseThrow { ServiceException(MarkerErrorCode.NOT_FOUND) }
 
-        validateOwner(marker.getPost(), memberId)
+        validateOwner(marker.post, memberId)
 
         marker.modify(
             request.centerLat,
             request.centerLng,
             request.placeName,
-            alignVisitedAtWithPostDate(marker.getPost(), request.visitedAt),
-            request.source
+            alignVisitedAtWithPostDate(marker.post, request.visitedAt),
+            requireNotNull(request.source)
         )
 
         return MarkerResponse(marker)
@@ -124,7 +124,7 @@ class MarkerService(
         val marker = markerRepository.findById(markerId)
             .orElseThrow { ServiceException(MarkerErrorCode.NOT_FOUND) }
 
-        validateOwner(marker.getPost(), memberId)
+        validateOwner(marker.post, memberId)
         throw ServiceException(MarkerErrorCode.DELETE_NOT_ALLOWED)
     }
 

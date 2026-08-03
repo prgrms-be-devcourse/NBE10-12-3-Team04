@@ -21,14 +21,14 @@ data class MarkerResponse(
 ) {
     constructor(marker: Marker) : this(
         marker.getId(),
-        marker.getPost().getId(),
-        marker.getCenterLat(),
-        marker.getCenterLng(),
-        marker.getPlaceName(),
-        marker.getVisitedAt(),
-        marker.getSource(),
-        if (marker.getRepresentativeImage() == null) null else marker.getRepresentativeImage().getId(),
-        if (marker.getRepresentativeImage() == null) null else marker.getRepresentativeImage().getThumbnailUrl(),
+        marker.post.getId(),
+        marker.centerLat,
+        marker.centerLng,
+        marker.placeName,
+        marker.visitedAt,
+        marker.source,
+        marker.representativeImage?.getId(),
+        marker.representativeImage?.getThumbnailUrl(),
         marker.getCreatedAt(),
         marker.getUpdatedAt()
     )
