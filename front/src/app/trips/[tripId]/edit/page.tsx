@@ -768,75 +768,50 @@ function MarkerEditor({
           )}
         </div>
 
-        {marker ? (
-          <>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">선택된 마커 1</label>
-              <div className="mb-3 flex gap-2">
-                <input
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      searchPlaces();
-                    }
-                  }}
-                  placeholder="장소명 또는 주소 검색"
-                  className="min-w-0 flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-green-500"
-                />
-                <button
-                  type="button"
-                  onClick={searchPlaces}
-                  disabled={candidatesLoading}
-                  className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
-                >
-                  검색
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mb-2">장소명</p>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">장소 검색</label>
+          <div className="flex gap-2">
+            <div className="relative min-w-0 flex-1">
               <input
-                value={marker.placeName}
-                onChange={(e) => setM('placeName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchPlaces();
+                  }
+                }}
+                placeholder="장소명 또는 주소 검색"
+                className="w-full rounded-lg border border-gray-200 py-2 pl-3 pr-9 text-xs outline-none focus:border-green-500"
               />
               <button
                 type="button"
                 onClick={loadCandidates}
-                className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                disabled={!marker || candidatesLoading}
+                className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-gray-400 hover:text-gray-600 disabled:opacity-40"
+                title="장소 후보 펼치기"
+                aria-label="장소 후보 펼치기"
               >
-                <span>장소 후보 펼치기</span>
                 <ChevronDown
                   size={14}
-                  className={`text-gray-400 transition-transform ${candidatesOpen ? 'rotate-180' : ''}`}
+                  className={`transition-transform ${candidatesOpen ? 'rotate-180' : ''}`}
                 />
               </button>
-              {candidatesOpen && candidateList}
             </div>
+            <button
+              type="button"
+              onClick={searchPlaces}
+              disabled={candidatesLoading}
+              className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+            >
+              검색
+            </button>
+          </div>
+          {candidatesOpen && candidateList}
+        </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">위도</label>
-                <input
-                  type="number"
-                  value={marker.lat ?? ''}
-                  onChange={(e) => setM('lat', e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                  step="0.0001"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">경도</label>
-                <input
-                  type="number"
-                  value={marker.lng ?? ''}
-                  onChange={(e) => setM('lng', e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                  step="0.0001"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-green-500"
-                />
-              </div>
-            </div>
-
+        {marker ? (
+          <>
             <div>
               <label className="block text-xs text-gray-500 mb-1">방문 시간</label>
               <input
@@ -856,34 +831,11 @@ function MarkerEditor({
           </>
         ) : (
           <div className="rounded-xl border border-dashed border-gray-200 p-4">
-            <div className="mb-4 flex flex-col items-center justify-center py-6 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-6 text-gray-400">
               <MapPin size={28} className="mb-2" />
               <p className="text-sm">마커가 없습니다.</p>
               <p className="text-xs mt-1">장소를 검색해 수동으로 마커를 추가할 수 있습니다.</p>
             </div>
-            <div className="flex gap-2">
-              <input
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchPlaces();
-                  }
-                }}
-                placeholder="장소명 또는 주소 검색"
-                className="min-w-0 flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-green-500"
-              />
-              <button
-                type="button"
-                onClick={searchPlaces}
-                disabled={candidatesLoading}
-                className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-60"
-              >
-                검색
-              </button>
-            </div>
-            {candidatesOpen && candidateList}
           </div>
         )}
       </div>
