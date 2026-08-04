@@ -1002,22 +1002,22 @@ export default function PhotosPage() {
                 key={trip.id}
                 type="button"
                 onClick={() => openTrip(trip)}
-                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="relative aspect-[4/3] bg-gray-100">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                   {trip.coverImage ? (
                     <img
                       src={trip.coverImage}
                       alt=""
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <Images size={34} className="text-gray-300" />
                     </div>
                   )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <span className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+                  <div className="absolute bottom-3 left-3 right-3 z-20 text-white">
                     <p className="line-clamp-1 text-sm font-bold">{trip.title}</p>
                     {trip.location && <p className="mt-1 line-clamp-1 text-xs text-white/85">{trip.location}</p>}
                   </div>
@@ -1042,25 +1042,25 @@ export default function PhotosPage() {
                 key={post.id}
                 type="button"
                 onClick={() => openPost(post)}
-                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="relative aspect-square bg-gray-100">
+                <div className="relative aspect-square overflow-hidden bg-gray-100">
                   {coverImage ? (
                     <img
                       src={coverImage}
                       alt=""
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <Images size={34} className="text-gray-300" />
                     </div>
                   )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
-                  <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-1 text-xs font-bold text-white">
+                  <span className="absolute inset-0 z-10 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+                  <span className="absolute right-3 top-3 z-20 rounded-full bg-black/60 px-2 py-1 text-xs font-bold text-white">
                     {post.images.length}
                   </span>
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <div className="absolute bottom-3 left-3 right-3 z-20 text-white">
                     <p className="line-clamp-1 text-sm font-bold">{post.title}</p>
                     {post.marker?.placeName && (
                       <p className="mt-1 line-clamp-1 text-xs text-white/85">{post.marker.placeName}</p>
