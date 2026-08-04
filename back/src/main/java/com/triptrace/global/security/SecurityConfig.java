@@ -40,6 +40,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers( // 비로그인 허용 경로
                     "/api/v1/auth/signup",
+                    "/api/v1/auth/email/**", // 회원가입 전 단계라 로그인 없이 호출한다
                     "/api/v1/auth/login",
                     "/api/v1/auth/reissue",
                     "/api/v1/auth/logout",
