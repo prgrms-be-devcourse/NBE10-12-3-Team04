@@ -23,6 +23,9 @@ logs/
 *.log
 application-local.yml
 application-local.properties
+application-secret.yml
+application-secret.yaml
+application-secret.properties
 .env
 .env.*
 !.env.example

@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { GoogleMap, Marker, OverlayView, Polyline, useJsApiLoader } from '@react-google-maps/api';
 import { ArrowLeft, Heart, MapPin, Calendar, Globe, Lock, Pencil, Maximize2, Minimize2, Trash2, X } from 'lucide-react';
 import { isAuthenticated, tripApi, postApi, likeApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_PROFILE_AVATAR, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
+import MarkdownContent from '@/components/MarkdownContent';
 import type { Trip, Post } from '@/types';
 
 type LocatedPost = Post & {
@@ -470,8 +472,7 @@ function GoogleTripMap({
                   fillColor: '#059669',
                   fillOpacity: 1,
                 },
-                offset: '100%',
-                repeat: '72px',
+                offset: '50%',
               }],
               strokeColor: '#059669',
               strokeOpacity: 0.75,
@@ -571,12 +572,6 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
       <div className="min-w-0 flex-1 pb-2">
         <p className="text-xs text-gray-400 mb-0.5">{post.time ?? '시간 미정'}</p>
         <p className="font-semibold text-gray-900 text-sm">{post.title}</p>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-3">{content}</p>
-        {post.marker && (
-          <p className="text-xs text-gray-400 mt-1 flex items-center gap-0.5">
-            <MapPin size={10} /> {post.marker.placeName}
-          </p>
-        )}
         {/* 이미지 그리드 */}
         {images.length > 0 && (
           <div className="mt-2 flex h-36 gap-2 overflow-x-auto pb-1 sm:h-44">
@@ -587,6 +582,14 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
             )}
           </div>
         )}
+        {content.trim() && (
+          <MarkdownContent markdown={content} variant="detail" className="mt-2" />
+        )}
+        {post.marker && (
+          <p className="text-xs text-gray-400 mt-1 flex items-center gap-0.5">
+            <MapPin size={10} /> {post.marker.placeName}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -596,6 +599,8 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
 export default function TripDetailPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPreview = searchParams.get('preview') === 'true';
 
   const [trip, setTrip] = useState<Trip | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -613,10 +618,19 @@ export default function TripDetailPage() {
   const dragRef = useRef<{ y: number; top: number } | null>(null);
 
   useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
     window.history.scrollRestoration = 'manual';
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
   }, [tripId]);
 
   useEffect(() => {
@@ -799,7 +813,11 @@ export default function TripDetailPage() {
   );
 
   return (
-    <div className="relative flex h-[calc(100dvh_-_56px_-_72px_-_env(safe-area-inset-bottom))] flex-col overflow-hidden bg-gray-50 md:h-[calc(100vh_-_64px)]">
+    <div className={`relative flex flex-col overflow-hidden bg-gray-50 ${
+      isPreview
+        ? 'h-dvh'
+        : 'h-[calc(100dvh_-_56px_-_72px_-_env(safe-area-inset-bottom))] md:h-[calc(100vh_-_64px)]'
+    }`}>
       {/* 지도 (배경) */}
       <div className="absolute inset-0 z-0">
         <TripMap
@@ -815,9 +833,11 @@ export default function TripDetailPage() {
 
       {/* 상단 네비 */}
       <div className="absolute left-3 right-3 top-4 z-[80] flex items-start justify-between gap-2 sm:left-5 sm:right-5 sm:top-6">
-        <button onClick={() => router.back()} className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors">
-          <ArrowLeft size={16} />
-        </button>
+        {isPreview ? <span /> : (
+          <button onClick={() => router.back()} className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <ArrowLeft size={16} />
+          </button>
+        )}
         <div className="flex flex-wrap items-center justify-end gap-2">
           <button
             onClick={toggleMapExpanded}
@@ -826,7 +846,7 @@ export default function TripDetailPage() {
             {mapExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
             {mapExpanded ? '지도 줄이기' : '지도 펼치기'}
           </button>
-          {isOwner && (
+          {isOwner && !isPreview && (
             <>
               <Link href={`/trips/${tripId}/edit`} className="flex items-center gap-1 rounded-full bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow transition-colors hover:bg-gray-50 sm:px-3">
                 <Pencil size={12} /> <span className="hidden sm:inline">수정/편집</span>
@@ -862,9 +882,12 @@ export default function TripDetailPage() {
           <div className="flex flex-col gap-3 px-4 pb-2 pt-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div className="flex min-w-0 items-start gap-3">
               <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-gray-300 to-gray-400 sm:h-20 sm:w-20">
-                {trip.thumbnailUrl && (
-                  <img src={trip.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-                )}
+                <img
+                  src={trip.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+                  alt=""
+                  onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="min-w-0">
                 <h2 className="line-clamp-2 text-base font-bold leading-tight text-gray-900">{trip.title}</h2>
@@ -876,11 +899,12 @@ export default function TripDetailPage() {
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <span className="flex items-center gap-0.5 text-xs text-gray-400">
-                    {trip.author?.profileImageUrl ? (
-                      <img src={trip.author.profileImageUrl} alt="" className="w-4 h-4 rounded-full bg-gray-200" />
-                    ) : (
-                      <span className="w-4 h-4 rounded-full bg-gray-200 inline-block" />
-                    )}
+                    <img
+                      src={trip.author?.profileImageUrl || DEFAULT_PROFILE_AVATAR}
+                      alt=""
+                      onError={(event) => applyImageFallback(event, DEFAULT_PROFILE_AVATAR)}
+                      className="w-4 h-4 rounded-full bg-gray-200 object-cover"
+                    />
                     {trip.author?.nickname ?? '작성자'}
                   </span>
                   {trip.isPublic ? (
@@ -909,7 +933,7 @@ export default function TripDetailPage() {
           {days.length > 0 && <DayTabs days={days} active={activeDay} onSelect={handleSelectDay} />}
 
           {/* 타임라인 */}
-          <div ref={timelineRef} className="flex-1 overflow-y-auto px-5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={timelineRef} className="flex-1 overscroll-contain overflow-y-auto px-5 pb-6">
             {dayPosts.length === 0 ? (
               <p className="text-center text-gray-400 text-sm py-8">이 날의 기록이 없습니다.</p>
             ) : (

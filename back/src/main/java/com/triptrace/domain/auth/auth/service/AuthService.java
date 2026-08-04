@@ -1,12 +1,20 @@
 package com.triptrace.domain.auth.auth.service;
 
 import com.triptrace.domain.auth.auth.dto.LoginRequest;
+import com.triptrace.domain.auth.auth.dto.OAuthLoginResult;
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
 import com.triptrace.domain.auth.auth.dto.SignupResponse;
 import com.triptrace.domain.auth.auth.dto.TokenPair;
 import com.triptrace.domain.auth.auth.entity.RefreshToken;
+import com.triptrace.domain.auth.auth.exception.AlreadyRegisteredException;
+import com.triptrace.domain.auth.auth.exception.AuthErrorCode;
+import com.triptrace.domain.auth.auth.oauth.GoogleOAuthClient;
+import com.triptrace.domain.auth.auth.oauth.GoogleUserInfo;
+import com.triptrace.domain.auth.auth.oauth.UsernameGenerator;
 import com.triptrace.domain.auth.auth.repository.RefreshTokenRepository;
+import com.triptrace.domain.member.member.entity.LoginType;
 import com.triptrace.domain.member.member.entity.Member;
+import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.member.member.service.MemberService;
 import com.triptrace.global.exception.ServiceException;
 import com.triptrace.global.security.JwtProvider;
@@ -27,6 +35,9 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
+    private final GoogleOAuthClient googleOAuthClient;
+    private final MemberRepository memberRepository;
+    private final UsernameGenerator usernameGenerator;
     @Value("${custom.refreshToken.expirationSeconds}")
     private long refreshTokenExpirationSeconds;
 
@@ -52,6 +63,40 @@ public class AuthService {
             throw new ServiceException("401-1", "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
         return issueTokens(member);
+    }
+
+    // 구글 로그인: 인가 코드 → 사용자 정보 → (기존 회원 조회 | 신규 가입) → LOCAL 로그인과 같은 토큰 발급.
+    @Transactional
+    public OAuthLoginResult loginWithGoogle(String code, String redirectUri) {
+        String googleAccessToken = googleOAuthClient.exchangeToken(code, redirectUri);
+        GoogleUserInfo userInfo = GoogleUserInfo.from(googleOAuthClient.fetchUserInfo(googleAccessToken));
+
+        // 구글이 소유를 확인하지 않은 이메일은 같은 주소를 선점당할 수 있어 가입/로그인을 막는다.
+        if (!userInfo.isEmailVerified()) {
+            throw new ServiceException(AuthErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        Member member = memberRepository
+            .findByProviderAndProviderId(LoginType.GOOGLE, userInfo.getProviderId())
+            .orElseGet(() -> registerGoogleMember(userInfo));
+
+        return new OAuthLoginResult(issueTokens(member), member.getStatus());
+    }
+
+    // 구글로 처음 들어온 사용자를 가입시킨다. 같은 이메일이 다른 경로로 이미 있으면 자동 연결하지 않고 막는다.
+    private Member registerGoogleMember(GoogleUserInfo userInfo) {
+        memberRepository.findByEmail(userInfo.getEmail())
+            .ifPresent(existing -> {
+                throw new AlreadyRegisteredException(existing.getProvider());
+            });
+
+        return memberRepository.save(Member.ofOAuth(
+            userInfo.getEmail(),
+            LoginType.GOOGLE,
+            userInfo.getProviderId(),
+            usernameGenerator.generate(userInfo.getEmail()),
+            userInfo.getProfileImageUrl()
+        ));
     }
 
     // 재발급(Rotation): RT 검증 → 탈취/만료 확인 → 기존 RT 폐기 → 새 AT/RT 발급.
@@ -98,11 +143,14 @@ public class AuthService {
         return new TokenPair(accessToken, refreshToken);
     }
 
-    public AuthService(final MemberService memberService, final PasswordEncoder passwordEncoder, final JwtProvider jwtProvider, final RefreshTokenRepository refreshTokenRepository, final RefreshTokenService refreshTokenService) {
+    public AuthService(final MemberService memberService, final PasswordEncoder passwordEncoder, final JwtProvider jwtProvider, final RefreshTokenRepository refreshTokenRepository, final RefreshTokenService refreshTokenService, final GoogleOAuthClient googleOAuthClient, final MemberRepository memberRepository, final UsernameGenerator usernameGenerator) {
         this.memberService = memberService;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenService = refreshTokenService;
+        this.googleOAuthClient = googleOAuthClient;
+        this.memberRepository = memberRepository;
+        this.usernameGenerator = usernameGenerator;
     }
 }

@@ -1,7 +1,9 @@
 package com.triptrace.domain.auth.auth.controller;
 
+import com.triptrace.domain.auth.auth.dto.GoogleLoginRequest;
 import com.triptrace.domain.auth.auth.dto.LoginRequest;
 import com.triptrace.domain.auth.auth.dto.LoginResponse;
+import com.triptrace.domain.auth.auth.dto.OAuthLoginResult;
 import com.triptrace.domain.auth.auth.dto.ReissueResponse;
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
 import com.triptrace.domain.auth.auth.dto.SignupResponse;
@@ -48,6 +50,21 @@ public class ApiV1AuthController {
         addRefreshTokenCookie(response, tokens.refreshToken());
 
         return new RsData<>("200-1", "로그인 성공", new LoginResponse(tokens.accessToken()));
+    }
+
+    @PostMapping("/auth/oauth/google")
+    public RsData<LoginResponse> loginWithGoogle(
+        @RequestBody @Valid GoogleLoginRequest request,
+        HttpServletResponse response
+    ) {
+        OAuthLoginResult result = authService.loginWithGoogle(request.code(), request.redirectUri());
+        addRefreshTokenCookie(response, result.tokens().refreshToken());
+
+        return new RsData<>(
+            "200-1",
+            "구글 로그인 성공",
+            new LoginResponse(result.tokens().accessToken(), result.status())
+        );
     }
 
     @PostMapping("/auth/reissue")
