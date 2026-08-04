@@ -55,7 +55,7 @@ class MarkerService(
         val saved = markerRepository.save(marker)
 
         log.info(
-            "[MARKER] create completed markerId={} postId={} ownerId={} source={}",
+            "[MARKER] create completed markerId: {}, postId: {}, ownerId: {}, source: {}",
             saved.id,
             postId,
             memberId,
@@ -128,7 +128,7 @@ class MarkerService(
         )
 
         log.info(
-            "[MARKER] modify completed markerId={} postId={} ownerId={} source={}",
+            "[MARKER] modify completed markerId: {}, postId: {}, ownerId: {}, source: {}",
             markerId,
             marker.post.id,
             memberId,

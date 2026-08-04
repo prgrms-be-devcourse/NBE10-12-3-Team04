@@ -36,7 +36,7 @@ public class TripLikeService {
         tripLikeRepository.save(tripLike);
         trip.increaseLikeCount();
 
-        log.info("[TRIP] like created tripId={} memberId={}", tripId, memberId);
+        log.info("[TRIP] like created tripId: {}, memberId: {}", tripId, memberId);
     }
 
     @Transactional
@@ -50,7 +50,7 @@ public class TripLikeService {
         tripLikeRepository.delete(tripLike);
         trip.decreaseLikeCount();
 
-        log.info("[TRIP] like deleted tripId={} memberId={}", tripId, memberId);
+        log.info("[TRIP] like deleted tripId: {}, memberId: {}", tripId, memberId);
     }
 
     public boolean isLiked(Long memberId, Long tripId) {

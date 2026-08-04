@@ -63,7 +63,7 @@ public class PostService {
         recalculateTripDateRange(trip);
 
         log.info(
-            "[POST] create completed postId={} tripId={} ownerId={}",
+            "[POST] create completed postId: {}, tripId: {}, ownerId: {}",
             post.getId(), tripId, ownerId
         );
 
@@ -110,7 +110,7 @@ public class PostService {
         recalculateTripDateRange(post.getTrip());
 
         log.info(
-            "[POST] modify completed postId={} tripId={} ownerId={}",
+            "[POST] modify completed postId: {}, tripId: {}, ownerId: {}",
             postId, post.getTrip().getId(), ownerId
         );
 
@@ -141,7 +141,7 @@ public class PostService {
         recalculateTripDateRange(post.getTrip());
 
         log.info(
-            "[POST] delete completed postId={} tripId={} ownerId={}",
+            "[POST] delete completed postId: {}, tripId: {}, ownerId: {}",
             postId, post.getTrip().getId(), ownerId
         );
     }

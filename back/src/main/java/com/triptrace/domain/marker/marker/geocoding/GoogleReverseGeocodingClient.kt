@@ -54,7 +54,7 @@ class GoogleReverseGeocodingClient(
 
             extractLocation(response)
         } catch (e: RestClientException) {
-            log.warn("[MARKER] reverse geocoding fallback reason={}", e.message)
+            log.warn("[MARKER] reverse geocoding fallback reason: {}", e.message)
             null
         }
     }

@@ -140,7 +140,7 @@ public class TripAutoRecordService {
         );
 
         log.info(
-            "[TRIP] auto record completed tripId={} ownerId={} postCount={} markerCount={} usedImageCount={} skippedImageCount={}",
+            "[TRIP] auto record completed tripId: {}, ownerId: {}, postCount: {}, markerCount: {}, usedImageCount: {}, skippedImageCount: {}",
             tripId,
             ownerId,
             response.generatedPostCount(),

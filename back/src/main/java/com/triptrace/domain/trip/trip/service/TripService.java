@@ -52,7 +52,7 @@ public class TripService {
         ));
 
         log.info(
-            "[TRIP] create completed tripId={} ownerId={} visibility={}",
+            "[TRIP] create completed tripId: {}, ownerId: {}, visibility: {}",
             trip.getId(), ownerId, trip.isVisibility()
         );
 
@@ -117,7 +117,7 @@ public class TripService {
         );
 
         log.info(
-            "[TRIP] modify completed tripId={} ownerId={} visibility={}",
+            "[TRIP] modify completed tripId: {}, ownerId: {}, visibility: {}",
             tripId, ownerId, trip.isVisibility()
         );
 
@@ -144,7 +144,7 @@ public class TripService {
         tripRepository.delete(trip);
 
         log.info(
-            "[TRIP] delete completed tripId={} ownerId={} postCount={}",
+            "[TRIP] delete completed tripId: {}, ownerId: {}, postCount: {}",
             tripId, ownerId, posts.size()
         );
     }
@@ -160,7 +160,7 @@ public class TripService {
         }
         trip.changeRepresentativeImage(image);
         log.info(
-            "[TRIP] representative image changed tripId={} ownerId={} imageId={}",
+            "[TRIP] representative image changed tripId: {}, ownerId: {}, imageId: {}",
             tripId, ownerId, imageId
         );
         return toResponse(trip);

@@ -47,7 +47,7 @@ class GooglePlacesClient(
 
             extractPlaceCandidates(response)
         } catch (e: RestClientException) {
-            log.warn("[MARKER] nearby place search fallback reason={}", e.message)
+            log.warn("[MARKER] nearby place search fallback reason: {}", e.message)
             emptyList()
         }
     }
@@ -70,7 +70,7 @@ class GooglePlacesClient(
             extractPlaceCandidates(response)
         } catch (e: RestClientException) {
             log.warn(
-                "[MARKER] text place search fallback keywordLength={} reason={}",
+                "[MARKER] text place search fallback keywordLength: {}, reason: {}",
                 keyword?.length ?: 0,
                 e.message
             )
