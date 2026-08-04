@@ -209,7 +209,7 @@ jobs:
         run: |
           set -euo pipefail
           gcloud compute ssh "${GCP_DEPLOY_INSTANCE}" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap --command 'mkdir -p ~/triptrace-deploy-staging'
-          gcloud compute scp docker-compose.prod.yml Caddyfile "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
+          gcloud compute scp infra/docker-compose.prod.yml infra/Caddyfile "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
 
       - name: Fetch environment and recreate services through IAP
         env:
