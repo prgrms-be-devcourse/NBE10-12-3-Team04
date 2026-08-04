@@ -799,6 +799,7 @@ export default function TripEditPage() {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [mobileTab, setMobileTab] = useState<'posts' | 'edit' | 'location'>('edit');
   const [representativeDragOver, setRepresentativeDragOver] = useState(false);
+  const [representativePickerOpen, setRepresentativePickerOpen] = useState(false);
   const [postListOpen, setPostListOpen] = useState(true);
   const [unassignedPanelOpen, setUnassignedPanelOpen] = useState(true);
   const [markerPanelOpen, setMarkerPanelOpen] = useState(false);
@@ -1078,6 +1079,12 @@ export default function TripEditPage() {
     showToast('대표 이미지로 선택했습니다. 저장 버튼을 누르면 반영됩니다.');
   };
 
+  const handleSelectRepresentativeImage = (imageId: string) => {
+    setRepresentativeImageId(imageId);
+    setRepresentativePickerOpen(false);
+    showToast('대표 이미지로 선택했습니다. 저장 버튼을 누르면 반영됩니다.');
+  };
+
   const handlePostChange = (updated: Post) => {
     const nextPost = withDerivedPostTime(updated);
     setSelectedPostId(nextPost.id);
@@ -1169,10 +1176,11 @@ export default function TripEditPage() {
             }}
             onDragLeave={() => setRepresentativeDragOver(false)}
             onDrop={handleRepresentativeImageDrop}
+            onClick={() => setRepresentativePickerOpen(true)}
             className={`flex flex-shrink-0 items-center gap-2 rounded-lg border px-2 py-1.5 transition-colors ${
               representativeDragOver ? 'border-green-400 bg-green-50' : 'border-gray-100 bg-gray-50'
-            }`}
-            title="이미지를 끌어 대표 이미지로 지정"
+            } cursor-pointer hover:border-green-300 hover:bg-green-50/50`}
+            title="클릭하거나 이미지를 끌어 대표 이미지 변경"
           >
             <div className="h-11 w-11 overflow-hidden rounded-md bg-gray-200">
               <img
@@ -1185,7 +1193,7 @@ export default function TripEditPage() {
             <div className="min-w-0">
               <p className="text-[10px] font-medium text-gray-400">대표 이미지</p>
               <p className="max-w-20 truncate text-xs font-semibold text-gray-700 sm:max-w-24">
-                {representativeDragOver ? '여기에 놓기' : selectedRepresentativeImage ? '선택됨' : trip?.thumbnailUrl ? '자동 설정됨' : '이미지 드롭'}
+                {representativeDragOver ? '여기에 놓기' : selectedRepresentativeImage ? '변경하기' : trip?.thumbnailUrl ? '변경하기' : '이미지 선택'}
               </p>
             </div>
           </div>
@@ -1279,6 +1287,49 @@ export default function TripEditPage() {
           </div>
         </div>
       </div>
+
+      {representativePickerOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={() => setRepresentativePickerOpen(false)}>
+          <div className="max-h-[80dvh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+              <div>
+                <h2 className="font-bold text-gray-900">대표 이미지 선택</h2>
+                <p className="mt-0.5 text-xs text-gray-400">Trip에 등록된 이미지 중 하나를 선택하세요.</p>
+              </div>
+              <button type="button" onClick={() => setRepresentativePickerOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100" title="닫기">
+                <X size={18} />
+              </button>
+            </div>
+            {tripImages.length > 0 ? (
+              <div className="grid max-h-[calc(80dvh_-_82px)] grid-cols-2 gap-3 overflow-y-auto p-5 sm:grid-cols-3 md:grid-cols-4">
+                {tripImages.map((image) => {
+                  const selected = image.id === representativeImageId;
+                  return (
+                    <button
+                      key={image.id}
+                      type="button"
+                      onClick={() => handleSelectRepresentativeImage(image.id)}
+                      className={`group relative aspect-square overflow-hidden rounded-xl border-2 bg-gray-100 transition ${
+                        selected ? 'border-green-500 ring-2 ring-green-500/20' : 'border-transparent hover:border-green-300'
+                      }`}
+                    >
+                      <img src={image.thumbnailUrl || image.url} alt="" onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)} className="h-full w-full object-cover" />
+                      <span className={`absolute inset-x-0 bottom-0 px-2 py-1.5 text-xs font-semibold text-white ${selected ? 'bg-green-600/90' : 'bg-black/55'}`}>
+                        {selected ? '현재 대표 이미지' : '대표로 설정'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center px-5 py-14 text-gray-400">
+                <ImageIcon size={32} />
+                <p className="mt-3 text-sm">선택할 이미지가 없습니다.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex border-b border-gray-100 bg-white px-4 md:hidden">
         {[
