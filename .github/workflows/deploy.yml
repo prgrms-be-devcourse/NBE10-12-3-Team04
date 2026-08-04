@@ -14,8 +14,8 @@ concurrency:
 
 # VM은 전체 운영 환경변수를, GitHub Actions는 프론트 빌드 전용 공개 설정만 읽는다.
 env:
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/frontend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/triptrace-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/triptrace-frontend
   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
   GCP_FRONTEND_BUILD_SERVICE_ACCOUNT: ${{ vars.GCP_FRONTEND_BUILD_SERVICE_ACCOUNT }}
@@ -232,9 +232,14 @@ jobs:
           test -s "${temporary_env_file}"
           sudo -n install -o root -g root -m 0600 "${temporary_env_file}" /opt/triptrace/.env
           printf '%s' "${ghcr_token}" | sudo -n docker login ghcr.io --username "${ghcr_username}" --password-stdin
-          cd /opt/triptrace
-          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose --env-file .env -f docker-compose.prod.yml pull backend frontend
-          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose --env-file .env -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
+          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose \
+            --project-directory /opt/triptrace \
+            --env-file /opt/triptrace/.env \
+            -f /opt/triptrace/docker-compose.prod.yml pull backend frontend
+          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose \
+            --project-directory /opt/triptrace \
+            --env-file /opt/triptrace/.env \
+            -f /opt/triptrace/docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
           REMOTE
           chmod 700 "${RUNNER_TEMP}/triptrace-deploy.sh"
           gcloud compute scp "${RUNNER_TEMP}/triptrace-deploy.sh" "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
