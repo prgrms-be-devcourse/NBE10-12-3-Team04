@@ -9,6 +9,7 @@ import {
   CheckCircle, MoreVertical, FileText, Heart, Map as MapIcon,
 } from 'lucide-react';
 import { isAuthenticated, userApi, tripApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { Trip, AutoRecordResult } from '@/types';
 
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -903,9 +904,12 @@ function TripCard({
   return (
     <div className="relative overflow-visible rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
       <Link href={`/trips/${trip.id}`} className="block h-[160px] overflow-hidden bg-gradient-to-br from-gray-300 to-gray-400 hover:opacity-90 transition-opacity">
-        {trip.thumbnailUrl && (
-          <img src={trip.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-        )}
+        <img
+          src={trip.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+          alt=""
+          onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+          className="h-full w-full object-cover"
+        />
       </Link>
 
       <div className="p-4">

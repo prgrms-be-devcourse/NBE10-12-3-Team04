@@ -8,6 +8,7 @@ import {
   MapPin, X, Upload, ImageIcon, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import { tripApi, postApi, markerApi, placeApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { Trip, Post, Marker, TripImage, PlaceCandidate } from '@/types';
 
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -1237,13 +1238,12 @@ export default function TripEditPage() {
             title="이미지를 끌어 대표 이미지로 지정"
           >
             <div className="h-11 w-11 overflow-hidden rounded-md bg-gray-200">
-              {selectedRepresentativeImage?.thumbnailUrl || trip?.thumbnailUrl ? (
-                <img src={selectedRepresentativeImage?.thumbnailUrl ?? trip?.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ImageIcon size={14} className="text-gray-400" />
-                </div>
-              )}
+              <img
+                src={selectedRepresentativeImage?.thumbnailUrl || trip?.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+                alt=""
+                onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-medium text-gray-400">대표 이미지</p>

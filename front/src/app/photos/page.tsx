@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { GoogleMap, Marker as GoogleMarker, Polyline, useJsApiLoader } from '@react-google-maps/api';
 import { ArrowLeft, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, CircleDotDashed, Clock3, Eye, EyeOff, Grid3X3, Images, MapPin, Plus, Route, X } from 'lucide-react';
 import { postApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { AlbumPost, AlbumPostImage, Trip } from '@/types';
 
 type AlbumView = 'trips' | 'posts' | 'photos';
@@ -105,7 +106,7 @@ function formatTripDateRange(trip?: Trip) {
 }
 
 function getCoverImage(post: AlbumPost) {
-  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || '';
+  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || DEFAULT_TRIP_THUMBNAIL;
 }
 
 function getPostPosition(post: AlbumPost) {
@@ -299,7 +300,13 @@ export default function PhotosPage() {
 
   const selectedImage = useMemo<AlbumPostImage | null>(() => {
     if (!selectedPost) return null;
-    return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? null;
+    return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? {
+      id: `default-${selectedPost.id}`,
+      url: DEFAULT_TRIP_THUMBNAIL,
+      thumbnailUrl: DEFAULT_TRIP_THUMBNAIL,
+      filename: 'default-trip-thumbnail.webp',
+      mimeType: 'image/webp',
+    };
   }, [selectedImageId, selectedPost]);
 
   const orderedPosts = useMemo(() => [...posts].reverse(), [posts]);
@@ -840,7 +847,12 @@ export default function PhotosPage() {
                   >
                     <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
                       {trip.coverImage ? (
-                        <img src={trip.coverImage} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={trip.coverImage}
+                          alt=""
+                          onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
                           <Images size={18} className="text-gray-300" />
@@ -966,7 +978,12 @@ export default function PhotosPage() {
                                       >
                                         <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                                           {coverImage ? (
-                                            <img src={coverImage} alt="" className="h-full w-full object-cover" />
+                                            <img
+                                              src={coverImage}
+                                              alt=""
+                                              onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                                              className="h-full w-full object-cover"
+                                            />
                                           ) : (
                                             <div className="flex h-full w-full items-center justify-center">
                                               <Images size={14} className="text-gray-300" />
@@ -1009,6 +1026,7 @@ export default function PhotosPage() {
                     <img
                       src={trip.coverImage}
                       alt=""
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
                       className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
@@ -1049,6 +1067,7 @@ export default function PhotosPage() {
                     <img
                       src={coverImage}
                       alt=""
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
                       className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
@@ -1130,6 +1149,7 @@ export default function PhotosPage() {
                     <img
                       src={photo.thumbnailUrl || photo.url}
                       alt={photo.post.title}
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
                       className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -1190,7 +1210,12 @@ export default function PhotosPage() {
                   {(selectedImageIndex >= 0 ? selectedImageIndex : 0) + 1} / {selectedPost.images.length}
                 </span>
               )}
-              <img src={selectedImage.url} alt="" className="max-h-[62dvh] w-full object-contain lg:max-h-[88vh]" />
+              <img
+                src={selectedImage.url}
+                alt=""
+                onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                className="max-h-[62dvh] w-full object-contain lg:max-h-[88vh]"
+              />
             </div>
 
             <aside className="max-h-[38dvh] w-full flex-shrink-0 overflow-y-auto border-t border-gray-100 p-4 sm:p-5 lg:max-h-none lg:w-96 lg:border-l lg:border-t-0">
@@ -1227,7 +1252,12 @@ export default function PhotosPage() {
                       selectedImage.id === image.id ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-transparent'
                     }`}
                   >
-                    <img src={image.thumbnailUrl || image.url} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={image.thumbnailUrl || image.url}
+                      alt=""
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Camera, CheckCircle } from 'lucide-react';
 import { authApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_PROFILE_AVATAR } from '@/lib/assets';
 import type { User } from '@/types';
 
 function formatDateOnly(value?: string) {
@@ -172,17 +173,12 @@ export default function UserMePage() {
         {/* 왼쪽 - 프로필 */}
         <div className="flex min-w-0 flex-col items-center md:min-w-[160px]">
           <div className="relative w-28 h-28 mb-4">
-            {displayImageUrl ? (
-              <img
-                src={displayImageUrl}
-                alt="프로필"
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-2xl font-bold">
-                {displayNickname?.[0]?.toUpperCase()}
-              </div>
-            )}
+            <img
+              src={displayImageUrl || DEFAULT_PROFILE_AVATAR}
+              alt="프로필"
+              onError={(event) => applyImageFallback(event, DEFAULT_PROFILE_AVATAR)}
+              className="w-full h-full rounded-full object-cover"
+            />
             {editing && (
               <>
                 <input

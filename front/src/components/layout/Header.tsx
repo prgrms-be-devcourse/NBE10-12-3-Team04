@@ -3,8 +3,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, User } from 'lucide-react';
+import { LogOut, Search } from 'lucide-react';
 import { isAuthenticated, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_PROFILE_AVATAR } from '@/lib/assets';
 import { appVersion } from '@/lib/version';
 
 interface HeaderProps {
@@ -102,11 +103,12 @@ export default function Header({ rightSlot }: HeaderProps) {
               href="/users/me"
               className="flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white hover:bg-emerald-700"
             >
-              {profileImageUrl ? (
-                <img src={profileImageUrl} alt="" className="h-5 w-5 rounded-full object-cover bg-white/20" />
-              ) : (
-                <User size={15} />
-              )}
+              <img
+                src={profileImageUrl || DEFAULT_PROFILE_AVATAR}
+                alt=""
+                onError={(event) => applyImageFallback(event, DEFAULT_PROFILE_AVATAR)}
+                className="h-5 w-5 rounded-full object-cover bg-white/20"
+              />
               <span className="hidden sm:inline">내정보</span>
             </Link>
           </>

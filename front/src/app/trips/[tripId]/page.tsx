@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { GoogleMap, Marker, OverlayView, Polyline, useJsApiLoader } from '@react-google-maps/api';
 import { ArrowLeft, Heart, MapPin, Calendar, Globe, Lock, Pencil, Maximize2, Minimize2, Trash2, X } from 'lucide-react';
 import { isAuthenticated, tripApi, postApi, likeApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_PROFILE_AVATAR, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { Trip, Post } from '@/types';
 
 type LocatedPost = Post & {
@@ -870,9 +871,12 @@ export default function TripDetailPage() {
           <div className="flex flex-col gap-3 px-4 pb-2 pt-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div className="flex min-w-0 items-start gap-3">
               <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-gray-300 to-gray-400 sm:h-20 sm:w-20">
-                {trip.thumbnailUrl && (
-                  <img src={trip.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-                )}
+                <img
+                  src={trip.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+                  alt=""
+                  onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="min-w-0">
                 <h2 className="line-clamp-2 text-base font-bold leading-tight text-gray-900">{trip.title}</h2>
@@ -884,11 +888,12 @@ export default function TripDetailPage() {
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <span className="flex items-center gap-0.5 text-xs text-gray-400">
-                    {trip.author?.profileImageUrl ? (
-                      <img src={trip.author.profileImageUrl} alt="" className="w-4 h-4 rounded-full bg-gray-200" />
-                    ) : (
-                      <span className="w-4 h-4 rounded-full bg-gray-200 inline-block" />
-                    )}
+                    <img
+                      src={trip.author?.profileImageUrl || DEFAULT_PROFILE_AVATAR}
+                      alt=""
+                      onError={(event) => applyImageFallback(event, DEFAULT_PROFILE_AVATAR)}
+                      className="w-4 h-4 rounded-full bg-gray-200 object-cover"
+                    />
                     {trip.author?.nickname ?? '작성자'}
                   </span>
                   {trip.isPublic ? (
