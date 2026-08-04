@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Camera, Plus, CheckCircle2 } from 'lucide-react';
+import { Plus, CheckCircle2 } from 'lucide-react';
 import { authApi, ApiError } from '@/lib/api';
+import { applyImageFallback, DEFAULT_PROFILE_AVATAR } from '@/lib/assets';
 
 // 서버 재전송 쿨다운과 같은 값. 서버가 최종 방어선이고 이건 UI 힌트일 뿐이다.
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -181,11 +182,12 @@ export default function SignupPage() {
             onClick={() => fileRef.current?.click()}
             className="relative w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
-            {profilePreview ? (
-              <img src={profilePreview} alt="프로필" className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <Camera size={24} className="text-gray-400" />
-            )}
+            <img
+              src={profilePreview || DEFAULT_PROFILE_AVATAR}
+              alt="프로필"
+              onError={(event) => applyImageFallback(event, DEFAULT_PROFILE_AVATAR)}
+              className="w-full h-full rounded-full object-cover"
+            />
             <span className="absolute bottom-0 right-0 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
               <Plus size={14} className="text-white" />
             </span>

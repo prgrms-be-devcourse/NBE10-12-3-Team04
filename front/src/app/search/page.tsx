@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoaderCircle, Search } from 'lucide-react';
 import { feedApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { TripSearchLocation, TripSearchPage } from '@/types';
 
 type SearchScope = 'ALL' | 'TRIP_TITLE' | 'POST_TITLE' | 'POST_CONTENT';
@@ -317,16 +318,12 @@ function SearchContent() {
                 className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
               >
                 <div className="h-44 bg-gradient-to-br from-emerald-100 to-sky-100">
-                  {trip.thumbnailUrl && (
-                    <img
-                      src={trip.thumbnailUrl}
-                      alt=""
-                      onError={(event) => {
-                        event.currentTarget.style.display = 'none';
-                      }}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
+                  <img
+                    src={trip.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+                    alt=""
+                    onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="truncate font-bold text-gray-900">{trip.title}</h3>

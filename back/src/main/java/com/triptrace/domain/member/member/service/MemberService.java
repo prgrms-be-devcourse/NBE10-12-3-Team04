@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.triptrace.domain.member.member.dto.MemberModifyRequest;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
+import com.triptrace.domain.member.member.exception.MemberErrorCode;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.global.exception.ServiceException;
 
@@ -50,6 +51,26 @@ public class MemberService {
     public void modifyProfileImageUrl(Long id, String profileImageUrl) {
         Member member = findById(id);
         member.modifyInfo(null, null, profileImageUrl);
+    }
+
+    // 온보딩 완료(2차 저장): 소셜 가입자가 임시 닉네임을 확정하면 정상 회원으로 전환한다.
+    @Transactional
+    public Member completeProfile(Long memberId, String username) {
+        Member member = findById(memberId);
+
+        // 이미 온보딩을 마친 회원이 다시 호출하면 닉네임이 덮어써지므로 여기서 막는다.
+        if (member.getStatus() != MemberStatus.PENDING_PROFILE) {
+            throw new ServiceException(MemberErrorCode.ALREADY_ONBOARDED);
+        }
+
+        // 임시로 받은 닉네임을 그대로 확정하는 경우가 있어 본인 값은 중복으로 보지 않는다.
+        if (!username.equals(member.getUsername()) && memberRepository.existsByUsername(username)) {
+            throw new ServiceException("409-1", "이미 사용중인 닉네임입니다.");
+        }
+
+        member.completeProfile(username);
+
+        return member;
     }
 
     // 내 정보 수정: 넘어온 필드만 반영한다. 닉네임은 실제로 바뀔 때만 중복 검사한다.

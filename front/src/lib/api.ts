@@ -29,6 +29,9 @@ export type ProfileImageUploadResult = {
   profileImageUrl: string;
 };
 
+// PENDING_PROFILE = 소셜 가입 직후 온보딩(추가정보 입력)을 아직 마치지 않은 상태
+export type MemberStatus = 'ACTIVE' | 'PENDING_PROFILE';
+
 function getAccessToken() {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('accessToken');
@@ -333,6 +336,16 @@ export const authApi = {
     return data;
   },
 
+  // 구글 로그인: 인가 코드를 백엔드에 넘기면 AT를 돌려준다. (RT는 로그인과 동일하게 쿠키로 세팅됨)
+  loginWithGoogle: async (body: { code: string; redirectUri: string }) => {
+    const data = await request<{ accessToken: string; status: MemberStatus }>('/api/v1/auth/oauth/google', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    setAccessToken(data.accessToken);
+    return data;
+  },
+
   logout: async () => {
     try {
       return await request('/api/v1/auth/logout', { method: 'POST' });
@@ -346,6 +359,14 @@ export const authApi = {
 export const userApi = {
   getMe: async () => {
     const user = await request<Record<string, unknown>>('/api/v1/users/me');
+    return normalizeUser(user);
+  },
+  // 온보딩 완료(2차 저장): PENDING_PROFILE 회원이 닉네임을 확정하면 ACTIVE로 전환된다.
+  completeProfile: async (body: { username: string }) => {
+    const user = await request<Record<string, unknown>>('/api/v1/users/me/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
     return normalizeUser(user);
   },
   updateMe: async (body: { username?: string; intro?: string; profileImageUrl?: string }) => {

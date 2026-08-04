@@ -4,8 +4,10 @@ import { type PointerEvent, type TouchEvent, useEffect, useMemo, useRef, useStat
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { GoogleMap, Marker as GoogleMarker, Polyline, useJsApiLoader } from '@react-google-maps/api';
-import { ArrowLeft, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, CircleDotDashed, Clock3, Eye, EyeOff, Grid3X3, Images, MapPin, Plus, Route, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronDown, CircleDotDashed, Eye, EyeOff, Grid3X3, Images, MapPin, Plus, Route, X } from 'lucide-react';
 import { postApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
+import PostPreviewModal from '@/components/PostPreviewModal';
 import type { AlbumPost, AlbumPostImage, Trip } from '@/types';
 
 type AlbumView = 'trips' | 'posts' | 'photos';
@@ -105,7 +107,7 @@ function formatTripDateRange(trip?: Trip) {
 }
 
 function getCoverImage(post: AlbumPost) {
-  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || '';
+  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || DEFAULT_TRIP_THUMBNAIL;
 }
 
 function getPostPosition(post: AlbumPost) {
@@ -299,8 +301,16 @@ export default function PhotosPage() {
 
   const selectedImage = useMemo<AlbumPostImage | null>(() => {
     if (!selectedPost) return null;
-    return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? null;
+    return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? {
+      id: `default-${selectedPost.id}`,
+      url: DEFAULT_TRIP_THUMBNAIL,
+      thumbnailUrl: DEFAULT_TRIP_THUMBNAIL,
+      filename: 'default-trip-thumbnail.webp',
+      mimeType: 'image/webp',
+    };
   }, [selectedImageId, selectedPost]);
+
+  const orderedPosts = useMemo(() => [...posts].reverse(), [posts]);
 
   const albumTrips = useMemo<AlbumTrip[]>(() => {
     const tripMeta = new Map(trips.map((trip) => [trip.id, trip]));
@@ -312,8 +322,9 @@ export default function PhotosPage() {
 
     return Array.from(postGroups.entries()).map(([tripId, tripPosts]) => {
       const trip = tripMeta.get(tripId);
-      const firstCoverPost = tripPosts.find((post) => getCoverImage(post));
-      const firstLocatedPost = tripPosts.find((post) => getPostPosition(post));
+      const orderedTripPosts = [...tripPosts].reverse();
+      const firstCoverPost = orderedTripPosts.find((post) => getCoverImage(post));
+      const firstLocatedPost = orderedTripPosts.find((post) => getPostPosition(post));
       const position = trip?.representativeLat != null && trip.representativeLng != null
         ? { lat: trip.representativeLat, lng: trip.representativeLng }
         : firstLocatedPost ? getPostPosition(firstLocatedPost) : undefined;
@@ -324,11 +335,11 @@ export default function PhotosPage() {
         location: [trip?.city, trip?.country].filter(Boolean).join(', '),
         dateRange: formatTripDateRange(trip),
         coverImage: trip?.thumbnailUrl || (firstCoverPost ? getCoverImage(firstCoverPost) : ''),
-        posts: tripPosts,
-        photoCount: tripPosts.reduce((sum, post) => sum + post.images.length, 0),
+        posts: orderedTripPosts,
+        photoCount: orderedTripPosts.reduce((sum, post) => sum + post.images.length, 0),
         position,
       };
-    });
+    }).reverse();
   }, [posts, trips]);
 
   const locatedTrips = useMemo(
@@ -340,7 +351,7 @@ export default function PhotosPage() {
     () => albumTrips
       .map((trip) => ({
         ...trip,
-        photos: trip.posts.flatMap((post) => post.images.map((image) => ({ ...image, post }))),
+        photos: trip.posts.flatMap((post) => [...post.images].reverse().map((image) => ({ ...image, post }))),
       }))
       .filter((trip) => trip.photos.length > 0),
     [albumTrips],
@@ -351,8 +362,8 @@ export default function PhotosPage() {
     [albumTrips, selectedTripId],
   );
   const modalPosts = useMemo(
-    () => activeView === 'trips' && selectedTrip ? selectedTrip.posts : posts,
-    [activeView, posts, selectedTrip],
+    () => activeView === 'trips' && selectedTrip ? selectedTrip.posts : orderedPosts,
+    [activeView, orderedPosts, selectedTrip],
   );
   const selectedPostIndex = useMemo(
     () => selectedPost ? modalPosts.findIndex((post) => post.id === selectedPost.id) : -1,
@@ -837,7 +848,12 @@ export default function PhotosPage() {
                   >
                     <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
                       {trip.coverImage ? (
-                        <img src={trip.coverImage} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={trip.coverImage}
+                          alt=""
+                          onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
                           <Images size={18} className="text-gray-300" />
@@ -963,7 +979,12 @@ export default function PhotosPage() {
                                       >
                                         <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                                           {coverImage ? (
-                                            <img src={coverImage} alt="" className="h-full w-full object-cover" />
+                                            <img
+                                              src={coverImage}
+                                              alt=""
+                                              onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                                              className="h-full w-full object-cover"
+                                            />
                                           ) : (
                                             <div className="flex h-full w-full items-center justify-center">
                                               <Images size={14} className="text-gray-300" />
@@ -999,22 +1020,23 @@ export default function PhotosPage() {
                 key={trip.id}
                 type="button"
                 onClick={() => openTrip(trip)}
-                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="relative aspect-[4/3] bg-gray-100">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                   {trip.coverImage ? (
                     <img
                       src={trip.coverImage}
                       alt=""
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                      className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <Images size={34} className="text-gray-300" />
                     </div>
                   )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <span className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+                  <div className="absolute bottom-3 left-3 right-3 z-20 text-white">
                     <p className="line-clamp-1 text-sm font-bold">{trip.title}</p>
                     {trip.location && <p className="mt-1 line-clamp-1 text-xs text-white/85">{trip.location}</p>}
                   </div>
@@ -1032,32 +1054,33 @@ export default function PhotosPage() {
         </div>
       ) : activeView === 'posts' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {posts.map((post) => {
+          {orderedPosts.map((post) => {
             const coverImage = getCoverImage(post);
             return (
               <button
                 key={post.id}
                 type="button"
                 onClick={() => openPost(post)}
-                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white text-left shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="relative aspect-square bg-gray-100">
+                <div className="relative aspect-square overflow-hidden bg-gray-100">
                   {coverImage ? (
                     <img
                       src={coverImage}
                       alt=""
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                      className="relative z-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <Images size={34} className="text-gray-300" />
                     </div>
                   )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
-                  <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-1 text-xs font-bold text-white">
+                  <span className="absolute inset-0 z-10 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+                  <span className="absolute right-3 top-3 z-20 rounded-full bg-black/60 px-2 py-1 text-xs font-bold text-white">
                     {post.images.length}
                   </span>
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <div className="absolute bottom-3 left-3 right-3 z-20 text-white">
                     <p className="line-clamp-1 text-sm font-bold">{post.title}</p>
                     {post.marker?.placeName && (
                       <p className="mt-1 line-clamp-1 text-xs text-white/85">{post.marker.placeName}</p>
@@ -1127,6 +1150,7 @@ export default function PhotosPage() {
                     <img
                       src={photo.thumbnailUrl || photo.url}
                       alt={photo.post.title}
+                      onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
                       className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -1142,102 +1166,19 @@ export default function PhotosPage() {
       )}
 
       {selectedPost && selectedImage && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-2 sm:p-4">
-          {modalPosts.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() => moveSelectedPost(-1)}
-                className="absolute left-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg hover:bg-white sm:flex"
-                aria-label="이전 Post"
-                title="이전 Post"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button
-                type="button"
-                onClick={() => moveSelectedPost(1)}
-                className="absolute right-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg hover:bg-white sm:flex"
-                aria-label="다음 Post"
-                title="다음 Post"
-              >
-                <ChevronRight size={24} />
-              </button>
-            </>
-          )}
-          <div className="relative flex max-h-[calc(100dvh_-_24px)] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl lg:max-h-[88vh] lg:flex-row">
-            <button
-              type="button"
-              onClick={() => setSelectedPostId(null)}
-              title="닫기"
-              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
-            >
-              <X size={18} />
-            </button>
-
-            <div
-              className="relative flex min-h-[280px] flex-1 touch-pan-y items-center justify-center bg-black sm:min-h-[360px] lg:min-h-[640px]"
-              onTouchStart={handleModalTouchStart}
-              onTouchEnd={handleModalTouchEnd}
-              onPointerDown={handleModalPointerDown}
-              onPointerUp={handleModalPointerUp}
-            >
-              {selectedPost.images.length > 1 && (
-                <span className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white">
-                  {(selectedImageIndex >= 0 ? selectedImageIndex : 0) + 1} / {selectedPost.images.length}
-                </span>
-              )}
-              <img src={selectedImage.url} alt="" className="max-h-[62dvh] w-full object-contain lg:max-h-[88vh]" />
-            </div>
-
-            <aside className="max-h-[38dvh] w-full flex-shrink-0 overflow-y-auto border-t border-gray-100 p-4 sm:p-5 lg:max-h-none lg:w-96 lg:border-l lg:border-t-0">
-              <p className="line-clamp-2 text-base font-bold text-gray-900">{selectedPost.title}</p>
-              <div className="mt-4 space-y-3 text-sm text-gray-500">
-                {selectedPost.marker?.placeName && (
-                  <p className="flex items-center gap-2">
-                    <MapPin size={15} />
-                    <span>{selectedPost.marker.placeName}</span>
-                  </p>
-                )}
-                {selectedPost.date && (
-                  <p className="flex items-center gap-2">
-                    <CalendarDays size={15} />
-                    <span>{formatDate(selectedPost.date)}</span>
-                  </p>
-                )}
-                {selectedPost.time && (
-                  <p className="flex items-center gap-2">
-                    <Clock3 size={15} />
-                    <span>{selectedPost.time}</span>
-                  </p>
-                )}
-              </div>
-              <p className="mt-5 text-sm leading-6 text-gray-600">{selectedPost.content || '메모가 없습니다.'}</p>
-
-              <div className="mt-5 grid grid-cols-4 gap-1.5">
-                {selectedPost.images.map((image) => (
-                  <button
-                    key={image.id}
-                    type="button"
-                    onClick={() => setSelectedImageId(image.id)}
-                    className={`aspect-square overflow-hidden rounded-md border ${
-                      selectedImage.id === image.id ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-transparent'
-                    }`}
-                  >
-                    <img src={image.thumbnailUrl || image.url} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-
-              <Link
-                href={`/trips/${selectedPost.tripId}`}
-                className="mt-6 inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-              >
-                Trip 보기
-              </Link>
-            </aside>
-          </div>
-        </div>
+        <PostPreviewModal
+          post={selectedPost}
+          selectedImageId={selectedImageId}
+          onSelectImage={setSelectedImageId}
+          onClose={() => setSelectedPostId(null)}
+          hasMultiplePosts={modalPosts.length > 1}
+          onPreviousPost={() => moveSelectedPost(-1)}
+          onNextPost={() => moveSelectedPost(1)}
+          onTouchStart={handleModalTouchStart}
+          onTouchEnd={handleModalTouchEnd}
+          onPointerDown={handleModalPointerDown}
+          onPointerUp={handleModalPointerUp}
+        />
       )}
     </div>
   );

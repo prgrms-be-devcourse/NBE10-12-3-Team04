@@ -42,6 +42,7 @@ public class SecurityConfig {
                     "/api/v1/auth/signup",
                     "/api/v1/auth/email/**", // 회원가입 전 단계라 로그인 없이 호출한다
                     "/api/v1/auth/login",
+                    "/api/v1/auth/oauth/google",
                     "/api/v1/auth/reissue",
                     "/api/v1/auth/logout",
                     "/api/v1/profile-images",

@@ -1,5 +1,6 @@
 package com.triptrace.domain.member.member.controller;
 
+import com.triptrace.domain.member.member.dto.CompleteProfileRequest;
 import com.triptrace.domain.member.member.dto.MemberMeResponse;
 import com.triptrace.domain.member.member.dto.MemberModifyRequest;
 import com.triptrace.domain.member.member.dto.ProfileImageUploadResponse;
@@ -43,6 +44,21 @@ public class ApiV1MemberController {
         return new RsData<>(
             "200-1",
             "회원 정보가 수정되었습니다.",
+            new MemberMeResponse(member)
+        );
+    }
+
+    // 소셜 가입자 온보딩 완료. 인증이 필요한 경로라 SecurityConfig의 anyRequest().authenticated()가 적용된다.
+    @PatchMapping("/users/me/profile")
+    public RsData<MemberMeResponse> completeProfile(
+        @AuthenticationPrincipal Long memberId,
+        @RequestBody @Valid CompleteProfileRequest request
+    ) {
+        Member member = memberService.completeProfile(memberId, request.username());
+
+        return new RsData<>(
+            "200-1",
+            "프로필 설정이 완료되었습니다.",
             new MemberMeResponse(member)
         );
     }
