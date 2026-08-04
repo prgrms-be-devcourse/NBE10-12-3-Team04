@@ -3,6 +3,8 @@ package com.triptrace.domain.image.image.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.triptrace.global.app.Domain;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,7 +44,7 @@ public class ImageUploadUseCase {
             byte[] bytes = imageFile.getBytes();
             return imageMetadataExtractor.extract(bytes);
         } catch (IOException | ImageProcessException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             return new ImageInfo();
         }
     }
@@ -67,8 +69,8 @@ public class ImageUploadUseCase {
             }
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo);
         } catch (IOException | ImageProcessException e) {
-            log.warn(e.getMessage());
-            return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILED");
+            log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
+            return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILEDs");
         }
         Image image = ImageMapper.toEntity(owner, trip, post, imageInfo, storedImageFile);
         ImageServiceResponse imageServiceResponse;
@@ -76,7 +78,7 @@ public class ImageUploadUseCase {
             imageServiceResponse = imageService.create(image);
         } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
             imageFileStorage.cleanUp(savedFileInfo);
-            log.warn(e.getMessage());
+            log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             return ImageMapper.toUploadResponse(fileName, null, "SERVER SAVE FAILED");
         }
         return ImageMapper.toUploadResponse(fileName, imageServiceResponse);

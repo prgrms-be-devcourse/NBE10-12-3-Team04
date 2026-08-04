@@ -66,7 +66,7 @@ public class ImageMetadataExtractor {
                 imageInfo.setLongitude(imageLocation.longitude());
             }
         } catch (ImageProcessingException | ImageProcessException | IOException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image metadata parsing fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             throw new ImageProcessException(ImageErrorCode.FILE_EXTRACT_ERROR);
         }
         return imageInfo;
@@ -87,11 +87,11 @@ public class ImageMetadataExtractor {
                 log.debug("[{}] date: {}, timeZone: {}",Domain.IMAGE.getName(), dateTime, timeZone);
                 imageDateTime = new ImageDateTime(dateTime, timeZone);
             } catch (Exception e) {
-                log.warn("[{}] date parsing failed: {}",Domain.IMAGE.getName(), e.getMessage());
+                log.warn("[{}] date parsing fallback reason: {}",Domain.IMAGE.getName(), e.getMessage());
                 return null;
             }
         } else
-            log.warn("[{}] subIFD directory: null", Domain.IMAGE.getName());
+            log.warn("[{}] subIFD directory parsing fallback reason: null", Domain.IMAGE.getName());
         return imageDateTime;
     }
 
@@ -108,9 +108,9 @@ public class ImageMetadataExtractor {
                 exifOrientation = ExifOrientation.fromExifValue(orientation);
                 imageExifIF = new ImageExifIF(exifOrientation, model, make);
             } else
-                log.warn("[{}] exif directory: null", Domain.IMAGE.getName());
+                log.warn("[{}] exif directory parsing fallback reason: null", Domain.IMAGE.getName());
         } catch (MetadataException e) {
-            log.warn("[{}] orientation make model parsing failed : {}", Domain.IMAGE.getName(),e.getMessage());
+            log.warn("[{}] orientation make model parsing fallback reason : {}", Domain.IMAGE.getName(),e.getMessage());
             return null;
         }
         return imageExifIF;
@@ -126,9 +126,9 @@ public class ImageMetadataExtractor {
                 log.debug("[{}] height: {}, width: {}",Domain.IMAGE.getName(), height, width);
                 imageWidthHeight = new ImageWidthHeight(width, height);
             } else
-                log.warn("[{}] jpeg directory: null", Domain.IMAGE.getName());
+                log.warn("[{}] jpeg directory parsing fallback reason: null", Domain.IMAGE.getName());
         } catch (MetadataException e) {
-            log.warn("[{}] image size parsing failed: {}", Domain.IMAGE.getName(), e.getMessage());
+            log.warn("[{}] image size parsing fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             return null;
         }
         return imageWidthHeight;
@@ -141,14 +141,14 @@ public class ImageMetadataExtractor {
             try {
                 double latitude = gpsDirectory.getGeoLocation().getLatitude();
                 double longitude = gpsDirectory.getGeoLocation().getLongitude();
-                log.debug("[{}] Latitude is: {},Longitude is: {}", Domain.IMAGE.getName(), latitude,longitude);
+                log.debug("[{}] latitude: {},longitude: {}", Domain.IMAGE.getName(), latitude,longitude);
                 imageLocation = new ImageLocation(latitude, longitude);
             } catch (Exception e) {
-                log.warn("[{}] gps parsing failed: {}",Domain.IMAGE.getName(), e.getMessage());
+                log.warn("[{}] gps parsing fallback reason: {}",Domain.IMAGE.getName(), e.getMessage());
                 return null;
             }
         } else
-            log.warn("[{}] gps directory: null",Domain.IMAGE.getName());
+            log.warn("[{}] gps directory parsing fallback reason: null",Domain.IMAGE.getName());
         return imageLocation;
     }
 
