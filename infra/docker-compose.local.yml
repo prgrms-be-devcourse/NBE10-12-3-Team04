@@ -46,8 +46,6 @@ services:
       args:
         # Dockerfile의 APP_VERSION은 JAR build-info.properties에 기록된다.
         APP_VERSION: ${BACKEND_VERSION:-0.0.1-SNAPSHOT}
-        LOG_DIR: ${LOG_DIR}
-        IMAGE_UPLOAD: ${IMAGE_UPLOAD}
     image: triptrace-backend:local
     ports:
       - "8080:8080"
@@ -61,11 +59,11 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-      LOG_DIR: ${LOG_DIR}
-      IMAGE_UPLOAD: ${IMAGE_UPLOAD}
-      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH}
-      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH}
-      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH}
+      LOG_DIR: /app/logs
+      IMAGE_UPLOAD: /app/images
+      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH:-/images/serving}
+      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH:-/images/thumbnail}
+      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH:-/images/profile}
       PUBLIC_PREFIX: ${PUBLIC_PREFIX}
       IMAGE_FILE_SIZE: ${IMAGE_FILE_SIZE}
       MAX_IMAGE_FILES_SIZE: ${MAX_IMAGE_FILES_SIZE}
@@ -77,8 +75,8 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - backend-images-local:${IMAGE_UPLOAD}
-      - backend-logs-local:${LOG_DIR}
+      - backend-images-local:/app/images
+      - backend-logs-local:/app/logs
 
   prometheus:
     image: prom/prometheus:v3.5.0

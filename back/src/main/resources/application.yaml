@@ -52,7 +52,8 @@ custom:
   ext:
     jpg: jpeg
   upload:
-    path: ${IMAGE_UPLOAD:/images}
+    # DB에는 /images/... 상대 경로를 저장하고, 실제 파일은 이 로컬 저장 루트 아래에 둔다.
+    path: ${IMAGE_UPLOAD:/app/images}
     serving-path: ${SERVING_UPLOAD_PATH:/images/serving}
     thumbnail-path: ${THUMBNAIL_UPLOAD_PATH:/images/thumbnail}
     profile-path: ${PROFILE_UPLOAD_PATH:/images/profile}

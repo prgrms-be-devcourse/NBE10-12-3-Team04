@@ -22,11 +22,10 @@ WORKDIR /app
 ENV TZ=Asia/Seoul
 ENV JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul
 
-ARG LOG_DIR=$LOG_DIR
-ARG IMAGE_UPLOAD=$IMAGE_UPLOAD
-
 RUN addgroup --system spring && adduser --system --ingroup spring spring
-RUN mkdir -p ${LOG_DIR} ${IMAGE_UPLOAD} && chown -R spring:spring ${LOG_DIR} ${IMAGE_UPLOAD}
+# 컨테이너 내부의 쓰기 루트는 환경과 무관하게 고정한다.
+# 업로드 하위 경로는 애플리케이션 설정이 이 루트 아래에 생성한다.
+RUN mkdir -p /app/logs /app/images && chown -R spring:spring /app/logs /app/images
 
 COPY --from=builder  --chown=spring:spring /app/build/libs/*.jar app.jar
 
