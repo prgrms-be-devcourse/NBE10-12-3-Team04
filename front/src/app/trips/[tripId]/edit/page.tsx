@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { tripApi, postApi, markerApi, placeApi } from '@/lib/api';
 import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
+import PostPreviewModal from '@/components/PostPreviewModal';
 import type { Trip, Post, Marker, TripImage, PlaceCandidate } from '@/types';
 
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -170,60 +171,6 @@ function UnassignedImageShelf({
   );
 }
 
-function renderInlineMarkdown(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>;
-    }
-    return part;
-  });
-}
-
-function renderMarkdownPreview(markdown: string) {
-  const lines = markdown.split('\n');
-  const blocks: React.ReactNode[] = [];
-  let listItems: string[] = [];
-
-  const flushList = () => {
-    if (!listItems.length) return;
-    blocks.push(
-      <ul key={`list-${blocks.length}`} className="my-3 list-disc space-y-1 pl-5 text-gray-700">
-        {listItems.map((item, index) => (
-          <li key={`${item}-${index}`}>{renderInlineMarkdown(item)}</li>
-        ))}
-      </ul>,
-    );
-    listItems = [];
-  };
-
-  lines.forEach((line, index) => {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      flushList();
-      blocks.push(<div key={`space-${index}`} className="h-3" />);
-      return;
-    }
-    if (trimmed.startsWith('- ')) {
-      listItems.push(trimmed.slice(2));
-      return;
-    }
-
-    flushList();
-    if (trimmed.startsWith('### ')) {
-      blocks.push(<h3 key={index} className="mt-5 text-lg font-bold text-gray-900">{renderInlineMarkdown(trimmed.slice(4))}</h3>);
-    } else if (trimmed.startsWith('## ')) {
-      blocks.push(<h2 key={index} className="mt-6 text-xl font-bold text-gray-900">{renderInlineMarkdown(trimmed.slice(3))}</h2>);
-    } else if (trimmed.startsWith('# ')) {
-      blocks.push(<h1 key={index} className="mt-6 text-2xl font-bold text-gray-900">{renderInlineMarkdown(trimmed.slice(2))}</h1>);
-    } else {
-      blocks.push(<p key={index} className="leading-7 text-gray-700">{renderInlineMarkdown(trimmed)}</p>);
-    }
-  });
-
-  flushList();
-  return blocks;
-}
-
 // ────────────────────────────────────────────────────────────────────
 // 컬럼 1: Post 목록
 // ────────────────────────────────────────────────────────────────────
@@ -362,7 +309,8 @@ function PostEditor({
   showUnassignedImages?: boolean;
 }) {
   const [draggingOver, setDraggingOver] = useState(false);
-  const [contentMode, setContentMode] = useState<'write' | 'preview'>('write');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImageId, setPreviewImageId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const images = post.images ?? [];
   const content = post.content ?? '';
@@ -452,46 +400,26 @@ function PostEditor({
 
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <div className="flex rounded-lg bg-gray-100 p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setContentMode('write')}
-                  className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
-                    contentMode === 'write' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                  }`}
-                >
-                  작성
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setContentMode('preview')}
-                  className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
-                    contentMode === 'preview' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                  }`}
-                >
-                  미리보기
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPreviewImageId(images[0]?.id ?? null);
+                  setPreviewOpen(true);
+                }}
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                <Eye size={13} /> 미리보기
+              </button>
               <span className="text-[10px] text-gray-400">{content.length} / 1000</span>
             </div>
-            {contentMode === 'write' ? (
-              <textarea
-                value={content}
-                onChange={(e) => set('content', e.target.value)}
-                maxLength={1000}
-                rows={12}
-                placeholder="여행의 장면을 적어보세요. # 제목, ## 소제목, - 목록, **강조**를 사용할 수 있습니다."
-                className="min-h-[320px] w-full resize-none rounded-xl border border-gray-100 bg-white px-4 py-4 text-base leading-7 text-gray-800 outline-none placeholder:text-gray-300 focus:border-green-500"
-              />
-            ) : (
-              <div className="min-h-[320px] rounded-xl border border-gray-100 bg-white px-4 py-4">
-                {content.trim() ? (
-                  <div className="prose max-w-none">{renderMarkdownPreview(content)}</div>
-                ) : (
-                  <p className="text-sm text-gray-400">미리보기 할 본문이 없습니다.</p>
-                )}
-              </div>
-            )}
+            <textarea
+              value={content}
+              onChange={(e) => set('content', e.target.value)}
+              maxLength={1000}
+              rows={12}
+              placeholder="여행의 장면을 적어보세요. # 제목, ## 소제목, - 목록, **강조**를 사용할 수 있습니다."
+              className="min-h-[320px] w-full resize-none rounded-xl border border-gray-100 bg-white px-4 py-4 text-base leading-7 text-gray-800 outline-none placeholder:text-gray-300 focus:border-green-500"
+            />
           </section>
 
         {/* 이미지 */}
@@ -564,6 +492,15 @@ function PostEditor({
         )}
         </article>
       </div>
+      {previewOpen && (
+        <PostPreviewModal
+          post={post}
+          selectedImageId={previewImageId}
+          onSelectImage={setPreviewImageId}
+          onClose={() => setPreviewOpen(false)}
+          showTripLink={false}
+        />
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { GoogleMap, Marker, OverlayView, Polyline, useJsApiLoader } from '@react
 import { ArrowLeft, Heart, MapPin, Calendar, Globe, Lock, Pencil, Maximize2, Minimize2, Trash2, X } from 'lucide-react';
 import { isAuthenticated, tripApi, postApi, likeApi, userApi } from '@/lib/api';
 import { applyImageFallback, DEFAULT_PROFILE_AVATAR, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
+import MarkdownContent from '@/components/MarkdownContent';
 import type { Trip, Post } from '@/types';
 
 type LocatedPost = Post & {
@@ -582,7 +583,9 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
             )}
           </div>
         )}
-        <p className="text-xs text-gray-500 mt-2 line-clamp-3">{content}</p>
+        {content.trim() && (
+          <MarkdownContent markdown={content} variant="detail" className="mt-2" />
+        )}
         {post.marker && (
           <p className="text-xs text-gray-400 mt-1 flex items-center gap-0.5">
             <MapPin size={10} /> {post.marker.placeName}
@@ -616,10 +619,19 @@ export default function TripDetailPage() {
   const dragRef = useRef<{ y: number; top: number } | null>(null);
 
   useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
     window.history.scrollRestoration = 'manual';
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
   }, [tripId]);
 
   useEffect(() => {
@@ -922,7 +934,7 @@ export default function TripDetailPage() {
           {days.length > 0 && <DayTabs days={days} active={activeDay} onSelect={handleSelectDay} />}
 
           {/* 타임라인 */}
-          <div ref={timelineRef} className="flex-1 overflow-y-auto px-5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={timelineRef} className="flex-1 overscroll-contain overflow-y-auto px-5 pb-6">
             {dayPosts.length === 0 ? (
               <p className="text-center text-gray-400 text-sm py-8">이 날의 기록이 없습니다.</p>
             ) : (
