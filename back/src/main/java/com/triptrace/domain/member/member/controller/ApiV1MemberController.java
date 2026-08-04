@@ -49,7 +49,7 @@ public class ApiV1MemberController {
     }
 
     // 소셜 가입자 온보딩 완료. 인증이 필요한 경로라 SecurityConfig의 anyRequest().authenticated()가 적용된다.
-    @PatchMapping("/members/me/profile")
+    @PatchMapping("/users/me/profile")
     public RsData<MemberMeResponse> completeProfile(
         @AuthenticationPrincipal Long memberId,
         @RequestBody @Valid CompleteProfileRequest request
