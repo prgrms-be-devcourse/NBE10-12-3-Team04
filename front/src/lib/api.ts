@@ -21,6 +21,9 @@ export type ProfileImageUploadResult = {
   profileImageUrl: string;
 };
 
+// PENDING_PROFILE = 소셜 가입 직후 온보딩(추가정보 입력)을 아직 마치지 않은 상태
+export type MemberStatus = 'ACTIVE' | 'PENDING_PROFILE';
+
 function getAccessToken() {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('accessToken');
@@ -280,6 +283,16 @@ export const authApi = {
 
   login: async (body: { email: string; password: string }) => {
     const data = await request<{ accessToken: string }>('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    setAccessToken(data.accessToken);
+    return data;
+  },
+
+  // 구글 로그인: 인가 코드를 백엔드에 넘기면 AT를 돌려준다. (RT는 로그인과 동일하게 쿠키로 세팅됨)
+  loginWithGoogle: async (body: { code: string; redirectUri: string }) => {
+    const data = await request<{ accessToken: string; status: MemberStatus }>('/api/v1/auth/oauth/google', {
       method: 'POST',
       body: JSON.stringify(body),
     });

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -68,6 +69,14 @@ export default function LoginPage() {
             {loading ? '처리 중...' : '로그인하기'}
           </button>
         </form>
+
+        <div className="my-4 flex items-center gap-3">
+          <span className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400">또는</span>
+          <span className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <GoogleLoginButton disabled={loading} />
 
         <p className="text-center text-sm text-gray-500 mt-4">
           계정이 없으신가요?{' '}
