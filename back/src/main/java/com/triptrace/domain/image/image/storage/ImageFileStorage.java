@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
+
+import com.triptrace.global.app.Domain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.triptrace.domain.image.image.error.ImageErrorCode;
@@ -70,7 +72,7 @@ public class ImageFileStorage {
             byte[] imageBytes = imageProcessor.encodeJpeg(image, jpegExt);
             storedFile = fileStorage.save(imageBytes, directoryPath, fileName);
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         if (storedFile == null) {
@@ -114,7 +116,7 @@ public class ImageFileStorage {
         try {
             fileStorage.delete(resolveStoragePath(imagePath));
         } catch (IOException e) {
-            log.warn(imagePath, e);
+            log.warn("[{}] image file storage image path: {} reason: {}", Domain.IMAGE.getName(),imagePath,e.getMessage());
             throw new ImageProcessException(ImageErrorCode.DELETE_ERROR);
         }
         return true;
@@ -138,13 +140,13 @@ public class ImageFileStorage {
         try {
             deleteImage(originFile);
         } catch (ImageProcessException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
         try {
             deleteImage(thumbnailFile);
         } catch (ImageProcessException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
     }

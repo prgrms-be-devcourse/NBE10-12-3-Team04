@@ -29,18 +29,18 @@ public class ImageInfo {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n------------------splitter------------------");
-        sb.append("\n width: " + width)
-            .append("\n height: " + height)
-            .append("\n longitude: " + longitude)
-            .append("\n latitude: " + latitude)
-            .append("\n capturedAt: " + capturedAt)
-            .append("\n timeZone: " + timeZone)
-            .append("\n model: " + model)
-            .append("\n maker: " + maker)
-            .append("\n orientation: " + orientation)
-            .append("\n fileSize: " + fileSize);
-        sb.append("\n------------------splitter------------------");
+
+        sb.append(" width: " + width)
+            .append(" height: " + height)
+            .append(" longitude: " + longitude)
+            .append(" latitude: " + latitude)
+            .append(" capturedAt: " + capturedAt)
+            .append(" timeZone: " + timeZone)
+            .append(" model: " + model)
+            .append(" maker: " + maker)
+            .append(" orientation: " + orientation)
+            .append(" fileSize: " + fileSize);
+
         return sb.toString();
     }
 
