@@ -28,7 +28,7 @@ class MarkerService(
 
     // 권한 체크
     private fun validateOwner(post: Post, memberId: Long?) {
-        val ownerId = post.trip.getOwner().getId()
+        val ownerId = post.trip.owner.getId()
 
         if (ownerId != memberId) {
             throw ServiceException(MarkerErrorCode.FORBIDDEN)

@@ -119,7 +119,7 @@ class PostService(
             .orElseThrow { ServiceException(PostErrorCode.NOT_FOUND) }
         validateOwner(post.trip, ownerId)
 
-        val representativeImage = post.trip.getRepresentativeImage()
+        val representativeImage = post.trip.representativeImage
         val usesRepresentativeImage = representativeImage?.getPost()?.getId() == postId
 
         markerRepository.findByPostId(postId).ifPresent(markerRepository::delete)
@@ -142,7 +142,7 @@ class PostService(
     }
 
     private fun validateOwner(trip: Trip, ownerId: Long?) {
-        if (trip.getOwner().getId() != ownerId) {
+        if (trip.owner.getId() != ownerId) {
             throw ServiceException(PostErrorCode.FORBIDDEN)
         }
     }

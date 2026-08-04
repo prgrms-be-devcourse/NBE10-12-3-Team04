@@ -33,6 +33,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -196,7 +197,7 @@ class TripAutoRecordServiceTest {
             null
         );
         Trip trip = new Trip(
-            null,
+            mock(Member.class),
             "부산 여행",
             "기존 국가",
             "기존 도시",
