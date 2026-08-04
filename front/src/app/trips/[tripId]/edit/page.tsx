@@ -995,7 +995,7 @@ export default function TripEditPage() {
 
       setPosts(sortPosts(updatedPosts));
       await refreshTripDateRange();
-      showToast('변경사항이 저장되었습니다.');
+      router.replace(`/trips/${tripId}`);
       return true;
     } catch (error) {
       showToast(error instanceof Error ? error.message : '저장에 실패했습니다.', 'error');

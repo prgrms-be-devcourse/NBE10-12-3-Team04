@@ -1056,7 +1056,7 @@ export default function HomePage() {
   const [myPosts, setMyPosts] = useState<AlbumPost[]>([]);
   const [myTrips, setMyTrips] = useState<Trip[]>([]);
   const [myDashboardLoading, setMyDashboardLoading] = useState(true);
-  const [activeTrayTab, setActiveTrayTab] = useState<HomeTrayTab>('mine');
+  const [activeTrayTab, setActiveTrayTab] = useState<HomeTrayTab>('popular');
   const [sheetHeight, setSheetHeight] = useState(430);
   const dragRef = useRef<{ y: number; height: number } | null>(null);
   const sheetScrollRef = useRef<HTMLDivElement | null>(null);
@@ -1348,9 +1348,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between border-b border-gray-200">
             <div className="flex min-w-0 items-center gap-1">
               {([
-                ['mine', '내 기록'],
                 ['popular', '인기'],
                 ['recent', '최신'],
+                ['mine', '내 기록'],
               ] as Array<[HomeTrayTab, string]>).map(([key, label]) => (
                 <button
                   key={key}
