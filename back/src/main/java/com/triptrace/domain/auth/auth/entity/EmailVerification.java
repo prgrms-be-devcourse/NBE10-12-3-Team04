@@ -44,6 +44,25 @@ public class EmailVerification extends BaseEntity {
         return new EmailVerification(email, code, expiresAt);
     }
 
+    // 인증 성공. 이후 회원가입 유효기간은 이 verifiedAt을 기준으로 계산한다.
+    public void verify() {
+        this.verified = true;
+        this.verifiedAt = LocalDateTime.now();
+    }
+
+    // 코드 불일치 시 호출. 정해진 횟수를 넘기면 이 코드는 더 이상 검증에 쓸 수 없다.
+    public void increaseAttemptCount() {
+        this.attemptCount++;
+    }
+
+    public boolean isExpired(LocalDateTime now) {
+        return this.expiresAt.isBefore(now);
+    }
+
+    public boolean matchesCode(String code) {
+        return this.code.equals(code);
+    }
+
     public String getEmail() {
         return this.email;
     }
