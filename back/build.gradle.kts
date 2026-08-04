@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com"
-version = providers.gradleProperty("appVersion").orElse("0.0.2-SNAPSHOT").get()
+version = providers.gradleProperty("appVersion").orElse("0.0.3-SNAPSHOT").get()
 description = "triptrace"
 
 java {
