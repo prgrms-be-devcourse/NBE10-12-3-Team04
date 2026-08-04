@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.slf4j.LoggerFactory
 import org.springframework.util.StringUtils
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -14,6 +15,8 @@ class GoogleReverseGeocodingClient(
     private val apiKey: String,
     private val restClient: RestClient
 ) : ReverseGeocodingClient {
+    private val log = LoggerFactory.getLogger(javaClass)
+
 
     @Autowired
     constructor(
@@ -50,7 +53,8 @@ class GoogleReverseGeocodingClient(
                 .body(JsonNode::class.java)
 
             extractLocation(response)
-        } catch (_: RestClientException) {
+        } catch (e: RestClientException) {
+            log.warn("[MARKER] reverse geocoding fallback reason: {}", e.message)
             null
         }
     }

@@ -20,6 +20,8 @@ import com.triptrace.global.exception.ServiceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -27,6 +29,7 @@ import java.util.List;
 
 @Service
 public class TripService {
+    private static final Logger log = LoggerFactory.getLogger(TripService.class);
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final ImageRepository imageRepository;
@@ -47,6 +50,11 @@ public class TripService {
             request.endDate(),
             request.visibility()
         ));
+
+        log.info(
+            "[TRIP] create completed tripId: {}, ownerId: {}, visibility: {}",
+            trip.getId(), ownerId, trip.isVisibility()
+        );
 
         return toResponse(trip);
     }
@@ -108,6 +116,11 @@ public class TripService {
             request.visibility()
         );
 
+        log.info(
+            "[TRIP] modify completed tripId: {}, ownerId: {}, visibility: {}",
+            tripId, ownerId, trip.isVisibility()
+        );
+
         return toResponse(trip);
     }
 
@@ -129,6 +142,11 @@ public class TripService {
         imageRepository.deleteAll(imageRepository.findByTripId(tripId));
         postRepository.deleteAll(posts);
         tripRepository.delete(trip);
+
+        log.info(
+            "[TRIP] delete completed tripId: {}, ownerId: {}, postCount: {}",
+            tripId, ownerId, posts.size()
+        );
     }
 
     @Transactional
@@ -141,6 +159,10 @@ public class TripService {
             throw new ServiceException(TripErrorCode.IMAGE_FORBIDDEN);
         }
         trip.changeRepresentativeImage(image);
+        log.info(
+            "[TRIP] representative image changed tripId: {}, ownerId: {}, imageId: {}",
+            tripId, ownerId, imageId
+        );
         return toResponse(trip);
     }
 
