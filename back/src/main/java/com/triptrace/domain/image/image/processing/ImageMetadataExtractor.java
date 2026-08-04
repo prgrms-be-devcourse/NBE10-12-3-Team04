@@ -30,21 +30,6 @@ import com.triptrace.domain.image.image.exception.ImageProcessException;
 public class ImageMetadataExtractor {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageMetadataExtractor.class);
 
-    private void showAllInfoByMetaData(Metadata metadata) {
-        if (metadata == null) {
-            log.warn("[{}] metadata: null", Domain.IMAGE.getName());
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n");
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                sb.append(tag.toString()).append("\n");
-            }
-        }
-        log.debug(sb.toString());
-    }
-
     public ImageInfo extract(byte[] bytes) throws ImageProcessException {
         ImageInfo imageInfo = new ImageInfo();
         try (ByteArrayInputStream fis = new ByteArrayInputStream(bytes)) {
@@ -54,7 +39,6 @@ public class ImageMetadataExtractor {
                 throw new ImageProcessException(ImageErrorCode.TYPE_ERROR);
             }
             Metadata metadata = ImageMetadataReader.readMetadata(fis);
-            showAllInfoByMetaData(metadata);
             log.debug("[{}] file type: {}", Domain.IMAGE.getName(), fileType);
 
             ImageDateTime imageDateTime = getImageDateTime(metadata);
