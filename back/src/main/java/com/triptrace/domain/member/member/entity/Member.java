@@ -92,6 +92,12 @@ public class Member extends BaseEntity {
         return member;
     }
 
+    // 온보딩 완료: 임시로 발급했던 닉네임을 사용자가 정한 값으로 바꾸고 정상 회원으로 전환한다.
+    public void completeProfile(String username) {
+        this.username = username;
+        this.status = MemberStatus.ACTIVE;
+    }
+
     // 부분 수정: null 인 값은 "변경하지 않음"으로 보고, 넘어온 값만 반영한다.
     public void modifyInfo(String username, String intro, String profileImageUrl) {
         if (username != null) {
