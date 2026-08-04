@@ -57,6 +57,7 @@ public class ImageUploadUseCase {
         if (imageFile == null || imageFile.isEmpty()) {
             return ImageMapper.toUploadResponse(null, null, "EMPTY_FILE");
         }
+        log.info("[{}] upload start owner: {}, trip: {}", Domain.IMAGE.getName(), owner.getId(), trip.getId());
         String fileName = imageFile.getOriginalFilename();
         SavedFileInfo savedFileInfo;
         StoredImageFile storedImageFile;
