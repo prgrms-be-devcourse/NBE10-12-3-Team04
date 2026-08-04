@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com"
-version = providers.gradleProperty("appVersion").orElse("0.0.2-SNAPSHOT").get()
+version = providers.gradleProperty("appVersion").orElse("0.0.3-SNAPSHOT").get()
 description = "triptrace"
 
 java {
@@ -28,9 +28,6 @@ val jjwtVersion = "0.13.0"
 val extractorVersion = "2.19.0"
 
 dependencies {
-    // kotlin
-    implementation(kotlin("reflect")) // spring kotlin 지원에 필요
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // kotlin data class JSON 역직렬화
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

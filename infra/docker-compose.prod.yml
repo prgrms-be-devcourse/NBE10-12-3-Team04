@@ -34,6 +34,10 @@ services:
     image: ghcr.io/prgrms-be-devcourse/triptrace-backend:${BACKEND_VERSION:-latest}
     expose:
       - "8080"
+    # Prometheus는 backend VM의 18080을 통해서만 이 컨테이너 8080을 scrape한다.
+    # GCP firewall은 monitoring VM 서비스 계정 외의 ingress를 허용하지 않는다.
+    ports:
+      - "18080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       TZ: ${APP_TIME_ZONE:-Asia/Seoul}
