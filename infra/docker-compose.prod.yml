@@ -24,7 +24,8 @@ services:
     environment:
       NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION}
+      # 배포 workflow가 전달한 이미지 버전을 서버 렌더링 환경에도 유지한다.
+      NEXT_PUBLIC_APP_VERSION: ${FRONTEND_VERSION:-0.0.1-SNAPSHOT}
     depends_on:
       - backend
     restart: always
