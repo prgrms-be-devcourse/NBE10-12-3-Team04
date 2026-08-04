@@ -99,12 +99,12 @@ class TripSearchService(
 
         val tripIds = trips.map { it.getId() }
         return postRepository.findByTripIdInOrderByDateAscIdAsc(tripIds)
-            .groupBy { it.getTrip().getId() }
+            .groupBy { it.trip.getId() }
     }
 
     private fun toResponse(trip: Trip, posts: List<Post>): TripSearchResponse {
         val thumbnailUrl = trip.representativeImage?.getThumbnailUrl()
-        val previewText = if (posts.isEmpty()) null else createPreview(posts.first().getMemo())
+        val previewText = if (posts.isEmpty()) null else createPreview(posts.first().memo)
 
         return TripSearchResponse(
             trip.getId(),
