@@ -1110,6 +1110,16 @@ export default function TripEditPage() {
 
   const unassignedImages = tripImages.filter((image) => !image.postId);
 
+  useEffect(() => {
+    if (loading) return;
+
+    const timer = window.setTimeout(
+      () => setUnassignedPanelOpen(unassignedImages.length > 0),
+      0,
+    );
+    return () => window.clearTimeout(timer);
+  }, [loading, unassignedImages.length]);
+
   const handleAssignTripImage = async (imageId: string) => {
     if (!selectedPost || selectedPost.images?.some((image) => image.id === imageId)) return;
     try {
