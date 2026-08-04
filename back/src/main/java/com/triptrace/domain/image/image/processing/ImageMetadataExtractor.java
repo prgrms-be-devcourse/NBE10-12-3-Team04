@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.triptrace.global.app.Domain;
 import org.springframework.stereotype.Component;
-
 import com.drew.imaging.FileType;
 import com.drew.imaging.FileTypeDetector;
 import com.drew.imaging.ImageMetadataReader;
@@ -19,34 +19,16 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.dto.ImageDateTime;
 import com.triptrace.domain.image.image.processing.dto.ImageExifIF;
 import com.triptrace.domain.image.image.processing.dto.ImageLocation;
 import com.triptrace.domain.image.image.processing.dto.ImageWidthHeight;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class ImageMetadataExtractor {
-    //ERROR CODE, 영역으로 구분
-    private static final String FILE_EXTRACT_ERROR = "400-1";
-
-    private void showAllInfoByMetaData(Metadata metadata) {
-        if (metadata == null) {
-            log.warn("metadata is null");
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n");
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                sb.append(tag.toString()).append("\n");
-            }
-        }
-        log.debug(sb.toString());
-    }
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageMetadataExtractor.class);
 
     public ImageInfo extract(byte[] bytes) throws ImageProcessException {
         ImageInfo imageInfo = new ImageInfo();
@@ -54,11 +36,10 @@ public class ImageMetadataExtractor {
             FileType fileType = FileTypeDetector.detectFileType(fis);
             imageInfo.setFileSize(Long.valueOf(bytes.length));
             if (!fileTypeFilter(fileType)) {
-                throw new ImageProcessException(FILE_EXTRACT_ERROR, "파일 유형이 올바르지 않습니다.");
+                throw new ImageProcessException(ImageErrorCode.TYPE_ERROR);
             }
             Metadata metadata = ImageMetadataReader.readMetadata(fis);
-            showAllInfoByMetaData(metadata);
-            log.debug("file type: {}", fileType);
+            log.debug("[{}] file type: {}", Domain.IMAGE.getName(), fileType);
 
             ImageDateTime imageDateTime = getImageDateTime(metadata);
             if (imageDateTime != null) {
@@ -85,8 +66,8 @@ public class ImageMetadataExtractor {
                 imageInfo.setLongitude(imageLocation.longitude());
             }
         } catch (ImageProcessingException | ImageProcessException | IOException e) {
-            log.warn(e.getMessage());
-            throw new ImageProcessException(FILE_EXTRACT_ERROR, "메타데이터를 추출할 수 없습니다.", e);
+            log.warn("[{}] image metadata parsing fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.FILE_EXTRACT_ERROR);
         }
         return imageInfo;
     }
@@ -103,14 +84,14 @@ public class ImageMetadataExtractor {
                     dateTime = LocalDateTime.parse(dataTimeString,
                         DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
                 }
-                log.debug("date: {}, timeZone: {}", dateTime, timeZone);
+                log.debug("[{}] date: {}, timeZone: {}",Domain.IMAGE.getName(), dateTime, timeZone);
                 imageDateTime = new ImageDateTime(dateTime, timeZone);
             } catch (Exception e) {
-                log.warn("촬영일시 형식을 파싱할 수 없습니다.: {}", e.getMessage());
+                log.warn("[{}] date parsing fallback reason: {}",Domain.IMAGE.getName(), e.getMessage());
                 return null;
             }
         } else
-            log.warn("SubIFD directory is null");
+            log.warn("[{}] subIFD directory parsing fallback reason: null", Domain.IMAGE.getName());
         return imageDateTime;
     }
 
@@ -123,15 +104,13 @@ public class ImageMetadataExtractor {
                 int orientation = exifDirectory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
                 String make = exifDirectory.getDescription(ExifIFD0Directory.TAG_MAKE);
                 String model = exifDirectory.getDescription(ExifIFD0Directory.TAG_MODEL);
-                log.debug("orientation: {}", orientation);
-                log.debug("make: {}", make);
-                log.debug("model: {}", model);
+                log.debug("[{}] orientation: {},make: {},model: {}", Domain.IMAGE.getName(),orientation, make, model);
                 exifOrientation = ExifOrientation.fromExifValue(orientation);
                 imageExifIF = new ImageExifIF(exifOrientation, model, make);
             } else
-                log.warn("Exif directory is null");
+                log.warn("[{}] exif directory parsing fallback reason: null", Domain.IMAGE.getName());
         } catch (MetadataException e) {
-            log.warn("회전값, 기기 정보를 불러올 수 없습니다.: {}", e.getMessage());
+            log.warn("[{}] orientation make model parsing fallback reason : {}", Domain.IMAGE.getName(),e.getMessage());
             return null;
         }
         return imageExifIF;
@@ -144,12 +123,12 @@ public class ImageMetadataExtractor {
             if (jpegDirectory != null) {
                 int height = jpegDirectory.getImageHeight();
                 int width = jpegDirectory.getImageWidth();
-                log.debug("height: {}, width: {}", height, width);
+                log.debug("[{}] height: {}, width: {}",Domain.IMAGE.getName(), height, width);
                 imageWidthHeight = new ImageWidthHeight(width, height);
             } else
-                log.warn("Jpeg directory is null");
+                log.warn("[{}] jpeg directory parsing fallback reason: null", Domain.IMAGE.getName());
         } catch (MetadataException e) {
-            log.warn("이미지의 크기 정보를 불러올 수 없습니다.: {}", e.getMessage());
+            log.warn("[{}] image size parsing fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             return null;
         }
         return imageWidthHeight;
@@ -162,20 +141,19 @@ public class ImageMetadataExtractor {
             try {
                 double latitude = gpsDirectory.getGeoLocation().getLatitude();
                 double longitude = gpsDirectory.getGeoLocation().getLongitude();
-                log.debug("Latitude is: {}", latitude);
-                log.debug("Longitude is: {}", longitude);
+                log.debug("[{}] latitude: {},longitude: {}", Domain.IMAGE.getName(), latitude,longitude);
                 imageLocation = new ImageLocation(latitude, longitude);
             } catch (Exception e) {
-                log.warn("GPS 정보를 불러올 수 없습니다.: {}", e.getMessage());
+                log.warn("[{}] gps parsing fallback reason: {}",Domain.IMAGE.getName(), e.getMessage());
                 return null;
             }
         } else
-            log.warn("GPS directory is null");
+            log.warn("[{}] gps directory parsing fallback reason: null",Domain.IMAGE.getName());
         return imageLocation;
     }
 
     private boolean fileTypeFilter(FileType fileType) {
-        log.debug("fileType: {}", fileType);
+        log.debug("[{}] fileType: {}",Domain.IMAGE.getName(), fileType);
         return fileType == FileType.Jpeg;
     }
 }

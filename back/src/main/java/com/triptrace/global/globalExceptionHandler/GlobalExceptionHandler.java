@@ -16,22 +16,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
+import com.triptrace.global.error.DefaultErrorCode;
 import com.triptrace.global.exception.ServiceException;
 import com.triptrace.global.rsData.RsData;
-
 import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<RsData<Void>> handle(NoSuchElementException ex) {
         return new ResponseEntity<>(
             new RsData<>(
-                "404-1",
-                "해당 데이터가 존재하지 않습니다."
+                DefaultErrorCode.NOT_FOUND.getCode(),
+                DefaultErrorCode.NOT_FOUND.getMessage()
             ),
             NOT_FOUND
         );
@@ -55,7 +53,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(
             new RsData<>(
-                "400-1",
+                DefaultErrorCode.BAD_REQUEST.getCode(),
                 message
             ),
             BAD_REQUEST
@@ -75,7 +73,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(
             new RsData<>(
-                "400-1",
+                DefaultErrorCode.BAD_REQUEST.getCode(),
                 msg
             ),
             BAD_REQUEST
@@ -86,8 +84,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RsData<Void>> handle(HttpMessageNotReadableException ex) {
         return new ResponseEntity<>(
             new RsData<>(
-                "400-1",
-                "요청 본문이 올바르지 않습니다."
+                DefaultErrorCode.BAD_REQUEST.getCode(),
+                DefaultErrorCode.BAD_REQUEST.getMessage()
             ),
             BAD_REQUEST
         );
@@ -97,7 +95,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RsData<Void>> handle(MissingRequestHeaderException ex) {
         return new ResponseEntity<>(
             new RsData<>(
-                "400-1",
+                DefaultErrorCode.BAD_REQUEST.getCode(),
                 "%s-%s-%s".formatted(
                     ex.getHeaderName(),
                     "NotBlank",
@@ -141,9 +139,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RsData<Void>> handle(MaxUploadSizeExceededException ex) {
         return new ResponseEntity<>(
             new RsData<>(
-                "413-1",
+                DefaultErrorCode.PAYLOAD_TOO_LARGE.getCode(),
                 "%s-%s".formatted(
-                    "파일 크기가 용량을 초과합니다.",
+                    DefaultErrorCode.PAYLOAD_TOO_LARGE.getMessage(),
                     ex.getLocalizedMessage()
                 )
             ),

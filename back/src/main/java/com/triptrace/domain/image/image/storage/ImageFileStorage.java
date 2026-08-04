@@ -5,23 +5,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import com.triptrace.global.app.Domain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.ImageProcessor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class ImageFileStorage {
-    private static final String IMAGE_PROCESSING_SAVE_ERROR = "400-4";
-    private static final String IMAGE_PROCESSING_DELETE_ERROR = "400-5";
-
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageFileStorage.class);
     private final String uploadDir;
     private final String profileImagesPath;
     private final String servingImagesPath;
@@ -53,12 +49,20 @@ public class ImageFileStorage {
 
     public String saveProfileImage(byte[] image) throws ImageProcessException {
         BufferedImage bufferedImage = imageProcessor.read(image);
-        StoredFile stored = saveImage(bufferedImage, resolveUploadPath(profileImagesPath), generateFileName(jpegExt),
-            false);
+        StoredFile stored = saveImage(
+            bufferedImage,
+            resolveUploadPath(profileImagesPath),
+            generateFileName(jpegExt),
+            false
+        );
         return profileImagesPath + "/" + stored.name();
     }
 
-    private StoredFile saveImage(BufferedImage image, String directoryPath, String fileName, boolean isThumbnail)
+    private StoredFile saveImage(
+        BufferedImage image,
+        String directoryPath,
+        String fileName,
+        boolean isThumbnail)
         throws ImageProcessException {
         StoredFile storedFile = null;
         try {
@@ -68,23 +72,33 @@ public class ImageFileStorage {
             byte[] imageBytes = imageProcessor.encodeJpeg(image, jpegExt);
             storedFile = fileStorage.save(imageBytes, directoryPath, fileName);
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.", e);
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         if (storedFile == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
         return storedFile;
     }
 
-    public SavedFileInfo saveImageWithThumbnail(byte[] image, ExifOrientation orientation)
+    public SavedFileInfo saveImageWithThumbnail(
+        byte[] image,
+        ExifOrientation orientation)
         throws ImageProcessException {
         BufferedImage bufferedImage = imageProcessor.read(image);
         bufferedImage = imageProcessor.rotate(bufferedImage, orientation);
-        StoredFile origin = saveImage(bufferedImage, resolveUploadPath(servingImagesPath), generateFileName(jpegExt),
-            false);
+        StoredFile origin = saveImage(
+            bufferedImage,
+            resolveUploadPath(servingImagesPath),
+            generateFileName(jpegExt),
+            false
+        );
         StoredFile thumbnail;
         try {
-            thumbnail = saveImage(bufferedImage, resolveUploadPath(thumbnailImagesPath), generateFileName(jpegExt),
+            thumbnail = saveImage(
+                bufferedImage,
+                resolveUploadPath(thumbnailImagesPath),
+                generateFileName(jpegExt),
                 true);
         } catch (ImageProcessException e) {
             deleteImage(servingImagesPath + "/" + origin.name());
@@ -94,15 +108,16 @@ public class ImageFileStorage {
             servingImagesPath + "/" + origin.name(),
             thumbnailImagesPath + "/" + thumbnail.name(),
             origin.size(),
-            "image/" + jpegExt);
+            "image/" + jpegExt
+        );
     }
 
     public boolean deleteImage(String imagePath) throws ImageProcessException {
         try {
             fileStorage.delete(resolveStoragePath(imagePath));
         } catch (IOException e) {
-            log.warn(imagePath, e);
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "파일 삭제에 실패했습니다.");
+            log.warn("[{}] image file storage image path: {} reason: {}", Domain.IMAGE.getName(),imagePath,e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.DELETE_ERROR);
         }
         return true;
     }
@@ -125,12 +140,14 @@ public class ImageFileStorage {
         try {
             deleteImage(originFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "보상 트랜잭션 실패");
+            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
         try {
             deleteImage(thumbnailFile);
         } catch (ImageProcessException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_DELETE_ERROR, "보상 트랜잭션 실패");
+            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR);
         }
     }
 }

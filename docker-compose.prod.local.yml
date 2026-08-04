@@ -1,0 +1,27 @@
+# docker-compose.prod.yml과 함께 사용하는 수동 운영 이미지 빌드 override다.
+# 레지스트리(GHCR)에서 pull하지 않고 현재 워크트리의 Dockerfile로 이미지를 만든다.
+services:
+  frontend:
+    # GCP Compute Engine의 x86_64 VM과 같은 이미지를 만든다. Apple Silicon Mac에서는
+    # Docker Desktop의 emulation으로 빌드되므로 시간이 더 걸릴 수 있다.
+    platform: linux/amd64
+    image: triptrace-frontend:${FRONTEND_VERSION:-local}
+    build:
+      # dockerfile 경로는 build context 기준이다. context가 front이므로
+      # front/Dockerfile이 아니라 이 디렉터리의 Dockerfile을 가리켜야 한다.
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION}
+
+  backend:
+    platform: linux/amd64
+    image: triptrace-backend:${BACKEND_VERSION:-local}
+    build:
+      # backend도 같은 규칙을 적용한다. 그렇지 않으면 back/back/Dockerfile을 찾는다.
+      context: ./back
+      dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${BACKEND_VERSION:-local}

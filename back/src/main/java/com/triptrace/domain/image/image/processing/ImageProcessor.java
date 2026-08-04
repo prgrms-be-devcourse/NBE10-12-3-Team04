@@ -1,8 +1,9 @@
 package com.triptrace.domain.image.image.processing;
 
-import com.triptrace.domain.image.image.processing.exception.ImageProcessException;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
+import com.triptrace.domain.image.image.exception.ImageProcessException;
+import com.triptrace.global.app.Domain;
 import org.springframework.stereotype.Component;
-
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -15,22 +16,21 @@ import java.io.IOException;
 
 @Component
 public class ImageProcessor {
-    private static final String IMAGE_PROCESSING_ERROR = "400-2";
-    private static final String IMAGE_PROCESSING_READ_ERROR = "400-3";
-    private static final String IMAGE_PROCESSING_SAVE_ERROR = "400-4";
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageProcessor.class);
 
     public BufferedImage read(byte[] image) {
         if (image == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_ERROR, "이미지를 읽을 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
         try {
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(image));
             if (bufferedImage == null) {
-                throw new ImageProcessException(IMAGE_PROCESSING_READ_ERROR, "이미지를 읽을 수 없습니다.");
+                throw new ImageProcessException(ImageErrorCode.READ_ERROR);
             }
             return bufferedImage;
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_READ_ERROR, "이미지를 읽을 수 없습니다.", e);
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
     }
 
@@ -66,7 +66,6 @@ public class ImageProcessor {
         ratio = Math.min(ratio, 1.0);
         int scaleHeight = (int) (height * ratio);
         int scaleWidth = (int) (width * ratio);
-
         BufferedImage resized = new BufferedImage(scaleWidth, scaleHeight, image.getType());
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -81,24 +80,23 @@ public class ImageProcessor {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             boolean written = ImageIO.write(rgbImage, jpegExt, bytes);
             if (!written) {
-                throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.");
+                throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
             }
             return bytes.toByteArray();
         } catch (IOException e) {
-            throw new ImageProcessException(IMAGE_PROCESSING_SAVE_ERROR, "파일을 저장할 수 없습니다.", e);
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
+            throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
     }
 
     private BufferedImage convertToRGB(BufferedImage image) {
         if (image == null) {
-            throw new ImageProcessException(IMAGE_PROCESSING_ERROR, "이미지를 읽을 수 없습니다.");
+            throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
         if (!image.getColorModel().hasAlpha()) {
             return image;
         }
-        BufferedImage rgbImage = new BufferedImage(
-            image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB
-        );
+        BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = rgbImage.createGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();

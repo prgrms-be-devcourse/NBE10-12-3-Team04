@@ -32,6 +32,44 @@ export interface Trip {
   createdAt: string;
 }
 
+export interface TripSearchResult {
+  tripId: string;
+  title: string;
+  thumbnailUrl?: string;
+  startDate: string;
+  endDate: string;
+  country?: string;
+  city?: string;
+  previewText?: string;
+}
+
+export interface TripSearchPage {
+  content: TripSearchResult[];
+  page: number;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface TripSearchLocation {
+  country: string;
+  cities: string[];
+}
+
+export interface WeeklyTrendingTrip {
+  trip: Trip;
+  weeklyLikeCount: number;
+}
+
+export interface PopularDestination {
+  country: string;
+  city: string;
+  tripCount: number;
+  thumbnailUrl?: string;
+  representativeTripId?: string;
+}
+
 export interface TripImage {
   id: string;
   url: string;

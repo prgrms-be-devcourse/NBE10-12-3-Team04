@@ -1,0 +1,241 @@
+name: Build and deploy from GCP Secret Manager
+
+on:
+  push:
+    branches:
+      - main
+  # main 반영 전 동작을 확인하거나, 같은 코드로 재배포할 때 사용할 수 있다.
+  workflow_dispatch:
+
+# 동시에 main에 여러 커밋이 들어와도 버전·이미지·배포가 뒤섞이지 않게 순차 실행한다.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+# VM은 전체 운영 환경변수를, GitHub Actions는 프론트 빌드 전용 공개 설정만 읽는다.
+env:
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/frontend
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_FRONTEND_BUILD_SERVICE_ACCOUNT: ${{ vars.GCP_FRONTEND_BUILD_SERVICE_ACCOUNT }}
+  GCP_DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+  GCP_DEPLOY_INSTANCE: ${{ vars.GCP_DEPLOY_INSTANCE }}
+  GCP_DEPLOY_ZONE: ${{ vars.GCP_DEPLOY_ZONE }}
+  APP_ENV_SECRET_ID: ${{ vars.APP_ENV_SECRET_ID }}
+  FRONTEND_BUILD_SECRET_ID: ${{ vars.FRONTEND_BUILD_SECRET_ID }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run backend tests
+        run: |
+          chmod +x gradlew
+          ./gradlew test
+
+  version:
+    # 테스트가 성공한 커밋에만 배포 버전 태그를 만든다.
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.release-version.outputs.version }}
+    steps:
+      - name: Checkout all tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create next patch tag
+        id: release-version
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest_tag="$(git tag --list --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+
+          if [[ -z "${latest_tag}" ]]; then
+            version="0.0.1"
+          else
+            IFS='.' read -r major minor patch <<< "${latest_tag#v}"
+            version="${major}.${minor}.$((patch + 1))"
+          fi
+
+          tag="v${version}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${tag}" -m "release: ${tag}" "${GITHUB_SHA}"
+          git push origin "${tag}"
+
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+  build-and-push:
+    needs: version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # GitHub OIDC 토큰으로 GCP Workload Identity Federation 인증을 한다.
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_FRONTEND_BUILD_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Fetch frontend build environment
+        id: frontend-build-env
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GCP_PROJECT_ID}" || -z "${FRONTEND_BUILD_SECRET_ID}" ]]; then
+            echo "GCP_PROJECT_ID와 FRONTEND_BUILD_SECRET_ID GitHub Variables를 설정해야 합니다."
+            exit 1
+          fi
+
+          secret_file="$(mktemp "${RUNNER_TEMP}/frontend-build-env.XXXXXX")"
+          trap 'rm -f "${secret_file}"' EXIT
+          gcloud secrets versions access latest \
+            --project "${GCP_PROJECT_ID}" \
+            --secret "${FRONTEND_BUILD_SECRET_ID}" > "${secret_file}"
+
+          # 빌드용 시크릿에는 브라우저에 공개될 NEXT_PUBLIC_*만 둔다.
+          for key in NEXT_PUBLIC_GOOGLE_MAPS_API_KEY NEXT_PUBLIC_API_URL; do
+            if ! grep -q "^${key}=" "${secret_file}"; then
+              echo "${key} 값이 프론트 빌드 시크릿에 없습니다."
+              exit 1
+            fi
+          done
+
+          printf 'NEXT_PUBLIC_APP_VERSION=%s\n' "${{ needs.version.outputs.version }}" >> "${secret_file}"
+          echo "secret_file=${secret_file}" >> "${GITHUB_OUTPUT}"
+          trap - EXIT
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./back
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ needs.version.outputs.version }}
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            ${{ env.BACKEND_IMAGE }}:latest
+          build-args: |
+            APP_VERSION=${{ needs.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front
+          push: true
+          # 운영 VM의 x86_64 아키텍처와 동일한 이미지로 고정한다.
+          platforms: linux/amd64
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ needs.version.outputs.version }}
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+          # Secret 파일은 빌드 중에만 mount되며 Docker 이미지 레이어에는 저장되지 않는다.
+          secret-files: |
+            frontend_build_env=${{ steps.frontend-build-env.outputs.secret_file }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Remove frontend build environment
+        if: always()
+        shell: bash
+        run: rm -f "${{ steps.frontend-build-env.outputs.secret_file }}"
+
+  deploy:
+    needs: [version, build-and-push]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Copy deployment files through IAP
+        env:
+          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+          GCP_DEPLOY_INSTANCE: ${{ env.GCP_DEPLOY_INSTANCE }}
+          GCP_DEPLOY_ZONE: ${{ env.GCP_DEPLOY_ZONE }}
+        run: |
+          set -euo pipefail
+          gcloud compute ssh "${GCP_DEPLOY_INSTANCE}" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap --command 'mkdir -p ~/triptrace-deploy-staging'
+          gcloud compute scp infra/docker-compose.prod.yml infra/Caddyfile "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
+
+      - name: Fetch environment and recreate services through IAP
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          BACKEND_VERSION: ${{ needs.version.outputs.version }}
+          FRONTEND_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/triptrace-deploy.sh" <<'REMOTE'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          read -r ghcr_token
+          project_id="$1"; secret_id="$2"; backend_version="$3"; frontend_version="$4"; ghcr_username="$5"
+          sudo -n install -d -o root -g root -m 0750 /opt/triptrace
+          sudo -n install -o root -g root -m 0644 ~/triptrace-deploy-staging/docker-compose.prod.yml /opt/triptrace/docker-compose.prod.yml
+          sudo -n install -o root -g root -m 0644 ~/triptrace-deploy-staging/Caddyfile /opt/triptrace/Caddyfile
+          temporary_env_file="$(mktemp)"; trap 'rm -f "${temporary_env_file}"' EXIT
+          access_token="$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' | jq -er '.access_token')"
+          curl -fsS -H "Authorization: Bearer ${access_token}" "https://secretmanager.googleapis.com/v1/projects/${project_id}/secrets/${secret_id}/versions/latest:access" | jq -er '.payload.data' | base64 --decode > "${temporary_env_file}"
+          test -s "${temporary_env_file}"
+          sudo -n install -o root -g root -m 0600 "${temporary_env_file}" /opt/triptrace/.env
+          printf '%s' "${ghcr_token}" | sudo -n docker login ghcr.io --username "${ghcr_username}" --password-stdin
+          cd /opt/triptrace
+          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose --env-file .env -f docker-compose.prod.yml pull backend frontend
+          sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose --env-file .env -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
+          REMOTE
+          chmod 700 "${RUNNER_TEMP}/triptrace-deploy.sh"
+          gcloud compute scp "${RUNNER_TEMP}/triptrace-deploy.sh" "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
+          printf '%s\n' "${GHCR_TOKEN}" | gcloud compute ssh "${GCP_DEPLOY_INSTANCE}" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap --command "bash ~/triptrace-deploy-staging/triptrace-deploy.sh '${GCP_PROJECT_ID}' '${APP_ENV_SECRET_ID}' '${BACKEND_VERSION}' '${FRONTEND_VERSION}' '${{ github.repository_owner }}'"

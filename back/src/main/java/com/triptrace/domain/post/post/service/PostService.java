@@ -9,14 +9,15 @@ import com.triptrace.domain.post.post.dto.PostCreateRequest;
 import com.triptrace.domain.post.post.dto.PostModifyRequest;
 import com.triptrace.domain.post.post.dto.PostResponse;
 import com.triptrace.domain.post.post.entity.Post;
+import com.triptrace.domain.post.post.error.PostErrorCode;
 import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,8 +28,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
+    private static final Logger log = LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final TripRepository tripRepository;
     private final ImageRepository imageRepository;
@@ -42,7 +43,7 @@ public class PostService {
     @Transactional
     public PostResponse create(Long tripId, Long ownerId, PostCreateRequest request) {
         Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.TRIP_NOT_FOUND));
         validateOwner(trip, ownerId);
 
         Post post = postRepository.save(new Post(
@@ -59,6 +60,12 @@ public class PostService {
             toVisitedAt(request.date(), request.time()),
             MarkerSource.MANUAL
         ));
+        recalculateTripDateRange(trip);
+
+        log.info(
+            "[POST] create completed postId: {}, tripId: {}, ownerId: {}",
+            post.getId(), tripId, ownerId
+        );
 
         return toResponse(post);
     }
@@ -66,7 +73,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostResponse> findPostsByTripId(Long tripId, Long ownerId) {
         Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.TRIP_NOT_FOUND));
 
         if (!trip.isVisibility()) {
             validateOwner(trip, ownerId);
@@ -79,7 +86,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse findAccessiblePost(Long postId, Long ownerId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new ServiceException("404-1", "게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.NOT_FOUND));
 
         if (!post.getTrip().isVisibility()) {
             validateOwner(post.getTrip(), ownerId);
@@ -91,7 +98,7 @@ public class PostService {
     @Transactional
     public PostResponse modifyPost(Long postId, Long ownerId, PostModifyRequest request) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new ServiceException("404-1", "게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.NOT_FOUND));
         validateOwner(post.getTrip(), ownerId);
 
         post.modify(
@@ -100,6 +107,12 @@ public class PostService {
             request.memo()
         );
         syncMarkerDate(post);
+        recalculateTripDateRange(post.getTrip());
+
+        log.info(
+            "[POST] modify completed postId: {}, tripId: {}, ownerId: {}",
+            postId, post.getTrip().getId(), ownerId
+        );
 
         return toResponse(post);
     }
@@ -107,7 +120,7 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId, Long ownerId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new ServiceException("404-1", "게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.NOT_FOUND));
         validateOwner(post.getTrip(), ownerId);
 
         boolean usesRepresentativeImage = post.getTrip().getRepresentativeImage() != null &&
@@ -124,11 +137,18 @@ public class PostService {
         }
 
         postRepository.delete(post);
+        postRepository.flush();
+        recalculateTripDateRange(post.getTrip());
+
+        log.info(
+            "[POST] delete completed postId: {}, tripId: {}, ownerId: {}",
+            postId, post.getTrip().getId(), ownerId
+        );
     }
 
     private void validateOwner(Trip trip, Long ownerId) {
         if (!trip.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "여행기에 대한 권한이 없습니다.");
+            throw new ServiceException(PostErrorCode.FORBIDDEN);
         }
     }
 
@@ -206,10 +226,24 @@ public class PostService {
         );
     }
 
+    private void recalculateTripDateRange(Trip trip) {
+        LocalDate firstDate = postRepository.findFirstByTripIdOrderByDateAscIdAsc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+        LocalDate lastDate = postRepository.findFirstByTripIdOrderByDateDescIdDesc(trip.getId())
+            .map(Post::getDate)
+            .orElse(null);
+
+        trip.changeDateRange(
+            firstDate == null ? null : firstDate.atStartOfDay(),
+            lastDate == null ? null : lastDate.atStartOfDay()
+        );
+    }
+
     @Transactional(readOnly = true)
     public Post getPost(Long postId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(()->new ServiceException("404-1","게시물을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(PostErrorCode.NOT_FOUND));
         return post;
     }
 
@@ -217,8 +251,15 @@ public class PostService {
     public Post getPost(Trip trip, Long postId) {
         Post post = getPost(postId);
         if (!post.getTrip().getId().equals(trip.getId())) {
-            throw new ServiceException("404-1","게시물을 찾을 수 없습니다.");
+            throw new ServiceException(PostErrorCode.NOT_FOUND);
         }
         return post;
+    }
+
+    public PostService(final PostRepository postRepository, final TripRepository tripRepository, final ImageRepository imageRepository, final MarkerRepository markerRepository) {
+        this.postRepository = postRepository;
+        this.tripRepository = tripRepository;
+        this.imageRepository = imageRepository;
+        this.markerRepository = markerRepository;
     }
 }

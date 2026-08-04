@@ -974,10 +974,23 @@ export default function TripEditPage() {
       .finally(() => setLoading(false));
   }, [tripId]);
 
+  const refreshTripDateRange = async () => {
+    const latestTrip = await tripApi.getOne(tripId) as Trip;
+    setTrip(latestTrip);
+    setTripForm((prev) => ({
+      ...prev,
+      startDate: latestTrip.startDate,
+      endDate: latestTrip.endDate,
+    }));
+  };
+
   const handleSaveTrip = async () => {
     setSaving(true);
     try {
-      const updatedPosts = await Promise.all(posts.map(async (post) => {
+      await tripApi.update(tripId, tripForm);
+
+      const updatedPosts: Post[] = [];
+      for (const post of posts) {
         const updatedPost = await postApi.update(tripId, post.id, {
           title: post.title,
           content: post.content,
@@ -985,7 +998,8 @@ export default function TripEditPage() {
         }) as Post;
 
         if (!post.marker) {
-          return withDerivedPostTime(updatedPost);
+          updatedPosts.push(withDerivedPostTime(updatedPost));
+          continue;
         }
 
         const markerPayload = {
@@ -999,10 +1013,10 @@ export default function TripEditPage() {
           ? await markerApi.update(post.id, post.marker.id, markerPayload)
           : await markerApi.create(post.id, markerPayload);
 
-        return withMarkerPostTime(withDerivedPostTime(updatedPost), updatedMarker as Marker);
-      }));
-
-      await tripApi.update(tripId, tripForm);
+        updatedPosts.push(
+          withMarkerPostTime(withDerivedPostTime(updatedPost), updatedMarker as Marker),
+        );
+      }
 
       if (representativeImageId && representativeImageId !== savedRepresentativeImageId) {
         const nextTrip = await tripApi.updateRepresentativeImage(tripId, representativeImageId) as Trip;
@@ -1011,6 +1025,7 @@ export default function TripEditPage() {
       }
 
       setPosts(sortPosts(updatedPosts));
+      await refreshTripDateRange();
       showToast('변경사항이 저장되었습니다.');
       return true;
     } catch (error) {
@@ -1028,6 +1043,7 @@ export default function TripEditPage() {
       await postApi.delete(tripId, postId);
       const nextPosts = sortPosts(posts.filter((post) => post.id !== postId));
       setPosts(nextPosts);
+      await refreshTripDateRange();
       if (selectedPostId === postId) setSelectedPostId(nextPosts[0]?.id ?? null);
       setTripImages((prev) => {
         const nextImages = prev.map((image) => (
@@ -1057,6 +1073,7 @@ export default function TripEditPage() {
       const nextPost = withDerivedPostTime(created);
       setPosts((prev) => sortPosts([...prev, nextPost]));
       setSelectedPostId(nextPost.id);
+      await refreshTripDateRange();
       showToast('새 Post가 생성되었습니다.');
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Post 생성에 실패했습니다.', 'error');

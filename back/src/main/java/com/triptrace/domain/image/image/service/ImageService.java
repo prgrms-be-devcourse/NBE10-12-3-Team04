@@ -1,11 +1,9 @@
 package com.triptrace.domain.image.image.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.triptrace.domain.image.image.catalog.ImageExceptionCatalog;
+import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.entity.Image;
 import com.triptrace.domain.image.image.mapper.ImageMapper;
@@ -15,11 +13,9 @@ import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.post.post.entity.Post;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
-
-import lombok.RequiredArgsConstructor;
+import com.triptrace.global.exception.ServiceException;
 
 @Service
-@RequiredArgsConstructor
 public class ImageService {
     private final ImageRepository imageRepository;
     private final TripRepository tripRepository;
@@ -42,10 +38,10 @@ public class ImageService {
     public ImageServiceResponse modifyPost(Member owner, Trip trip, Post post, Long imageId) {
         Image image = getById(imageId);
         if (!validateOwner(owner, image)) {
-            throw ImageExceptionCatalog.forbidden();
+            throw new ServiceException(ImageErrorCode.FORBIDDEN);
         }
         if (!validateTrip(trip, image)) {
-            throw ImageExceptionCatalog.invalid("해당 여행기의 이미지가 아닙니다.");
+            throw new ServiceException(ImageErrorCode.INVALID_TRIP);
         }
         image.modifyPost(post);
         return ImageMapper.toServiceResponse(image);
@@ -85,13 +81,13 @@ public class ImageService {
     @Transactional(readOnly = true)
     public Image getById(Long id) {
         return imageRepository.findById(id)
-            .orElseThrow(ImageExceptionCatalog::notFound);
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public Image getByUrl(String originalFileUrl) {
         return imageRepository.findByOriginalFileUrl(originalFileUrl)
-            .orElseThrow(ImageExceptionCatalog::notFound);
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -101,36 +97,22 @@ public class ImageService {
     }
 
     @Transactional(readOnly = true)
-    public ImageServiceResponse findByUrl(String imageUrl) {
-        Image image = getByUrl(imageUrl);
-        return ImageMapper.toServiceResponse(image);
-    }
-    @Transactional(readOnly = true)
     public List<ImageServiceResponse> findWithOwner(Long ownerId) {
-        List<Image> images = imageRepository.findByOwnerId(ownerId);
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
-    }
-    @Transactional(readOnly = true)
-    public List<ImageServiceResponse> findByTripId(Trip trip) {
-        List<Image> images = imageRepository.findByTripId(trip.getId());
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ImageServiceResponse> findByPostId(Post post) {
-        List<Image> images = imageRepository.findByPostId(post.getId());
-        return images.stream().map(ImageMapper::toServiceResponse).toList();
+        return imageRepository.findByOwnerId(ownerId)
+            .stream()
+            .map(ImageMapper::toServiceResponse)
+            .toList();
     }
 
     private void validate(Member owner, Trip trip, Post post, Image image) {
         if (!validateOwner(owner, image)) {
-            throw ImageExceptionCatalog.forbidden();
+            throw new ServiceException(ImageErrorCode.FORBIDDEN);
         }
         if (!validateTrip(trip, image)) {
-            throw ImageExceptionCatalog.invalid("해당 여행기의 이미지가 아닙니다.");
+            throw new ServiceException(ImageErrorCode.INVALID_TRIP);
         }
         if (!validatePost(post, image)) {
-            throw ImageExceptionCatalog.invalid("해당 게시글의 이미지가 아닙니다.");
+            throw new ServiceException(ImageErrorCode.INVALID_POST);
         }
     }
 
@@ -151,10 +133,19 @@ public class ImageService {
         }
         return post.getId().equals(image.getPost().getId());
     }
+
     @Transactional
-        public ImageServiceResponse unassign(Long ownerId, Long tripId, Long imageId) {
-        Image image = imageRepository.findByIdAndOwnerIdAndTripId(imageId,ownerId,tripId).orElseThrow(ImageExceptionCatalog::notFound);
+    public ImageServiceResponse unassign(Long ownerId, Long tripId, Long imageId) {
+        Image image = imageRepository
+            .findByIdAndOwnerIdAndTripId(imageId, ownerId, tripId)
+            .orElseThrow(() -> new ServiceException(ImageErrorCode.NOT_FOUND));
         image.modifyPost(null);
-        return  ImageMapper.toServiceResponse(image);
+        return ImageMapper.toServiceResponse(image);
+    }
+
+    public ImageService(final ImageRepository imageRepository, final TripRepository tripRepository, final MarkerRepository markerRepository) {
+        this.imageRepository = imageRepository;
+        this.tripRepository = tripRepository;
+        this.markerRepository = markerRepository;
     }
 }

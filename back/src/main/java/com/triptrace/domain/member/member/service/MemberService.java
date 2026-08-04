@@ -1,21 +1,19 @@
 package com.triptrace.domain.member.member.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.triptrace.domain.member.member.dto.MemberModifyRequest;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.global.exception.ServiceException;
-import jakarta.validation.constraints.NotEmpty;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 회원 데이터의 규칙과 영속화를 담당한다. (중복 검사 → 저장, 이메일로 조회)
  * 비밀번호 해시·토큰 발급 같은 인증 조립은 AuthService의 몫이며, 여기선 받은 값을 다룰 뿐이다.
  */
 @Service
-@RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
 
@@ -68,5 +66,9 @@ public class MemberService {
         member.modifyInfo(request.username(), request.intro(), request.profileImageUrl());
 
         return member;
+    }
+
+    public MemberService(final MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
     }
 }

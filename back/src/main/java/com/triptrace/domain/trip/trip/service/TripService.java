@@ -10,22 +10,26 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.dto.TripCreateRequest;
 import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
+import com.triptrace.domain.trip.trip.dto.PopularDestinationResponse;
+import com.triptrace.domain.trip.trip.dto.WeeklyTrendingTripResponse;
 import com.triptrace.domain.trip.trip.entity.Trip;
+import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class TripService {
+    private static final Logger log = LoggerFactory.getLogger(TripService.class);
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final ImageRepository imageRepository;
@@ -35,8 +39,8 @@ public class TripService {
 
     @Transactional
     public TripResponse create(Long ownerId, TripCreateRequest request) {
-        Member owner = memberRepository.findById(ownerId).orElseThrow(() -> new ServiceException("404-1", "회원을 찾을 수 없습니다."));
-
+        Member owner = memberRepository.findById(ownerId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.MEMBER_NOT_FOUND));
         Trip trip = tripRepository.save(new Trip(
             owner,
             request.title(),
@@ -46,6 +50,11 @@ public class TripService {
             request.endDate(),
             request.visibility()
         ));
+
+        log.info(
+            "[TRIP] create completed tripId: {}, ownerId: {}, visibility: {}",
+            trip.getId(), ownerId, trip.isVisibility()
+        );
 
         return toResponse(trip);
     }
@@ -74,7 +83,8 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public TripResponse findAccessibleTrip(Long tripId, Long ownerId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.NOT_FOUND));
 
         if (!trip.isVisibility()) {
             validateOwner(trip, ownerId);
@@ -85,7 +95,8 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public Trip findOwnedTrip(Long tripId, Long ownerId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new ServiceException(TripErrorCode.NOT_FOUND));
         // 이미지 업로드처럼 여행기 내부 데이터를 변경하는 로직은 공개 여부와 무관하게 소유자만 접근 가능
         validateOwner(trip, ownerId);
 
@@ -103,6 +114,11 @@ public class TripService {
             request.startDate(),
             request.endDate(),
             request.visibility()
+        );
+
+        log.info(
+            "[TRIP] modify completed tripId: {}, ownerId: {}, visibility: {}",
+            tripId, ownerId, trip.isVisibility()
         );
 
         return toResponse(trip);
@@ -126,20 +142,27 @@ public class TripService {
         imageRepository.deleteAll(imageRepository.findByTripId(tripId));
         postRepository.deleteAll(posts);
         tripRepository.delete(trip);
+
+        log.info(
+            "[TRIP] delete completed tripId: {}, ownerId: {}, postCount: {}",
+            tripId, ownerId, posts.size()
+        );
     }
 
     @Transactional
     public TripResponse changeRepresentativeImage(Long tripId, Long ownerId, Long imageId) {
         Trip trip = findOwnedTrip(tripId, ownerId);
         Image image = imageRepository.findById(imageId)
-            .orElseThrow(() -> new ServiceException("404-1", "이미지를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(TripErrorCode.IMAGE_NOT_FOUND));
 
         if (!image.getTrip().getId().equals(trip.getId()) || !image.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "이미지에 대한 권한이 없습니다.");
+            throw new ServiceException(TripErrorCode.IMAGE_FORBIDDEN);
         }
-
         trip.changeRepresentativeImage(image);
-
+        log.info(
+            "[TRIP] representative image changed tripId: {}, ownerId: {}, imageId: {}",
+            tripId, ownerId, imageId
+        );
         return toResponse(trip);
     }
 
@@ -151,6 +174,45 @@ public class TripService {
         return tripRepository.findTop10PublicTripsByRecentLikeCount(likedSince)
             .stream()
             .map(this::toResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeeklyTrendingTripResponse> findWeeklyTrendingTrips() {
+        LocalDateTime likedSince = LocalDateTime.now().minusDays(7);
+        return tripRepository.findWeeklyTrendingTrips(likedSince, PageRequest.of(0, 9))
+            .stream()
+            .map(row -> new WeeklyTrendingTripResponse(
+                toResponse((Trip) row[0]),
+                ((Number) row[1]).longValue()
+            ))
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PopularDestinationResponse> findPopularDestinations() {
+        return tripRepository.findPopularDestinations(PageRequest.of(0, 6))
+            .stream()
+            .map(row -> {
+                String country = ((String) row[0]).trim();
+                String city = ((String) row[1]).trim();
+                Trip representative = tripRepository
+                    .findFirstByVisibilityTrueAndCountryAndCityOrderByLikeCountDescCreatedAtDescIdDesc(
+                        (String) row[0],
+                        (String) row[1]
+                    )
+                    .orElse(null);
+                String thumbnailUrl = representative == null || representative.getRepresentativeImage() == null
+                    ? null
+                    : representative.getRepresentativeImage().getThumbnailUrl();
+                return new PopularDestinationResponse(
+                    country,
+                    city,
+                    ((Number) row[2]).longValue(),
+                    thumbnailUrl,
+                    representative == null ? null : representative.getId()
+                );
+            })
             .toList();
     }
 
@@ -175,7 +237,16 @@ public class TripService {
 
     private void validateOwner(Trip trip, Long ownerId) {
         if (!trip.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "여행기에 대한 권한이 없습니다.");
+            throw new ServiceException(TripErrorCode.FORBIDDEN);
         }
+    }
+
+    public TripService(final TripRepository tripRepository, final MemberRepository memberRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final TripLikeRepository tripLikeRepository) {
+        this.tripRepository = tripRepository;
+        this.memberRepository = memberRepository;
+        this.imageRepository = imageRepository;
+        this.postRepository = postRepository;
+        this.markerRepository = markerRepository;
+        this.tripLikeRepository = tripLikeRepository;
     }
 }

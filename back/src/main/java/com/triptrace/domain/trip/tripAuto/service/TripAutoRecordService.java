@@ -12,12 +12,13 @@ import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripAuto.dto.TripAutoRecordResponse;
+import com.triptrace.domain.trip.tripAuto.error.TripAutoErrorCode;
 import com.triptrace.global.exception.ServiceException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -27,17 +28,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
-@RequiredArgsConstructor
 public class TripAutoRecordService {
-
+    private static final Logger log = LoggerFactory.getLogger(TripAutoRecordService.class);
     // 같은 날짜 안에서도 클러스터 첫 사진과 2시간을 넘게 차이나면 다른 묶음으로 분리
     private static final long CLUSTER_TIME_GAP_MINUTES = 120;
     private static final int MARKER_COORDINATE_SCALE = 7;
-
     private final TripRepository tripRepository;
     private final ImageRepository imageRepository;
     private final PostRepository postRepository;
@@ -49,7 +47,7 @@ public class TripAutoRecordService {
     public TripAutoRecordResponse createAutoRecords(Long tripId, Long ownerId) {
         // 자동 생성 대상 여행기를 조회하고, 요청자가 해당 여행기의 소유자인지 확인
         Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new ServiceException("404-1", "여행기를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(TripAutoErrorCode.TRIP_NOT_FOUND));
 
         validateOwner(trip, ownerId);
 
@@ -132,7 +130,7 @@ public class TripAutoRecordService {
 
         applyTripAutoRecordDefaults(trip, usableImages, firstMarkerLocation);
 
-        return new TripAutoRecordResponse(
+        TripAutoRecordResponse response = new TripAutoRecordResponse(
             trip.getId(),
             records.size(), //생성된 post카운트
             records.size(), //생성된 marker카운트 -> 자동생성이라 post와 marker의 개수가 같음
@@ -140,6 +138,18 @@ public class TripAutoRecordService {
             images.size() - usableImages.size(),
             records
         );
+
+        log.info(
+            "[TRIP] auto record completed tripId: {}, ownerId: {}, postCount: {}, markerCount: {}, usedImageCount: {}, skippedImageCount: {}",
+            tripId,
+            ownerId,
+            response.generatedPostCount(),
+            response.generatedMarkerCount(),
+            response.usedImageCount(),
+            response.skippedImageCount()
+        );
+
+        return response;
     }
 
     private void applyTripAutoRecordDefaults(
@@ -231,7 +241,7 @@ public class TripAutoRecordService {
 
     private void validateOwner(Trip trip, Long ownerId) {
         if (!trip.getOwner().getId().equals(ownerId)) {
-            throw new ServiceException("403-1", "권한이 없습니다.");
+            throw new ServiceException(TripAutoErrorCode.FORBIDDEN);
         }
     }
 
@@ -240,5 +250,13 @@ public class TripAutoRecordService {
         return image.getCapturedAt() != null
             && image.getGpsLat() != null
             && image.getGpsLng() != null;
+    }
+
+    public TripAutoRecordService(final TripRepository tripRepository, final ImageRepository imageRepository, final PostRepository postRepository, final MarkerRepository markerRepository, final ReverseGeocodingClient reverseGeocodingClient) {
+        this.tripRepository = tripRepository;
+        this.imageRepository = imageRepository;
+        this.postRepository = postRepository;
+        this.markerRepository = markerRepository;
+        this.reverseGeocodingClient = reverseGeocodingClient;
     }
 }

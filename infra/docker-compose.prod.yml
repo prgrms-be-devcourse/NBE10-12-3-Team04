@@ -1,0 +1,89 @@
+services:
+  caddy:
+    image: caddy:2
+    ports:
+      # 운영은 기본값 80/443을 사용하며, 호스트 환경에서만 필요하면 포트를 변경할 수 있다.
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDR: ${SITE_ADDR}
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:8080}
+      FRONTEND_UPSTREAM: ${FRONTEND_UPSTREAM:-frontend:3000}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+  frontend:
+    # CD가 .env.prod에 기록한 고정 버전 이미지만 실행한다.
+    image: ghcr.io/prgrms-be-devcourse/frontend:${FRONTEND_VERSION:-latest}
+    expose:
+      - "3000"
+    environment:
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION}
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    # latest 대신 릴리스 태그를 사용해 배포한 커밋을 재현할 수 있다.
+    image: ghcr.io/prgrms-be-devcourse/backend:${BACKEND_VERSION:-latest}
+    expose:
+      - "8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      JAVA_TOOL_OPTIONS: -Duser.timezone=${APP_TIME_ZONE:-Asia/Seoul}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      LOG_DIR: /app/logs
+      IMAGE_UPLOAD: /app/images
+      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH:-/images/serving}
+      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH:-/images/thumbnail}
+      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH:-/images/profile}
+      PUBLIC_PREFIX: ${PUBLIC_PREFIX}
+      IMAGE_FILE_SIZE: ${IMAGE_FILE_SIZE}
+      MAX_IMAGE_FILES_SIZE: ${MAX_IMAGE_FILES_SIZE}
+      ACCESS_TOKEN_EXPIRATION_SECONDS: ${ACCESS_TOKEN_EXPIRATION_SECONDS}
+      REFRESH_TOKEN_EXPIRATION_SECONDS: ${REFRESH_TOKEN_EXPIRATION_SECONDS}
+      THUMBNAIL_WIDTH: ${THUMBNAIL_WIDTH}
+      THUMBNAIL_HEIGHT: ${THUMBNAIL_HEIGHT}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend-images:/app/images
+      - backend-logs:/app/logs
+    restart: always
+
+  db:
+    image: mysql:8.4
+    environment:
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+volumes:
+  mysql-data:
+  backend-images:
+  backend-logs:
+  caddy_data:
+  caddy_config:

@@ -1,7 +1,6 @@
 package com.triptrace.global.security;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,15 +16,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import lombok.RequiredArgsConstructor;
-
 /**
  * 인증의 "규칙표". 어떤 경로가 열려 있고 어디부터 로그인이 필요한지 정하고,
  * 우리가 만든 JwtFilter를 보안 필터 체인에 끼워 넣는다.
  */
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
     @Value("${custom.cors.allowed-origins}")
@@ -51,7 +47,10 @@ public class SecurityConfig {
                     "/h2-console/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/images/**"
+                    "/images/**",
+                    "/actuator/health",
+                    "/actuator/info",
+                    "/actuator/prometheus"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/trips").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/trips/*").permitAll()
@@ -83,5 +82,9 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    public SecurityConfig(final JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
     }
 }

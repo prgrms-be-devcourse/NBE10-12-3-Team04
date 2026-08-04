@@ -11,16 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Image extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -46,7 +40,8 @@ public class Image extends BaseEntity {
     private String mimeType;
 
     // EXIF 분석 완료 후 채워지는 이미지 메타데이터
-    @Column(precision = 10, scale = 7) // 정수 3자리, 소수 7자리
+    // 정수 3자리, 소수 7자리
+    @Column(precision = 10, scale = 7)
     private BigDecimal gpsLat;
 
     @Column(precision = 10, scale = 7)
@@ -88,6 +83,7 @@ public class Image extends BaseEntity {
         this.deviceInfo = deviceInfo;
         this.uploadStatus = uploadStatus;
     }
+
     // 업로드 시점에 알 수 있는 기본 이미지 정보만 먼저 저장
     public Image(
         Member owner,
@@ -121,7 +117,7 @@ public class Image extends BaseEntity {
         this.post = null;
     }
 
-    public void modifyStatus(UploadStatus uploadStatus){
+    public void modifyStatus(UploadStatus uploadStatus) {
         this.uploadStatus = uploadStatus;
     }
 
@@ -129,5 +125,56 @@ public class Image extends BaseEntity {
     // 추후 이미지 관계 테이블 도입 시 관계 테이블로 이전
     public void connectPost(Post post) {
         this.post = post;
+    }
+
+    public Member getOwner() {
+        return this.owner;
+    }
+
+    public Trip getTrip() {
+        return this.trip;
+    }
+
+    public Post getPost() {
+        return this.post;
+    }
+
+    public String getOriginalFileUrl() {
+        return this.originalFileUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return this.thumbnailUrl;
+    }
+
+    public Long getFileSize() {
+        return this.fileSize;
+    }
+
+    public String getMimeType() {
+        return this.mimeType;
+    }
+
+    public BigDecimal getGpsLat() {
+        return this.gpsLat;
+    }
+
+    public BigDecimal getGpsLng() {
+        return this.gpsLng;
+    }
+
+    public LocalDateTime getCapturedAt() {
+        return this.capturedAt;
+    }
+
+    public String getDeviceInfo() {
+        return this.deviceInfo;
+    }
+
+    public UploadStatus getUploadStatus() {
+        return this.uploadStatus;
+    }
+
+    protected Image() {
     }
 }

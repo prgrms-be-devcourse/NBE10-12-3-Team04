@@ -15,9 +15,11 @@ import com.triptrace.domain.trip.trip.dto.TripCreateRequest;
 import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.entity.Trip;
+import com.triptrace.domain.trip.trip.error.TripErrorCode;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
 import com.triptrace.domain.trip.tripLike.repository.TripLikeRepository;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.exception.ServiceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,25 @@ class TripServiceTest {
     }
 
     @Test
+    @DisplayName("존재하지 않는 회원은 여행기를 생성할 수 없다.")
+    void createByUnknownMember() {
+        assertThatThrownBy(() -> tripService.create(Long.MAX_VALUE, new TripCreateRequest(
+            "생성할 여행기",
+            "한국",
+            "서울",
+            LocalDateTime.of(2026, 1, 1, 0, 0),
+            LocalDateTime.of(2026, 1, 2, 0, 0),
+            true
+        )))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.MEMBER_NOT_FOUND.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.MEMBER_NOT_FOUND.getMessage()
+            ));
+    }
+
+    @Test
     @DisplayName("ownerId 기준으로 내 여행기 목록을 조회한다.")
     void findTripsByOwnerId() {
         Member owner = createMember("owner");
@@ -143,7 +164,23 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findAccessibleTrip(trip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 여행기는 조회할 수 없다.")
+    void findUnknownTrip() {
+        assertThatThrownBy(() -> tripService.findAccessibleTrip(Long.MAX_VALUE, null))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.NOT_FOUND.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.NOT_FOUND.getMessage()
+            ));
     }
 
     @Test
@@ -167,7 +204,11 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.findOwnedTrip(publicTrip.getId(), other.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -207,7 +248,11 @@ class TripServiceTest {
             true
         )))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
     }
 
     @Test
@@ -274,7 +319,51 @@ class TripServiceTest {
 
         assertThatThrownBy(() -> tripService.changeRepresentativeImage(trip.getId(), other.getId(), image.getId()))
             .isInstanceOf(ServiceException.class)
-            .hasMessage("403-1 : 여행기에 대한 권한이 없습니다.");
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.FORBIDDEN.getMessage()
+            ));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이미지는 여행기 대표이미지로 지정할 수 없다.")
+    void changeRepresentativeImageNotFound() {
+        Member owner = createMember("missingImageOwner");
+        Trip trip = createTrip(owner, "대표이미지 변경 여행기");
+
+        assertThatThrownBy(() -> tripService.changeRepresentativeImage(
+            trip.getId(),
+            owner.getId(),
+            Long.MAX_VALUE
+        ))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.IMAGE_NOT_FOUND.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.IMAGE_NOT_FOUND.getMessage()
+            ));
+    }
+
+    @Test
+    @DisplayName("다른 여행기의 이미지는 대표이미지로 지정할 수 없다.")
+    void changeRepresentativeImageFromOtherTrip() {
+        Member owner = createMember("otherTripImageOwner");
+        Trip trip = createTrip(owner, "대표이미지 변경 여행기");
+        Trip otherTrip = createTrip(owner, "다른 여행기");
+        Image otherTripImage = toEntity(owner, otherTrip, null, "other-trip.jpg");
+
+        assertThatThrownBy(() -> tripService.changeRepresentativeImage(
+            trip.getId(),
+            owner.getId(),
+            otherTripImage.getId()
+        ))
+            .isInstanceOf(ServiceException.class)
+            .hasMessage("%s-%s : %s".formatted(
+                TripErrorCode.IMAGE_FORBIDDEN.getCode(),
+                Domain.TRIP.getCode(),
+                TripErrorCode.IMAGE_FORBIDDEN.getMessage()
+            ));
     }
 
     private Member createMember(String username) {

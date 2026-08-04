@@ -2,15 +2,16 @@ package com.triptrace.domain.trip.tripLike.controller;
 
 import com.triptrace.domain.trip.tripLike.dto.TripLikeStatusResponse;
 import com.triptrace.domain.trip.tripLike.service.TripLikeService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.rsData.RsData;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/trips")
-@RequiredArgsConstructor
 public class TripLikeController {
+    private static final String SUCCESS_CODE = "200-" + Domain.TRIP.getCode();
+    private static final String CREATED_CODE = "201-" + Domain.TRIP.getCode();
     private final TripLikeService tripLikeService;
 
     // 좋아요 추가
@@ -22,7 +23,7 @@ public class TripLikeController {
         tripLikeService.createLike(memberId, tripId);
 
         return new RsData<>(
-            "201-1",
+            CREATED_CODE,
             "좋아요가 등록되었습니다."
         );
     }
@@ -36,7 +37,7 @@ public class TripLikeController {
         tripLikeService.deleteLike(memberId, tripId);
 
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "좋아요가 취소되었습니다."
         );
     }
@@ -50,9 +51,13 @@ public class TripLikeController {
         boolean liked = tripLikeService.isLiked(memberId, tripId);
 
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "좋아요 여부 조회 성공했습니다.",
             new TripLikeStatusResponse(liked)
         );
+    }
+
+    public TripLikeController(final TripLikeService tripLikeService) {
+        this.tripLikeService = tripLikeService;
     }
 }

@@ -1,23 +1,28 @@
 package com.triptrace.global.app;
 
-import com.triptrace.standard.util.Ut;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import com.triptrace.standard.util.Ut;
+import jakarta.annotation.PostConstruct;
 import tools.jackson.databind.ObjectMapper;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 @Configuration
 public class AppConfig {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AppConfig.class);
     private static Environment environment;
+    private static BuildProperties buildProperties;
 
     @Autowired
     public void setEnvironment(Environment environment) {
         AppConfig.environment = environment;
+    }
+
+    @Autowired
+    public void setBuildProperties(BuildProperties buildProperties) {
+        AppConfig.buildProperties = buildProperties;
+        log.info("backend-version: {}", (buildProperties.getVersion()));
     }
 
     public static boolean isDev() {
@@ -36,12 +41,10 @@ public class AppConfig {
         return !isProd();
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    public String getVersion() {
+        return buildProperties.getVersion();
+    }
 
-    @Getter
     private static ObjectMapper objectMapper;
 
     @Autowired
@@ -52,5 +55,9 @@ public class AppConfig {
     @PostConstruct
     public void postConstruct() {
         Ut.json.objectMapper = objectMapper;
+    }
+
+    public static ObjectMapper getObjectMapper() {
+        return AppConfig.objectMapper;
     }
 }

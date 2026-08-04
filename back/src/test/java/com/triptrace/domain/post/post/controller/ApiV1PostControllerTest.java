@@ -4,9 +4,11 @@ import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.post.post.entity.Post;
+import com.triptrace.domain.post.post.error.PostErrorCode;
 import com.triptrace.domain.post.post.repository.PostRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.global.app.Domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +71,7 @@ class ApiV1PostControllerTest {
                     """))
             .andDo(print())
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.resultCode").value("201-1"))
+            .andExpect(jsonPath("$.resultCode").value("201-" + Domain.POST.getCode()))
             .andExpect(jsonPath("$.data.tripId").value(trip.getId()))
             .andExpect(jsonPath("$.data.title").value("둘째 날"));
     }
@@ -90,6 +92,23 @@ class ApiV1PostControllerTest {
             .andExpect(jsonPath("$.data.length()").value(2))
             .andExpect(jsonPath("$.data[0].title").value("첫째 날"))
             .andExpect(jsonPath("$.data[1].title").value("둘째 날"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("내 게시물 목록 조회 API")
+    void getMyPosts() throws Exception {
+        Member owner = createMember("myPostOwner");
+        Trip trip = createTrip(owner, "내 여행기");
+        createPost(trip, LocalDate.of(2026, 1, 1), "내 첫 게시물");
+
+        mvc.perform(get("/api/v1/posts")
+                .with(authentication(auth(owner))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.POST.getCode()))
+            .andExpect(jsonPath("$.data.length()").value(1))
+            .andExpect(jsonPath("$.data[0].title").value("내 첫 게시물"));
     }
 
     @Test
@@ -120,7 +139,9 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                PostErrorCode.FORBIDDEN.getCode() + "-" + Domain.POST.getCode()
+            ));
     }
 
     @Test
@@ -162,9 +183,30 @@ class ApiV1PostControllerTest {
                 .with(authentication(auth(other))))
             .andDo(print())
             .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.resultCode").value("403-1"));
+            .andExpect(jsonPath("$.resultCode").value(
+                PostErrorCode.FORBIDDEN.getCode() + "-" + Domain.POST.getCode()
+            ));
 
         assertThat(postRepository.existsById(post.getId())).isTrue();
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("게시물 삭제 API")
+    void deletePost() throws Exception {
+        Member owner = createMember("deleteOwner");
+        Trip trip = createTrip(owner, "삭제 여행기");
+        Post post = createPost(trip, LocalDate.of(2026, 1, 1), "삭제할 게시물");
+
+        mvc.perform(delete("/api/v1/posts/{postId}", post.getId())
+                .with(csrf())
+                .with(authentication(auth(owner))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resultCode").value("200-" + Domain.POST.getCode()))
+            .andExpect(jsonPath("$.msg").value("%d번 게시물이 삭제되었습니다.".formatted(post.getId())));
+
+        assertThat(postRepository.existsById(post.getId())).isFalse();
     }
 
     private Member createMember(String username) {

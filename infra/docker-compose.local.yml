@@ -1,0 +1,123 @@
+services:
+  caddy:
+    image: caddy:2
+    ports:
+      # host 포트만 환경별로 바꾸고 Caddy 컨테이너 내부 포트는 표준 80/443을 유지한다.
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDR: ${SITE_ADDR}
+      # Compose 네트워크 안의 서비스 주소. 홈서버·운영에서 분리 배치할 때만 바꾼다.
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:8080}
+      FRONTEND_UPSTREAM: ${FRONTEND_UPSTREAM:-frontend:3000}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build:
+      # Compose 파일은 infra/에 있으므로 애플리케이션 소스는 한 단계 위에서 찾는다.
+      context: ../front
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION}
+    image: triptrace-frontend:local
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      # Compose 파일은 infra/에 있으므로 애플리케이션 소스는 한 단계 위에서 찾는다.
+      context: ../back
+      dockerfile: Dockerfile
+      args:
+        # Dockerfile의 APP_VERSION은 JAR build-info.properties에 기록된다.
+        APP_VERSION: ${BACKEND_VERSION:-0.0.1-SNAPSHOT}
+    image: triptrace-backend:local
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      JAVA_TOOL_OPTIONS: -Duser.timezone=${APP_TIME_ZONE:-Asia/Seoul}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://db:3306/triptrace}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      LOG_DIR: /app/logs
+      IMAGE_UPLOAD: /app/images
+      SERVING_UPLOAD_PATH: ${SERVING_UPLOAD_PATH:-/images/serving}
+      THUMBNAIL_UPLOAD_PATH: ${THUMBNAIL_UPLOAD_PATH:-/images/thumbnail}
+      PROFILE_UPLOAD_PATH: ${PROFILE_UPLOAD_PATH:-/images/profile}
+      PUBLIC_PREFIX: ${PUBLIC_PREFIX}
+      IMAGE_FILE_SIZE: ${IMAGE_FILE_SIZE}
+      MAX_IMAGE_FILES_SIZE: ${MAX_IMAGE_FILES_SIZE}
+      ACCESS_TOKEN_EXPIRATION_SECONDS: ${ACCESS_TOKEN_EXPIRATION_SECONDS}
+      REFRESH_TOKEN_EXPIRATION_SECONDS: ${REFRESH_TOKEN_EXPIRATION_SECONDS}
+      THUMBNAIL_WIDTH: ${THUMBNAIL_WIDTH}
+      THUMBNAIL_HEIGHT: ${THUMBNAIL_HEIGHT}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend-images-local:/app/images
+      - backend-logs-local:/app/logs
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    ports:
+      # Prometheus UI/API는 로컬 호스트에서만 확인한다.
+      - "127.0.0.1:${PROMETHEUS_HOST_PORT:-9090}:9090"
+    volumes:
+      # backend 서비스명은 Compose 내부 DNS로 backend:8080에 해석된다.
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data-local:/prometheus
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.4
+    ports:
+      - "3306:3306"
+    environment:
+      TZ: ${APP_TIME_ZONE:-Asia/Seoul}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data-local:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mysql-data-local:
+  backend-images-local:
+  backend-logs-local:
+  prometheus-data-local:
+  caddy_data:
+  caddy_config:

@@ -302,11 +302,6 @@ export default function PhotosPage() {
     return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? null;
   }, [selectedImageId, selectedPost]);
 
-  const photos = useMemo<AlbumPhoto[]>(
-    () => posts.flatMap((post) => post.images.map((image) => ({ ...image, post }))),
-    [posts],
-  );
-
   const albumTrips = useMemo<AlbumTrip[]>(() => {
     const tripMeta = new Map(trips.map((trip) => [trip.id, trip]));
     const postGroups = new Map<string, AlbumPost[]>();
@@ -338,6 +333,16 @@ export default function PhotosPage() {
 
   const locatedTrips = useMemo(
     () => albumTrips.filter((trip): trip is AlbumTrip & { position: { lat: number; lng: number } } => !!trip.position),
+    [albumTrips],
+  );
+
+  const photoTrips = useMemo(
+    () => albumTrips
+      .map((trip) => ({
+        ...trip,
+        photos: trip.posts.flatMap((post) => post.images.map((image) => ({ ...image, post }))),
+      }))
+      .filter((trip) => trip.photos.length > 0),
     [albumTrips],
   );
 
@@ -1071,25 +1076,67 @@ export default function PhotosPage() {
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-1 sm:gap-2 md:grid-cols-4 xl:grid-cols-5">
-          {photos.map((photo) => (
-            <button
-              key={`${photo.post.id}-${photo.id}`}
-              type="button"
-              onClick={() => openPhoto(photo)}
-              className="group relative aspect-square overflow-hidden bg-gray-100"
-              title={photo.post.title}
-            >
-              <img
-                src={photo.thumbnailUrl || photo.url}
-                alt=""
-                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-              />
-              <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
-              <span className="absolute bottom-2 left-2 right-2 line-clamp-1 text-left text-[11px] font-semibold text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100">
-                {photo.post.title}
-              </span>
-            </button>
+        <div className="space-y-10 sm:space-y-12">
+          {photoTrips.map((trip) => (
+            <section key={trip.id} aria-labelledby={`photo-trip-${trip.id}`}>
+              <div className="mb-3 flex items-end justify-between gap-4 border-b border-gray-200 pb-3 sm:mb-4">
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="h-5 w-1 flex-shrink-0 rounded-full bg-emerald-500" />
+                    <h2 id={`photo-trip-${trip.id}`} className="truncate text-base font-bold text-gray-900 sm:text-lg">
+                      {trip.title}
+                    </h2>
+                    <span className="flex-shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-500">
+                      {trip.photoCount}
+                    </span>
+                  </div>
+                  {(trip.location || trip.dateRange) && (
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-3 text-xs text-gray-400">
+                      {trip.location && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin size={12} />
+                          {trip.location}
+                        </span>
+                      )}
+                      {trip.dateRange && (
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays size={12} />
+                          {trip.dateRange}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <Link
+                  href={`/trips/${trip.id}`}
+                  className="flex-shrink-0 text-xs font-semibold text-gray-400 transition-colors hover:text-emerald-600"
+                >
+                  Trip 보기
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1 sm:gap-2 md:grid-cols-4 xl:grid-cols-5">
+                {trip.photos.map((photo) => (
+                  <button
+                    key={`${photo.post.id}-${photo.id}`}
+                    type="button"
+                    onClick={() => openPhoto(photo)}
+                    className="group relative aspect-square overflow-hidden rounded-sm bg-gray-100 sm:rounded-md"
+                    title={photo.post.title}
+                  >
+                    <img
+                      src={photo.thumbnailUrl || photo.url}
+                      alt={photo.post.title}
+                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    <span className="absolute bottom-2 left-2 right-2 line-clamp-1 translate-y-1 text-left text-[11px] font-semibold text-white opacity-0 drop-shadow transition-all group-hover:translate-y-0 group-hover:opacity-100">
+                      {photo.post.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}

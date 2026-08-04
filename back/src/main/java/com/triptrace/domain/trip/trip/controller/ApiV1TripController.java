@@ -5,21 +5,21 @@ import com.triptrace.domain.trip.trip.dto.TripModifyRequest;
 import com.triptrace.domain.trip.trip.dto.TripRepresentativeImageRequest;
 import com.triptrace.domain.trip.trip.dto.TripResponse;
 import com.triptrace.domain.trip.trip.service.TripService;
+import com.triptrace.global.app.Domain;
 import com.triptrace.global.rsData.RsData;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class ApiV1TripController {
+    private static final String SUCCESS_CODE = "200-" + Domain.TRIP.getCode();
+    private static final String CREATED_CODE = "201-" + Domain.TRIP.getCode();
     private final TripService tripService;
 
     @PostMapping("/trips")
@@ -30,7 +30,7 @@ public class ApiV1TripController {
         TripResponse response = tripService.create(memberId, request);
 
         return new RsData<>(
-            "201-1",
+            CREATED_CODE,
             "%d번 여행기가 생성되었습니다.".formatted(response.id()),
             response
         );
@@ -41,7 +41,7 @@ public class ApiV1TripController {
         @AuthenticationPrincipal Long memberId
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "내 여행기 목록 조회에 성공했습니다.",
             tripService.findTripsByOwnerId(memberId)
         );
@@ -53,7 +53,7 @@ public class ApiV1TripController {
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "내 여행기 목록 조회에 성공했습니다.",
             tripService.findTripsByOwnerId(memberId, pageable)
         );
@@ -62,7 +62,7 @@ public class ApiV1TripController {
     @GetMapping("/trips")
     public RsData<List<TripResponse>> getTrips() {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "공개 여행기 목록 조회에 성공했습니다.",
             tripService.findPublicTrips()
         );
@@ -74,7 +74,7 @@ public class ApiV1TripController {
         @AuthenticationPrincipal Long memberId
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "%d번 여행기 조회에 성공했습니다.".formatted(tripId),
             tripService.findAccessibleTrip(tripId, memberId)
         );
@@ -87,7 +87,7 @@ public class ApiV1TripController {
         @RequestBody @Valid TripModifyRequest request
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "%d번 여행기가 수정되었습니다.".formatted(tripId),
             tripService.modifyTrip(tripId, memberId, request)
         );
@@ -101,7 +101,7 @@ public class ApiV1TripController {
         tripService.deleteTrip(tripId, memberId);
 
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "%d번 여행기가 삭제되었습니다.".formatted(tripId)
         );
     }
@@ -113,9 +113,15 @@ public class ApiV1TripController {
         @RequestBody @Valid TripRepresentativeImageRequest request
     ) {
         return new RsData<>(
-            "200-1",
+            SUCCESS_CODE,
             "%d번 여행기 대표이미지가 수정되었습니다.".formatted(tripId),
-            tripService.changeRepresentativeImage(tripId, memberId, request.imageId())
-        );
+            tripService.changeRepresentativeImage(
+                tripId,
+                memberId,
+                request.imageId()));
+    }
+
+    public ApiV1TripController(final TripService tripService) {
+        this.tripService = tripService;
     }
 }
