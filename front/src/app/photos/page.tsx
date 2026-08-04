@@ -302,6 +302,8 @@ export default function PhotosPage() {
     return selectedPost.images.find((image) => image.id === selectedImageId) ?? selectedPost.images[0] ?? null;
   }, [selectedImageId, selectedPost]);
 
+  const orderedPosts = useMemo(() => [...posts].reverse(), [posts]);
+
   const albumTrips = useMemo<AlbumTrip[]>(() => {
     const tripMeta = new Map(trips.map((trip) => [trip.id, trip]));
     const postGroups = new Map<string, AlbumPost[]>();
@@ -312,8 +314,9 @@ export default function PhotosPage() {
 
     return Array.from(postGroups.entries()).map(([tripId, tripPosts]) => {
       const trip = tripMeta.get(tripId);
-      const firstCoverPost = tripPosts.find((post) => getCoverImage(post));
-      const firstLocatedPost = tripPosts.find((post) => getPostPosition(post));
+      const orderedTripPosts = [...tripPosts].reverse();
+      const firstCoverPost = orderedTripPosts.find((post) => getCoverImage(post));
+      const firstLocatedPost = orderedTripPosts.find((post) => getPostPosition(post));
       const position = trip?.representativeLat != null && trip.representativeLng != null
         ? { lat: trip.representativeLat, lng: trip.representativeLng }
         : firstLocatedPost ? getPostPosition(firstLocatedPost) : undefined;
@@ -324,11 +327,11 @@ export default function PhotosPage() {
         location: [trip?.city, trip?.country].filter(Boolean).join(', '),
         dateRange: formatTripDateRange(trip),
         coverImage: trip?.thumbnailUrl || (firstCoverPost ? getCoverImage(firstCoverPost) : ''),
-        posts: tripPosts,
-        photoCount: tripPosts.reduce((sum, post) => sum + post.images.length, 0),
+        posts: orderedTripPosts,
+        photoCount: orderedTripPosts.reduce((sum, post) => sum + post.images.length, 0),
         position,
       };
-    });
+    }).reverse();
   }, [posts, trips]);
 
   const locatedTrips = useMemo(
@@ -340,7 +343,7 @@ export default function PhotosPage() {
     () => albumTrips
       .map((trip) => ({
         ...trip,
-        photos: trip.posts.flatMap((post) => post.images.map((image) => ({ ...image, post }))),
+        photos: trip.posts.flatMap((post) => [...post.images].reverse().map((image) => ({ ...image, post }))),
       }))
       .filter((trip) => trip.photos.length > 0),
     [albumTrips],
@@ -351,8 +354,8 @@ export default function PhotosPage() {
     [albumTrips, selectedTripId],
   );
   const modalPosts = useMemo(
-    () => activeView === 'trips' && selectedTrip ? selectedTrip.posts : posts,
-    [activeView, posts, selectedTrip],
+    () => activeView === 'trips' && selectedTrip ? selectedTrip.posts : orderedPosts,
+    [activeView, orderedPosts, selectedTrip],
   );
   const selectedPostIndex = useMemo(
     () => selectedPost ? modalPosts.findIndex((post) => post.id === selectedPost.id) : -1,
@@ -1032,7 +1035,7 @@ export default function PhotosPage() {
         </div>
       ) : activeView === 'posts' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {posts.map((post) => {
+          {orderedPosts.map((post) => {
             const coverImage = getCoverImage(post);
             return (
               <button
