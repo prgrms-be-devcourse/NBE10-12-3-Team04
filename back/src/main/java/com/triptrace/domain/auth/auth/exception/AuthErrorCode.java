@@ -10,6 +10,7 @@ public enum AuthErrorCode implements ErrorCode {
     VERIFICATION_CODE_EXPIRED("400", "만료된 인증 코드입니다. 인증 코드를 다시 요청해 주세요."),
     VERIFICATION_ATTEMPT_EXCEEDED("429", "인증 시도 횟수를 초과했습니다. 인증 코드를 다시 요청해 주세요."),
     VERIFICATION_ALREADY_VERIFIED("409", "이미 인증이 완료된 이메일입니다."),
+    SIGNUP_EMAIL_NOT_VERIFIED("403", "이메일 인증이 필요합니다."),
     EMAIL_SEND_FAILED("500", "인증 메일 발송에 실패했습니다.");
 
     private final String code;

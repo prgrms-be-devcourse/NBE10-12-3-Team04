@@ -5,6 +5,7 @@ import com.triptrace.domain.auth.auth.dto.SignupRequest;
 import com.triptrace.domain.auth.auth.dto.SignupResponse;
 import com.triptrace.domain.auth.auth.dto.TokenPair;
 import com.triptrace.domain.auth.auth.entity.RefreshToken;
+import com.triptrace.domain.auth.auth.exception.AuthErrorCode;
 import com.triptrace.domain.auth.auth.repository.RefreshTokenRepository;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.service.MemberService;
@@ -27,11 +28,17 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
     @Value("${custom.refreshToken.expirationSeconds}")
     private long refreshTokenExpirationSeconds;
 
-    // 회원가입: 비밀번호를 해시한 뒤 회원 저장을 MemberService에 위임하고 응답을 만든다.
+    // 회원가입: 이메일 인증을 마쳤는지 먼저 확인하고, 비밀번호를 해시한 뒤 회원 저장을 MemberService에 위임한다.
     public SignupResponse signup(SignupRequest request) {
+        // 인증 완료 여부와 인증 후 30분 유효기간까지 EmailVerificationService가 함께 판단한다.
+        if (!emailVerificationService.isEmailVerified(request.email())) {
+            throw new ServiceException(AuthErrorCode.SIGNUP_EMAIL_NOT_VERIFIED);
+        }
+
         String passwordHash = passwordEncoder.encode(request.password());
 
         Member member = memberService.signup(
@@ -98,11 +105,12 @@ public class AuthService {
         return new TokenPair(accessToken, refreshToken);
     }
 
-    public AuthService(final MemberService memberService, final PasswordEncoder passwordEncoder, final JwtProvider jwtProvider, final RefreshTokenRepository refreshTokenRepository, final RefreshTokenService refreshTokenService) {
+    public AuthService(final MemberService memberService, final PasswordEncoder passwordEncoder, final JwtProvider jwtProvider, final RefreshTokenRepository refreshTokenRepository, final RefreshTokenService refreshTokenService, final EmailVerificationService emailVerificationService) {
         this.memberService = memberService;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenService = refreshTokenService;
+        this.emailVerificationService = emailVerificationService;
     }
 }
