@@ -70,7 +70,7 @@ public class ImageUploadUseCase {
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo);
         } catch (IOException | ImageProcessException e) {
             log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
-            return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILEDs");
+            return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILED");
         }
         Image image = ImageMapper.toEntity(owner, trip, post, imageInfo, storedImageFile);
         ImageServiceResponse imageServiceResponse;
