@@ -18,6 +18,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { feedApi, isAuthenticated, likeApi, postApi, userApi } from '@/lib/api';
+import { applyImageFallback, DEFAULT_TRIP_THUMBNAIL } from '@/lib/assets';
 import type { AlbumPost, PopularDestination, Trip, WeeklyTrendingTrip } from '@/types';
 
 type HomeTrayTab = 'mine' | 'popular' | 'recent';
@@ -77,7 +78,7 @@ function formatDashboardDate(value?: string) {
 }
 
 function getAlbumPostCover(post: AlbumPost) {
-  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || '';
+  return post.marker?.representativeImageUrl || post.images[0]?.thumbnailUrl || post.images[0]?.url || DEFAULT_TRIP_THUMBNAIL;
 }
 
 function getTripRange(trip: Trip) {
@@ -178,9 +179,12 @@ function TripVisual({
 
   return (
     <div className={`relative overflow-hidden bg-gradient-to-br ${tone} ${className}`}>
-      {trip?.thumbnailUrl && (
-        <img src={trip.thumbnailUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      )}
+      <img
+        src={trip?.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+        alt=""
+        onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.45),transparent_24%),linear-gradient(to_top,rgba(0,0,0,0.55),transparent_55%)]" />
       <div className="absolute bottom-0 left-0 right-0 h-12 bg-black/20" />
       {trip && showMeta && (
@@ -846,13 +850,12 @@ function PopularDiscoveryGrid({
                 href={`/search?country=${encodeURIComponent(destination.country)}&city=${encodeURIComponent(destination.city)}`}
                 className="group relative h-28 overflow-hidden rounded-lg bg-gray-200 sm:h-[118px]"
               >
-                {destination.thumbnailUrl && (
-                  <img
-                    src={destination.thumbnailUrl}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                )}
+                <img
+                  src={destination.thumbnailUrl || DEFAULT_TRIP_THUMBNAIL}
+                  alt=""
+                  onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                 <div className="absolute inset-x-3 bottom-2.5 text-white">
                   <p className="truncate text-sm font-bold">{destination.city}</p>
@@ -988,7 +991,12 @@ function HomeDashboard({
                   <Link key={post.id} href="/photos" className="group flex gap-3 rounded-lg border border-gray-100 p-2 hover:border-emerald-200 hover:bg-emerald-50/30">
                     <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 sm:w-24">
                       {cover ? (
-                        <img src={cover} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                        <img
+                          src={cover}
+                          alt=""
+                          onError={(event) => applyImageFallback(event, DEFAULT_TRIP_THUMBNAIL)}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
                       ) : (
                         <div className="grid h-full w-full place-items-center">
                           <Camera size={18} className="text-gray-300" />
@@ -1048,7 +1056,7 @@ export default function HomePage() {
   const [myPosts, setMyPosts] = useState<AlbumPost[]>([]);
   const [myTrips, setMyTrips] = useState<Trip[]>([]);
   const [myDashboardLoading, setMyDashboardLoading] = useState(true);
-  const [activeTrayTab, setActiveTrayTab] = useState<HomeTrayTab>('mine');
+  const [activeTrayTab, setActiveTrayTab] = useState<HomeTrayTab>('popular');
   const [sheetHeight, setSheetHeight] = useState(430);
   const dragRef = useRef<{ y: number; height: number } | null>(null);
   const sheetScrollRef = useRef<HTMLDivElement | null>(null);
@@ -1340,9 +1348,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between border-b border-gray-200">
             <div className="flex min-w-0 items-center gap-1">
               {([
-                ['mine', '내 기록'],
                 ['popular', '인기'],
                 ['recent', '최신'],
+                ['mine', '내 기록'],
               ] as Array<[HomeTrayTab, string]>).map(([key, label]) => (
                 <button
                   key={key}
