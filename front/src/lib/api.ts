@@ -238,6 +238,21 @@ function normalizeAutoRecordResult(result: Record<string, unknown>) {
   };
 }
 
+/**
+ * 응답 메시지와 함께 HTTP 상태 코드를 실어 나르는 에러.
+ * 호출부가 상태별로 다르게 반응해야 할 때(예: 회원가입 403 = 이메일 인증 만료) 쓴다.
+ * Error를 상속하므로 message만 보는 기존 호출부는 그대로 동작한다.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 async function request<T = unknown>(path: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -251,7 +266,10 @@ async function request<T = unknown>(path: string, options?: RequestInit): Promis
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error((error as { msg?: string; message?: string }).msg ?? (error as { message?: string }).message ?? res.statusText);
+    throw new ApiError(
+      res.status,
+      (error as { msg?: string; message?: string }).msg ?? (error as { message?: string }).message ?? res.statusText,
+    );
   }
   const json = await res.json();
   if (json && typeof json === 'object' && 'data' in json) {
@@ -275,6 +293,13 @@ function getListData<T>(value: unknown): T[] {
 export const authApi = {
   signup: (body: { email: string; username: string; password: string; profileImageUrl?: string }) =>
     request('/api/v1/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
+
+  // 회원가입 전 이메일 인증. 두 API 모두 로그인 없이 호출한다.
+  sendEmailVerificationCode: (body: { email: string }) =>
+    request('/api/v1/auth/email/verification-code', { method: 'POST', body: JSON.stringify(body) }),
+
+  verifyEmailCode: (body: { email: string; code: string }) =>
+    request('/api/v1/auth/email/verify', { method: 'POST', body: JSON.stringify(body) }),
 
   uploadProfileImage: async (formData: FormData) => {
     const res = await fetch(`${BASE_URL}/api/v1/profile-images`, {
