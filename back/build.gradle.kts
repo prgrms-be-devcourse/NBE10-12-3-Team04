@@ -28,6 +28,9 @@ val jjwtVersion = "0.13.0"
 val extractorVersion = "2.19.0"
 
 dependencies {
+    // Spring Data가 Kotlin 엔티티·DTO의 생성자를 분석할 때 kotlin-reflect를 사용한다.
+    implementation(kotlin("reflect"))
+
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
