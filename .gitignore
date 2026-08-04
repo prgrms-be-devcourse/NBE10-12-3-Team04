@@ -24,6 +24,9 @@ pnpm-debug.log*
 !.env.example
 !.env.local.example
 
+# Google GitHub Actions 인증 중 생성되는 단기 자격 증명 파일
+gha-creds-*.json
+
 # Java / Spring Boot
 *.class
 *.jar

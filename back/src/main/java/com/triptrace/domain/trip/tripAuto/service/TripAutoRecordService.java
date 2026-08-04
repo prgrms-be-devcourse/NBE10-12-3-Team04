@@ -15,6 +15,8 @@ import com.triptrace.domain.trip.tripAuto.dto.TripAutoRecordResponse;
 import com.triptrace.domain.trip.tripAuto.error.TripAutoErrorCode;
 import com.triptrace.global.exception.ServiceException;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
@@ -30,6 +32,7 @@ import static java.util.stream.Collectors.groupingBy;
 
 @Service
 public class TripAutoRecordService {
+    private static final Logger log = LoggerFactory.getLogger(TripAutoRecordService.class);
     // 같은 날짜 안에서도 클러스터 첫 사진과 2시간을 넘게 차이나면 다른 묶음으로 분리
     private static final long CLUSTER_TIME_GAP_MINUTES = 120;
     private static final int MARKER_COORDINATE_SCALE = 7;
@@ -127,7 +130,7 @@ public class TripAutoRecordService {
 
         applyTripAutoRecordDefaults(trip, usableImages, firstMarkerLocation);
 
-        return new TripAutoRecordResponse(
+        TripAutoRecordResponse response = new TripAutoRecordResponse(
             trip.getId(),
             records.size(), //생성된 post카운트
             records.size(), //생성된 marker카운트 -> 자동생성이라 post와 marker의 개수가 같음
@@ -135,6 +138,18 @@ public class TripAutoRecordService {
             images.size() - usableImages.size(),
             records
         );
+
+        log.info(
+            "[TRIP] auto record completed tripId: {}, ownerId: {}, postCount: {}, markerCount: {}, usedImageCount: {}, skippedImageCount: {}",
+            tripId,
+            ownerId,
+            response.generatedPostCount(),
+            response.generatedMarkerCount(),
+            response.usedImageCount(),
+            response.skippedImageCount()
+        );
+
+        return response;
     }
 
     private void applyTripAutoRecordDefaults(

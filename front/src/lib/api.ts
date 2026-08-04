@@ -1,4 +1,12 @@
-import type { PlaceCandidate } from '@/types';
+import type {
+  PlaceCandidate,
+  TripSearchLocation,
+  TripSearchPage,
+  TripSearchResult,
+  WeeklyTrendingTrip,
+  PopularDestination,
+  Trip,
+} from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -90,6 +98,19 @@ function normalizeTrip(trip: Record<string, unknown>) {
     isPublic: typeof trip.isPublic === 'boolean' ? trip.isPublic : !!trip.visibility,
     likeCount: Number(trip.likeCount ?? 0),
     recordCount: Number(trip.recordCount ?? 0),
+  };
+}
+
+function normalizeTripSearchResult(result: Record<string, unknown>): TripSearchResult {
+  return {
+    tripId: String(result.tripId),
+    title: String(result.title ?? '제목 없는 여행'),
+    thumbnailUrl: toAssetUrl(result.thumbnailUrl) || undefined,
+    startDate: toDateInput(result.startDate),
+    endDate: toDateInput(result.endDate),
+    country: typeof result.country === 'string' ? result.country : undefined,
+    city: typeof result.city === 'string' ? result.city : undefined,
+    previewText: typeof result.previewText === 'string' ? result.previewText : undefined,
   };
 }
 
@@ -347,6 +368,65 @@ export const feedApi = {
     const query = params ? `?page=${params.page ?? 0}&size=${params.size ?? 10}` : '';
     const result = await request<unknown>(`/api/v1/feed/trips/recent${query}`);
     return getListData<Record<string, unknown>>(result).map(normalizeTrip);
+  },
+  getWeeklyTrending: async () => {
+    const result = await request<unknown>('/api/v1/feed/trips/trending-weekly');
+    return getListData<Record<string, unknown>>(result).map((item) => ({
+      trip: normalizeTrip(item.trip as Record<string, unknown>) as Trip,
+      weeklyLikeCount: Number(item.weeklyLikeCount ?? 0),
+    })) satisfies WeeklyTrendingTrip[];
+  },
+  getPopularDestinations: async () => {
+    const result = await request<unknown>('/api/v1/feed/trips/popular-destinations');
+    return getListData<Record<string, unknown>>(result).map((item) => ({
+      country: String(item.country),
+      city: String(item.city),
+      tripCount: Number(item.tripCount ?? 0),
+      thumbnailUrl: toAssetUrl(item.thumbnailUrl) || undefined,
+      representativeTripId: item.representativeTripId == null
+        ? undefined
+        : String(item.representativeTripId),
+    })) satisfies PopularDestination[];
+  },
+  search: async (params: {
+    keyword?: string;
+    scope?: 'TRIP_TITLE' | 'POST_TITLE' | 'POST_CONTENT' | 'ALL';
+    sort?: 'LATEST' | 'OLDEST' | 'MOST_LIKED' | 'LEAST_LIKED';
+    country?: string;
+    city?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    const query = new URLSearchParams();
+    if (params.keyword?.trim()) query.set('keyword', params.keyword.trim());
+    if (params.scope) query.set('scope', params.scope);
+    if (params.sort) query.set('sort', params.sort);
+    if (params.country?.trim()) query.set('country', params.country.trim());
+    if (params.city?.trim()) query.set('city', params.city.trim());
+    query.set('page', String(params.page ?? 0));
+    query.set('size', String(params.size ?? 8));
+
+    const result = await request<unknown>(`/api/v1/feed/trips/search?${query}`);
+    const page = result && typeof result === 'object'
+      ? result as Record<string, unknown>
+      : {};
+    const content = getListData<Record<string, unknown>>(result).map(normalizeTripSearchResult);
+
+    return {
+      content,
+      page: Number(page.number ?? params.page ?? 0),
+      totalPages: Number(page.totalPages ?? (content.length ? 1 : 0)),
+      totalElements: Number(page.totalElements ?? content.length),
+      first: typeof page.first === 'boolean' ? page.first : (params.page ?? 0) === 0,
+      last: typeof page.last === 'boolean' ? page.last : true,
+    } satisfies TripSearchPage;
+  },
+  getSearchLocations: async () => {
+    const result = await request<unknown>('/api/v1/feed/trips/search/locations');
+    return getListData<Record<string, unknown>>(result).map((location) => ({
+      country: String(location.country),
+      cities: Array.isArray(location.cities) ? location.cities.map(String) : [],
+    })) satisfies TripSearchLocation[];
   },
 };
 

@@ -9,10 +9,18 @@ spring:
       ddl-auto: update
     show-sql: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
 
 logging:
   file:
-    name: ${LOG_DIR:/app/log}/app.log
+    name: ${LOG_DIR:/app/logs}/app.log
   level:
     org.hibernate.orm.jdbc.bind: WARN
     org.hibernate.orm.jdbc.extract: WARN

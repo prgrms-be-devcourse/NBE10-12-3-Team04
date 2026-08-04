@@ -2,6 +2,7 @@ package com.triptrace.domain.image.image.processing;
 
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
+import com.triptrace.global.app.Domain;
 import org.springframework.stereotype.Component;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -28,7 +29,7 @@ public class ImageProcessor {
             }
             return bufferedImage;
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             throw new ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
         }
     }
@@ -83,7 +84,7 @@ public class ImageProcessor {
             }
             return bytes.toByteArray();
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             throw new ImageProcessException(ImageErrorCode.SAVE_ERROR);
         }
     }

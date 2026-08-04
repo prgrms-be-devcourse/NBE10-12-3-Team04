@@ -3,6 +3,8 @@ package com.triptrace.domain.image.image.application;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.triptrace.global.app.Domain;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +19,7 @@ import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
 import com.triptrace.domain.image.image.service.ImageService;
 import com.triptrace.domain.image.image.storage.ImageFileStorage;
-import com.triptrace.domain.image.image.storage.StoredImageFile;
+import com.triptrace.domain.image.image.dto.response.storage.StoredImageFile;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.service.MemberService;
 import com.triptrace.domain.post.post.entity.Post;
@@ -42,7 +44,7 @@ public class ImageUploadUseCase {
             byte[] bytes = imageFile.getBytes();
             return imageMetadataExtractor.extract(bytes);
         } catch (IOException | ImageProcessException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.getName(),e.getMessage());
             return new ImageInfo();
         }
     }
@@ -55,6 +57,7 @@ public class ImageUploadUseCase {
         if (imageFile == null || imageFile.isEmpty()) {
             return ImageMapper.toUploadResponse(null, null, "EMPTY_FILE");
         }
+        log.info("[{}] upload start owner: {}, trip: {}", Domain.IMAGE.getName(), owner.getId(), trip.getId());
         String fileName = imageFile.getOriginalFilename();
         SavedFileInfo savedFileInfo;
         StoredImageFile storedImageFile;
@@ -67,7 +70,7 @@ public class ImageUploadUseCase {
             }
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo);
         } catch (IOException | ImageProcessException e) {
-            log.warn(e.getMessage());
+            log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILED");
         }
         Image image = ImageMapper.toEntity(owner, trip, post, imageInfo, storedImageFile);
@@ -76,7 +79,7 @@ public class ImageUploadUseCase {
             imageServiceResponse = imageService.create(image);
         } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
             imageFileStorage.cleanUp(savedFileInfo);
-            log.warn(e.getMessage());
+            log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.getName(), e.getMessage());
             return ImageMapper.toUploadResponse(fileName, null, "SERVER SAVE FAILED");
         }
         return ImageMapper.toUploadResponse(fileName, imageServiceResponse);
