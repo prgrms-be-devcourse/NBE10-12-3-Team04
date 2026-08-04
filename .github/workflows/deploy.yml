@@ -131,7 +131,6 @@ jobs:
             fi
           done
 
-          printf 'NEXT_PUBLIC_APP_VERSION=%s\n' "${{ needs.version.outputs.version }}" >> "${secret_file}"
           echo "secret_file=${secret_file}" >> "${GITHUB_OUTPUT}"
           trap - EXIT
 
@@ -174,6 +173,8 @@ jobs:
           # Secret 파일은 빌드 중에만 mount되며 Docker 이미지 레이어에는 저장되지 않는다.
           secret-files: |
             frontend_build_env=${{ steps.frontend-build-env.outputs.secret_file }}
+          build-args: |
+            APP_VERSION=${{ needs.version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -236,10 +237,11 @@ jobs:
             --project-directory /opt/triptrace \
             --env-file /opt/triptrace/.env \
             -f /opt/triptrace/docker-compose.prod.yml pull backend frontend
+          # Caddyfile도 함께 배포하므로 Caddy를 재생성해 변경된 라우팅 규칙을 즉시 읽힌다.
           sudo -n env BACKEND_VERSION="${backend_version}" FRONTEND_VERSION="${frontend_version}" docker compose \
             --project-directory /opt/triptrace \
             --env-file /opt/triptrace/.env \
-            -f /opt/triptrace/docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
+            -f /opt/triptrace/docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend caddy
           REMOTE
           chmod 700 "${RUNNER_TEMP}/triptrace-deploy.sh"
           gcloud compute scp "${RUNNER_TEMP}/triptrace-deploy.sh" "${GCP_DEPLOY_INSTANCE}:~/triptrace-deploy-staging/" --project "${GCP_PROJECT_ID}" --zone "${GCP_DEPLOY_ZONE}" --tunnel-through-iap
