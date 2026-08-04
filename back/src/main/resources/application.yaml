@@ -1,6 +1,9 @@
 spring:
   application:
     name: triptrace
+  config:
+    # 로컬 전용 비밀 설정. git에 커밋되지 않으므로 optional 로 둔다.
+    import: optional:classpath:application-secret.yaml
   profiles:
     active: dev
   output:
