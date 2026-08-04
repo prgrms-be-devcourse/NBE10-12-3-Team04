@@ -34,6 +34,9 @@ replay_pid*
 application-local.yml
 application-local.yaml
 application-local.properties
+application-secret.yml
+application-secret.yaml
+application-secret.properties
 
 # Gradle
 .gradle/
