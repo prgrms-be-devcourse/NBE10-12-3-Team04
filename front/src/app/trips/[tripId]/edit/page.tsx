@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { GoogleMap, Marker as GoogleMarker, useJsApiLoader } from '@react-google-maps/api';
 import {
   Plus, Trash2, Save, Eye, ChevronDown,
@@ -929,6 +928,23 @@ export default function TripEditPage() {
     window.setTimeout(() => setToast(null), 2400);
   };
 
+  const handleOpenPreview = () => {
+    const width = Math.min(1200, window.screen.availWidth);
+    const height = Math.min(900, window.screen.availHeight);
+    const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
+    const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
+    const previewWindow = window.open(
+      `/trips/${tripId}?preview=true`,
+      `trip-preview-${tripId}`,
+      `popup=yes,width=${width},height=${height},left=${Math.round(left)},top=${Math.round(top)},resizable=yes,scrollbars=yes`,
+    );
+
+    if (previewWindow) {
+      previewWindow.opener = null;
+      previewWindow.focus();
+    }
+  };
+
   const startMarkerPanelResize = (event: React.MouseEvent<HTMLDivElement>) => {
     markerResizeRef.current = { x: event.clientX, width: markerPanelWidth };
     window.addEventListener('mousemove', moveMarkerPanelResize);
@@ -1285,13 +1301,14 @@ export default function TripEditPage() {
           </div>
         </div>
           <div className="flex flex-shrink-0 items-center justify-end gap-2">
-            <Link
-              href={`/trips/${tripId}`}
+            <button
+              type="button"
+              onClick={handleOpenPreview}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 md:h-auto md:w-auto md:gap-1 md:px-3 md:py-1.5 md:text-sm"
               title="미리보기"
             >
               <Eye size={14} /> <span className="hidden md:inline">미리보기</span>
-            </Link>
+            </button>
             <button
               onClick={handleDeleteTrip}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-500 transition-colors hover:bg-red-50 md:h-auto md:w-auto md:gap-1 md:px-3 md:py-1.5 md:text-sm"

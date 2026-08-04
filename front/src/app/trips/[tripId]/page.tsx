@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { GoogleMap, Marker, OverlayView, Polyline, useJsApiLoader } from '@react-google-maps/api';
 import { ArrowLeft, Heart, MapPin, Calendar, Globe, Lock, Pencil, Maximize2, Minimize2, Trash2, X } from 'lucide-react';
@@ -596,6 +596,8 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
 export default function TripDetailPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPreview = searchParams.get('preview') === 'true';
 
   const [trip, setTrip] = useState<Trip | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -799,7 +801,11 @@ export default function TripDetailPage() {
   );
 
   return (
-    <div className="relative flex h-[calc(100dvh_-_56px_-_72px_-_env(safe-area-inset-bottom))] flex-col overflow-hidden bg-gray-50 md:h-[calc(100vh_-_64px)]">
+    <div className={`relative flex flex-col overflow-hidden bg-gray-50 ${
+      isPreview
+        ? 'h-dvh'
+        : 'h-[calc(100dvh_-_56px_-_72px_-_env(safe-area-inset-bottom))] md:h-[calc(100vh_-_64px)]'
+    }`}>
       {/* 지도 (배경) */}
       <div className="absolute inset-0 z-0">
         <TripMap
@@ -815,9 +821,11 @@ export default function TripDetailPage() {
 
       {/* 상단 네비 */}
       <div className="absolute left-3 right-3 top-4 z-[80] flex items-start justify-between gap-2 sm:left-5 sm:right-5 sm:top-6">
-        <button onClick={() => router.back()} className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors">
-          <ArrowLeft size={16} />
-        </button>
+        {isPreview ? <span /> : (
+          <button onClick={() => router.back()} className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors">
+            <ArrowLeft size={16} />
+          </button>
+        )}
         <div className="flex flex-wrap items-center justify-end gap-2">
           <button
             onClick={toggleMapExpanded}
@@ -826,7 +834,7 @@ export default function TripDetailPage() {
             {mapExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
             {mapExpanded ? '지도 줄이기' : '지도 펼치기'}
           </button>
-          {isOwner && (
+          {isOwner && !isPreview && (
             <>
               <Link href={`/trips/${tripId}/edit`} className="flex items-center gap-1 rounded-full bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow transition-colors hover:bg-gray-50 sm:px-3">
                 <Pencil size={12} /> <span className="hidden sm:inline">수정/편집</span>
