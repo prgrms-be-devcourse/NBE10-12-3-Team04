@@ -49,12 +49,8 @@ function GoogleCallback() {
       savedState: takeOAuthState(),
     })
       .then((data) => {
-        if (data.status === 'PENDING_PROFILE') {
-          // TODO: 온보딩 페이지 구현 후 해당 경로로 이동시킨다.
-          console.log('추가 정보 입력이 필요합니다 (온보딩 페이지는 추후 구현)');
-        }
-
-        router.replace('/');
+        // 소모된 인가 코드로 재시도하지 않도록 콜백 URL은 히스토리에 남기지 않는다.
+        router.replace(data.status === 'PENDING_PROFILE' ? '/signup/complete' : '/');
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : '구글 로그인에 실패했습니다.');

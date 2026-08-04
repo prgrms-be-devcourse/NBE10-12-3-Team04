@@ -315,6 +315,14 @@ export const userApi = {
     const user = await request<Record<string, unknown>>('/api/v1/users/me');
     return normalizeUser(user);
   },
+  // 온보딩 완료(2차 저장): PENDING_PROFILE 회원이 닉네임을 확정하면 ACTIVE로 전환된다.
+  completeProfile: async (body: { username: string }) => {
+    const user = await request<Record<string, unknown>>('/api/v1/users/me/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+    return normalizeUser(user);
+  },
   updateMe: async (body: { username?: string; intro?: string; profileImageUrl?: string }) => {
     const user = await request<Record<string, unknown>>('/api/v1/users/me', {
       method: 'PATCH',
