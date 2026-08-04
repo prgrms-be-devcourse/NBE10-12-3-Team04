@@ -3,7 +3,9 @@
     @backend {
         path /api/*
         path /login/*
-        path /images/*
+        path /images/serving/*
+        path /images/thumbnail/*
+        path /images/profile/*
     }
     handle @backend {
         reverse_proxy {$BACKEND_UPSTREAM:backend:8080}
