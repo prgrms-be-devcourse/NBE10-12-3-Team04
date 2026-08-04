@@ -571,12 +571,6 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
       <div className="min-w-0 flex-1 pb-2">
         <p className="text-xs text-gray-400 mb-0.5">{post.time ?? '시간 미정'}</p>
         <p className="font-semibold text-gray-900 text-sm">{post.title}</p>
-        <p className="text-xs text-gray-500 mt-1 line-clamp-3">{content}</p>
-        {post.marker && (
-          <p className="text-xs text-gray-400 mt-1 flex items-center gap-0.5">
-            <MapPin size={10} /> {post.marker.placeName}
-          </p>
-        )}
         {/* 이미지 그리드 */}
         {images.length > 0 && (
           <div className="mt-2 flex h-36 gap-2 overflow-x-auto pb-1 sm:h-44">
@@ -586,6 +580,12 @@ function TimelineItem({ post, active }: { post: Post; active: boolean }) {
               ) : null,
             )}
           </div>
+        )}
+        <p className="text-xs text-gray-500 mt-2 line-clamp-3">{content}</p>
+        {post.marker && (
+          <p className="text-xs text-gray-400 mt-1 flex items-center gap-0.5">
+            <MapPin size={10} /> {post.marker.placeName}
+          </p>
         )}
       </div>
     </div>
