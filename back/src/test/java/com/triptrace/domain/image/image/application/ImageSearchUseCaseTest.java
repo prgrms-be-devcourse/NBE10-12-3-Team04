@@ -28,9 +28,9 @@ class ImageSearchUseCaseTest {
         List<ImageResponse> responses = useCase.getImages(1L);
 
         assertThat(responses)
-            .extracting(ImageResponse::id)
+            .extracting(ImageResponse::getId)
             .containsExactly(10L, 20L);
-        assertThat(responses.getFirst().originalUrl()).isEqualTo("/images/10.jpg");
+        assertThat(responses.getFirst().getOriginalUrl()).isEqualTo("/images/10.jpg");
         verify(imageService).findWithOwner(1L);
     }
 

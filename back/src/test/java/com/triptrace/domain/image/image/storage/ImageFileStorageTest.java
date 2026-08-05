@@ -69,9 +69,9 @@ public class ImageFileStorageTest {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
         assertThat(savedFileInfo).isNotNull();
-        assertThat(savedFileInfo.servingUrl()).startsWith("/images/serving/");
-        assertThat(savedFileInfo.thumbnailUrl()).startsWith("/images/thumbnail/");
-        assertThat(savedFileInfo.size()).isGreaterThan(0);
+        assertThat(savedFileInfo.getServingUrl()).startsWith("/images/serving/");
+        assertThat(savedFileInfo.getThumbnailUrl()).startsWith("/images/thumbnail/");
+        assertThat(savedFileInfo.getSize()).isGreaterThan(0);
     }
 
     @Test
@@ -79,8 +79,8 @@ public class ImageFileStorageTest {
     void test02() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
-        assertThat(Files.exists(diskPath(savedFileInfo.servingUrl()))).isTrue();
-        assertThat(Files.exists(diskPath(savedFileInfo.thumbnailUrl()))).isTrue();
+        assertThat(Files.exists(diskPath(savedFileInfo.getServingUrl()))).isTrue();
+        assertThat(Files.exists(diskPath(savedFileInfo.getThumbnailUrl()))).isTrue();
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ImageFileStorageTest {
     void test03() throws IOException {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
-        BufferedImage thumbnail = ImageIO.read(diskPath(savedFileInfo.thumbnailUrl()).toFile());
+        BufferedImage thumbnail = ImageIO.read(diskPath(savedFileInfo.getThumbnailUrl()).toFile());
 
         assertThat(thumbnail.getWidth()).isLessThanOrEqualTo(1024);
         assertThat(thumbnail.getHeight()).isLessThanOrEqualTo(1024);
@@ -100,8 +100,8 @@ public class ImageFileStorageTest {
         SavedFileInfo normal = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
         SavedFileInfo rotated = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.ROTATE_90_CW);
 
-        BufferedImage normalImage = ImageIO.read(diskPath(normal.servingUrl()).toFile());
-        BufferedImage rotatedImage = ImageIO.read(diskPath(rotated.servingUrl()).toFile());
+        BufferedImage normalImage = ImageIO.read(diskPath(normal.getServingUrl()).toFile());
+        BufferedImage rotatedImage = ImageIO.read(diskPath(rotated.getServingUrl()).toFile());
 
         assertThat(rotatedImage.getWidth()).isEqualTo(normalImage.getHeight());
         assertThat(rotatedImage.getHeight()).isEqualTo(normalImage.getWidth());
@@ -120,10 +120,10 @@ public class ImageFileStorageTest {
     @DisplayName("이미지를 삭제하면 디스크에서 파일이 사라진다")
     void test06() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
-        Path originFile = diskPath(savedFileInfo.servingUrl());
+        Path originFile = diskPath(savedFileInfo.getServingUrl());
         assertThat(Files.exists(originFile)).isTrue();
 
-        imageFileStorage.deleteImage(savedFileInfo.servingUrl());
+        imageFileStorage.deleteImage(savedFileInfo.getServingUrl());
 
         assertThat(Files.exists(originFile)).isFalse();
     }
@@ -236,8 +236,8 @@ public class ImageFileStorageTest {
     @DisplayName("원본과 섬네일 파일을 함께 정리한다")
     void cleanUp_deletesOriginAndThumbnail() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
-        Path originFile = diskPath(savedFileInfo.servingUrl());
-        Path thumbnailFile = diskPath(savedFileInfo.thumbnailUrl());
+        Path originFile = diskPath(savedFileInfo.getServingUrl());
+        Path thumbnailFile = diskPath(savedFileInfo.getThumbnailUrl());
 
         imageFileStorage.cleanUp(savedFileInfo);
 

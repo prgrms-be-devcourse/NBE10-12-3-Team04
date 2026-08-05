@@ -67,10 +67,10 @@ class ImageMapperTest {
         assertThat(image.getOwner()).isSameAs(owner);
         assertThat(image.getTrip()).isSameAs(trip);
         assertThat(image.getPost()).isNull();
-        assertThat(image.getOriginalFileUrl()).isEqualTo(storedImageFile.imageFileUrl());
-        assertThat(image.getThumbnailUrl()).isEqualTo(storedImageFile.thumbnailImageFileUrl());
-        assertThat(image.getFileSize()).isEqualTo(storedImageFile.fileSize());
-        assertThat(image.getMimeType()).isEqualTo(storedImageFile.mimeType());
+        assertThat(image.getOriginalFileUrl()).isEqualTo(storedImageFile.getImageFileUrl());
+        assertThat(image.getThumbnailUrl()).isEqualTo(storedImageFile.getThumbnailImageFileUrl());
+        assertThat(image.getFileSize()).isEqualTo(storedImageFile.getFileSize());
+        assertThat(image.getMimeType()).isEqualTo(storedImageFile.getMimeType());
         assertThat(image.getGpsLat()).isEqualByComparingTo(BigDecimal.valueOf(35.011636D));
         assertThat(image.getGpsLng()).isEqualByComparingTo(BigDecimal.valueOf(135.768029D));
         assertThat(image.getCapturedAt()).isEqualTo(LocalDateTime.of(2024, 4, 1, 10, 30));
@@ -121,11 +121,11 @@ class ImageMapperTest {
 
         ImageResponse response = ImageMapper.toImageResponse(serviceResponse);
 
-        assertThat(response.id()).isEqualTo(1L);
-        assertThat(response.ownerId()).isEqualTo(2L);
-        assertThat(response.tripId()).isEqualTo(3L);
-        assertThat(response.postId()).isEqualTo(4L);
-        assertThat(response.originalUrl()).isEqualTo("https://example.com/images/kyoto.jpg");
-        assertThat(response.thumbnailUrl()).isEqualTo("https://example.com/images/kyoto-thumb.jpg");
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getOwnerId()).isEqualTo(2L);
+        assertThat(response.getTripId()).isEqualTo(3L);
+        assertThat(response.getPostId()).isEqualTo(4L);
+        assertThat(response.getOriginalUrl()).isEqualTo("https://example.com/images/kyoto.jpg");
+        assertThat(response.getThumbnailUrl()).isEqualTo("https://example.com/images/kyoto-thumb.jpg");
     }
 }

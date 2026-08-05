@@ -153,12 +153,12 @@ public class ImageServiceUseCaseTest {
         List<ImageUploadResponse> res = imageUploadUseCase.uploadImages(owner.getId(), trip.getId(), files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
-        ImageServiceResponse imageServiceResponse = imageService.findById(res.getFirst().id());
+        ImageServiceResponse imageServiceResponse = imageService.findById(res.getFirst().getId());
         assertThat(imageServiceResponse).isNotNull();
-        assertThat(imageServiceResponse.originalFileUrl()).startsWith("/images/serving/");
-        assertThat(imageServiceResponse.thumbnailUrl()).startsWith("/images/thumbnail/");
+        assertThat(imageServiceResponse.getOriginalFileUrl()).startsWith("/images/serving/");
+        assertThat(imageServiceResponse.getThumbnailUrl()).startsWith("/images/thumbnail/");
     }
 
     @Test
@@ -168,10 +168,10 @@ public class ImageServiceUseCaseTest {
         List<ImageUploadResponse> uploadImages = imageUploadUseCase.uploadImages(owner.getId(), trip.getId(),
             post.getId(), files);
         imageDeleteUseCase.deleteById(owner.getId(), trip.getId(),
-            post.getId(), uploadImages.getFirst().id());
+            post.getId(), uploadImages.getFirst().getId());
         ImageUploadResponse uploaded = uploadImages.stream().findFirst().get();
 
-        assertThatThrownBy(() -> imageService.findById(uploaded.id())).isInstanceOf(ServiceException.class);
+        assertThatThrownBy(() -> imageService.findById(uploaded.getId())).isInstanceOf(ServiceException.class);
     }
 
     @Test
@@ -182,14 +182,14 @@ public class ImageServiceUseCaseTest {
             files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
-        ImageServiceResponse imageServiceResponse = imageService.findById(res.getFirst().id());
+        ImageServiceResponse imageServiceResponse = imageService.findById(res.getFirst().getId());
         assertThat(imageServiceResponse).isNotNull();
-        assertThat(imageServiceResponse.originalFileUrl()).startsWith("/images/serving/");
-        assertThat(imageServiceResponse.thumbnailUrl()).startsWith("/images/thumbnail/");
+        assertThat(imageServiceResponse.getOriginalFileUrl()).startsWith("/images/serving/");
+        assertThat(imageServiceResponse.getThumbnailUrl()).startsWith("/images/thumbnail/");
 
-        Image image = imageService.getById(res.getFirst().id());
+        Image image = imageService.getById(res.getFirst().getId());
         assertThat(image).isNotNull();
         assertThat(image.getPost().getId()).isEqualTo(post.getId());
     }
@@ -201,11 +201,11 @@ public class ImageServiceUseCaseTest {
         List<ImageUploadResponse> res = imageUploadUseCase.uploadImages(owner.getId(), trip.getId(), files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
-        imageDeleteUseCase.deleteById(owner.getId(), trip.getId(), res.getFirst().id());
+        imageDeleteUseCase.deleteById(owner.getId(), trip.getId(), res.getFirst().getId());
 
-        assertThatThrownBy(() -> imageService.findById(res.getFirst().id())).isInstanceOf(ServiceException.class);
+        assertThatThrownBy(() -> imageService.findById(res.getFirst().getId())).isInstanceOf(ServiceException.class);
     }
 
     @Test
@@ -216,10 +216,10 @@ public class ImageServiceUseCaseTest {
             files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
         assertThatThrownBy(() -> imageDeleteUseCase.deleteById(owner.getId(), trip.getId(), otherPost.getId(),
-            res.getFirst().id())).isInstanceOf(
+            res.getFirst().getId())).isInstanceOf(
             ServiceException.class);
     }
 
@@ -231,11 +231,11 @@ public class ImageServiceUseCaseTest {
             .uploadImages(owner.getId(), trip.getId(), post.getId(), files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
         assertThatThrownBy(() ->
             imageDeleteUseCase
-                .deleteByUrl(owner.getId(), trip.getId(), otherPost.getId(), res.getFirst().originalFileUrl()))
+                .deleteByUrl(owner.getId(), trip.getId(), otherPost.getId(), res.getFirst().getOriginalFileUrl()))
             .isInstanceOf(ServiceException.class);
     }
 
@@ -247,12 +247,12 @@ public class ImageServiceUseCaseTest {
             .uploadImages(owner.getId(), trip.getId(), post.getId(), files);
 
         assertThat(res.size()).isEqualTo(1);
-        assertThat(res.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
 
         assertThat(
             imageModifyUseCase
-                .modifyById(owner.getId(), trip.getId(), otherPost.getId(), res.getFirst().id())
-                .postId()).isNotEqualTo(post.getId());
+                .modifyById(owner.getId(), trip.getId(), otherPost.getId(), res.getFirst().getId())
+                .getPostId()).isNotEqualTo(post.getId());
     }
 
     @Test
@@ -276,8 +276,8 @@ public class ImageServiceUseCaseTest {
         List<ImageUploadResponse> res = imageUploadUseCase.uploadImages(owner.getId(), trip.getId(), files);
 
         assertThat(res.size()).isEqualTo(2);
-        assertThat(res.get(0).uploadStatus()).isEqualTo(UploadStatus.FAILED);
-        assertThat(res.get(0).message()).isEqualTo("EMPTY_FILE");
-        assertThat(res.get(1).uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(res.get(0).getUploadStatus()).isEqualTo(UploadStatus.FAILED);
+        assertThat(res.get(0).getMessage()).isEqualTo("EMPTY_FILE");
+        assertThat(res.get(1).getUploadStatus()).isEqualTo(UploadStatus.STORED);
     }
 }
