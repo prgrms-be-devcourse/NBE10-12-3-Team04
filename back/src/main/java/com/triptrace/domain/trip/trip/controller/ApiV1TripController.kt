@@ -118,7 +118,7 @@ class ApiV1TripController(private val tripService: TripService) {
     }
 
     companion object {
-        private val SUCCESS_CODE = "200-" + Domain.TRIP.getCode()
-        private val CREATED_CODE = "201-" + Domain.TRIP.getCode()
+        private val SUCCESS_CODE = "200-" + Domain.TRIP.code
+        private val CREATED_CODE = "201-" + Domain.TRIP.code
     }
 }

@@ -94,6 +94,6 @@ class ApiV1TripFeedController(
         )
 
     companion object {
-        private val SUCCESS_CODE = "200-" + Domain.TRIP.getCode()
+        private val SUCCESS_CODE = "200-" + Domain.TRIP.code
     }
 }

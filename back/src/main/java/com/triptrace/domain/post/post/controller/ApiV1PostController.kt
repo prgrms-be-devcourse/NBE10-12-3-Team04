@@ -89,7 +89,7 @@ class ApiV1PostController(private val postService: PostService) {
     }
 
     companion object {
-        private val SUCCESS_CODE = "200-" + Domain.POST.getCode()
-        private val CREATED_CODE = "201-" + Domain.POST.getCode()
+        private val SUCCESS_CODE = "200-" + Domain.POST.code
+        private val CREATED_CODE = "201-" + Domain.POST.code
     }
 }

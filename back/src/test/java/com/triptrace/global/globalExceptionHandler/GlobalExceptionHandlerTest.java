@@ -51,7 +51,9 @@ class GlobalExceptionHandlerTest {
         mvc.perform(post("/test/service-exception"))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.resultCode").value("409-05"))
-            .andExpect(jsonPath("$.msg").value("이미 존재합니다."));
+            .andExpect(jsonPath("$.msg").value("이미 존재합니다."))
+            // statusCode는 @JsonIgnore 대상이라 응답 본문에 나가면 안 된다.
+            .andExpect(jsonPath("$.statusCode").doesNotExist());
     }
 
     @Test
