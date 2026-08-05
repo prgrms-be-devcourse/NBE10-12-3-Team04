@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "2.3.20" //java kotlin 함께 컴파일
     kotlin("plugin.spring") version "2.3.20" // final 제약을 spring 프록시와 호환
     kotlin("plugin.jpa") version "2.3.20" // jpa entity용 no-arg생성자와 open 처리
+    kotlin("plugin.allopen") version "2.3.20" // @Entity 등 JPA 애노테이션에도 open 적용
 
     id("com.diffplug.spotless") version "8.8.0"
     id("org.springframework.boot") version "4.1.0"
@@ -26,6 +27,16 @@ repositories {
 
 val jjwtVersion = "0.13.0"
 val extractorVersion = "2.19.0"
+val mockkVersion = "1.14.7"
+val springMockkVersion = "5.0.1" // spring-test 7.x 기준. Spring Boot 4와 맞는 라인이다.
+
+// kotlin-jpa(noarg)는 기본 생성자만 만들어 준다. 엔티티가 final이면 Hibernate가 지연 로딩 프록시를
+// 만들지 못하므로, @Entity 계열에도 open을 적용해 LAZY 매핑이 실제로 동작하게 한다.
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+}
 
 dependencies {
     // Spring Data가 Kotlin 엔티티·DTO의 생성자를 분석할 때 kotlin-reflect를 사용한다.
@@ -67,6 +78,10 @@ dependencies {
 
     // kotlin Test
     testImplementation(kotlin("test"))
+    // Kotlin 테스트용 모킹. 기존 Java 테스트는 Mockito를 그대로 쓰므로 당분간 둘을 함께 둔다.
+    // 마이그레이션이 끝나 Mockito 사용처가 사라지면 mockito-core를 제거한다.
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
