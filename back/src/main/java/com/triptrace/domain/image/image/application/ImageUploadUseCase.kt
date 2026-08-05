@@ -1,7 +1,6 @@
 package com.triptrace.domain.image.image.application
 
 import com.triptrace.domain.image.image.dto.response.ImageUploadResponse
-import com.triptrace.domain.image.image.dto.response.storage.StoredImageFile
 import com.triptrace.domain.image.image.error.ImageErrorCode
 import com.triptrace.domain.image.image.exception.ImageProcessException
 import com.triptrace.domain.image.image.mapper.ImageMapper
@@ -58,15 +57,11 @@ class ImageUploadUseCase(
         log.info("[{}] upload start owner: {}, trip: {}", Domain.IMAGE.name, owner.id, trip.id)
         val fileName = imageFile.originalFilename
         val imageInfo = extract(imageFile)
-        val savedFileInfo: SavedFileInfo
-        val storedImageFile: StoredImageFile
-
-        try {
-            savedFileInfo = imageFileStorage.saveImageWithThumbnail(
+        val savedFileInfo = try {
+            imageFileStorage.saveImageWithThumbnail(
                 imageFile.bytes,
                 imageInfo.orientation,
             )
-            storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo)
         } catch (e: IOException) {
             log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.name, e.message)
             return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILED")
@@ -74,6 +69,7 @@ class ImageUploadUseCase(
             log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.name, e.message)
             return ImageMapper.toUploadResponse(fileName, null, "FILE SAVE FAILED")
         }
+        val storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo)
 
         val image = ImageMapper.toEntity(owner, trip, post, imageInfo, storedImageFile)
         val imageServiceResponse = try {

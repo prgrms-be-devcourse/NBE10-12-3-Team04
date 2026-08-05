@@ -1,9 +1,13 @@
 package com.triptrace.domain.image.image.application
 
+import com.triptrace.domain.image.image.dto.response.ImageServiceResponse
 import com.triptrace.domain.image.image.service.ImageService
 import com.triptrace.domain.image.image.storage.ImageFileStorage
+import com.triptrace.domain.member.member.entity.Member
 import com.triptrace.domain.member.member.service.MemberService
+import com.triptrace.domain.post.post.entity.Post
 import com.triptrace.domain.post.post.service.PostService
+import com.triptrace.domain.trip.trip.entity.Trip
 import com.triptrace.domain.trip.trip.service.TripService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,8 +45,7 @@ class ImageDeleteUseCase(
         val owner = memberService.findById(ownerId)
         val trip = tripService.findOwnedTrip(tripId, owner.id)
         val image = imageService.delete(owner, trip, imageId)
-        imageFileStorage.deleteImage(image.originalFileUrl)
-        imageFileStorage.deleteImage(image.thumbnailUrl)
+        deleteFiles(image)
     }
 
     private fun delete(
@@ -50,16 +53,20 @@ class ImageDeleteUseCase(
         tripId: Long,
         postId: Long,
         action: (
-            com.triptrace.domain.member.member.entity.Member,
-            com.triptrace.domain.trip.trip.entity.Trip,
-            com.triptrace.domain.post.post.entity.Post,
-        ) -> com.triptrace.domain.image.image.dto.response.ImageServiceResponse,
+            Member,
+            Trip,
+            Post,
+        ) -> ImageServiceResponse,
     ) {
         val owner = memberService.findById(ownerId)
         val trip = tripService.findOwnedTrip(tripId, owner.id)
         val post = postService.getPost(trip, postId)
         val image = action(owner, trip, post)
-        imageFileStorage.deleteImage(image.originalFileUrl)
-        imageFileStorage.deleteImage(image.thumbnailUrl)
+        deleteFiles(image)
+    }
+
+    private fun deleteFiles(image: ImageServiceResponse) {
+        image.originalFileUrl?.let(imageFileStorage::deleteImage)
+        image.thumbnailUrl?.let(imageFileStorage::deleteImage)
     }
 }
