@@ -107,8 +107,10 @@ class AuthService(
     }
 
     // 재발급(Rotation): RT 검증 → 탈취/만료 확인 → 기존 RT 폐기 → 새 AT/RT 발급.
+    // 컨트롤러가 @CookieValue(required = false)로 받은 값을 그대로 넘기므로 쿠키가 없으면 null이 들어온다.
+    // null을 막지 않고 조회 실패로 흘려보내야 NPE(500)가 아니라 401로 응답한다.
     @Transactional
-    fun reissue(refreshToken: String): TokenPair {
+    fun reissue(refreshToken: String?): TokenPair {
         val storedToken = refreshTokenRepository.findByToken(refreshToken)
             .orElseThrow { ServiceException("401-1", "유효하지 않은 리프레시 토큰입니다.") }
 
@@ -131,8 +133,9 @@ class AuthService(
     }
 
     // 로그아웃: 전달받은 RT를 폐기 표시한다. (같은 트랜잭션의 dirty checking으로 UPDATE 반영)
+    // reissue와 같은 이유로 null을 허용한다.
     @Transactional
-    fun logout(refreshToken: String) {
+    fun logout(refreshToken: String?) {
         val storedToken = refreshTokenRepository.findByToken(refreshToken)
             .orElseThrow { ServiceException("401-1", "유효하지 않은 리프레시 토큰입니다.") }
 
