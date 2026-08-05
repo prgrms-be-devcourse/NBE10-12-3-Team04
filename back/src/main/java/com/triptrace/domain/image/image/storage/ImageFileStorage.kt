@@ -28,7 +28,7 @@ class ImageFileStorage(
     private val thumbnailHeight = properties.thumbnail.height
     private val jpegExt = properties.ext.jpg
 
-    fun saveProfileImage(image: ByteArray?): String {
+    fun saveProfileImage(image: ByteArray): String {
         val stored = saveImage(
             imageProcessor.read(image),
             resolveUploadPath(profileImagesPath),
@@ -68,7 +68,7 @@ class ImageFileStorage(
         )
     }
 
-    fun deleteImage(imagePath: String?): Boolean {
+    fun deleteImage(imagePath: String): Boolean {
         try {
             fileStorage.delete(resolveStoragePath(imagePath))
         } catch (exception: IOException) {
@@ -139,8 +139,7 @@ class ImageFileStorage(
     private fun resolveUploadPath(path: String): String =
         Path.of(uploadDir, path.replaceFirst("^/", "")).toString()
 
-    private fun resolveStoragePath(imagePath: String?) =
-        resolveUploadPath(requireNotNull(imagePath) { "이미지 경로는 null일 수 없습니다." })
+    private fun resolveStoragePath(imagePath: String) = resolveUploadPath(imagePath)
 
     private companion object {
         private val log = LoggerFactory.getLogger(ImageFileStorage::class.java)
