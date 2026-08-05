@@ -27,8 +27,8 @@ data class TripResponse(
         trip.owner.getId(),
         AuthorResponse(
             trip.owner.getId(),
-            trip.owner.getUsername(),
-            trip.owner.getProfileImageUrl()
+            trip.owner.username,
+            trip.owner.profileImageUrl
         ),
         trip.representativeImage?.getThumbnailUrl(),
         trip.representativeImage?.getGpsLat(),

@@ -12,8 +12,8 @@ data class SignupResponse(
 ) {
     constructor(member: Member) : this(
         member.getId(),
-        member.getEmail(),
-        member.getUsername(),
+        member.email,
+        member.username,
         member.getCreatedAt()
     )
 }

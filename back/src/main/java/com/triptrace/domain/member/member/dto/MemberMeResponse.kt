@@ -18,13 +18,13 @@ data class MemberMeResponse(
 ) {
     constructor(member: Member) : this(
         member.getId(),
-        member.getEmail(),
-        member.getUsername(),
+        member.email,
+        member.username,
         // 프론트가 nickname 키를 쓰고 있어 username과 같은 값을 함께 내려준다.
-        member.getUsername(),
-        member.getIntro(),
-        member.getProfileImageUrl(),
-        member.getStatus(),
+        member.username,
+        member.intro,
+        member.profileImageUrl,
+        member.status,
         member.getCreatedAt(),
         member.getUpdatedAt()
     )
