@@ -18,6 +18,7 @@ import com.triptrace.domain.member.member.entity.MemberStatus;
 import com.triptrace.domain.member.member.repository.MemberRepository;
 import com.triptrace.domain.trip.trip.entity.Trip;
 import com.triptrace.domain.trip.trip.repository.TripRepository;
+import com.triptrace.domain.trip.tripAuto.error.TripAutoErrorCode;
 import com.triptrace.global.app.Domain;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -101,6 +102,58 @@ class TripAutoRecordControllerTest {
             .andExpect(jsonPath("$.data.generatedPostCount").value(1))
             .andExpect(jsonPath("$.data.generatedMarkerCount").value(1))
             .andExpect(jsonPath("$.data.records[0].title").value("광안리 근처"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("여행기 주인이 아니면 자동 생성을 요청할 수 없다")
+    void createAutoRecordsForbidden() throws Exception {
+        Member owner = createMember("auto-owner@test.com", "autoOwner");
+        Member stranger = createMember("auto-stranger@test.com", "autoStranger");
+        Trip trip = createTrip(owner);
+
+        mvc.perform(post("/api/v1/trips/{tripId}/auto-records", trip.getId())
+                .with(csrf())
+                .with(authentication(auth(stranger))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.resultCode")
+                .value("%s-%s".formatted(
+                    TripAutoErrorCode.FORBIDDEN.getCode(),
+                    Domain.TRIP.getCode()
+                )));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("없는 여행기에 자동 생성을 요청하면 404다")
+    void createAutoRecordsTripNotFound() throws Exception {
+        Member member = createMember("auto-none@test.com", "autoNone");
+
+        mvc.perform(post("/api/v1/trips/{tripId}/auto-records", -1L)
+                .with(csrf())
+                .with(authentication(auth(member))))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.resultCode")
+                .value("%s-%s".formatted(
+                    TripAutoErrorCode.TRIP_NOT_FOUND.getCode(),
+                    Domain.TRIP.getCode()
+                )));
+    }
+
+    private Member createMember(String email, String username) {
+        return memberRepository.save(new Member(email, username, "password1234", "imageUrl", MemberStatus.ACTIVE));
+    }
+
+    private Trip createTrip(Member owner) {
+        return tripRepository.save(new Trip(
+            owner,
+            "부산 여행",
+            "한국",
+            "부산",
+            LocalDateTime.of(2026, 7, 1, 0, 0),
+            LocalDateTime.of(2026, 7, 2, 0, 0),
+            true
+        ));
     }
 
     private UsernamePasswordAuthenticationToken auth(Member member) {
