@@ -41,9 +41,9 @@ class LocalFileStorageTest {
         Path savedFile = missingDirectory.resolve(fileName);
         assertThat(Files.isDirectory(missingDirectory)).isTrue();
         assertThat(Files.readAllBytes(savedFile)).isEqualTo(file);
-        assertThat(storedFile.path()).isEqualTo(missingDirectory.toString());
-        assertThat(storedFile.name()).isEqualTo(fileName);
-        assertThat(storedFile.size()).isEqualTo((long) file.length);
+        assertThat(storedFile.getPath()).isEqualTo(missingDirectory.toString());
+        assertThat(storedFile.getName()).isEqualTo(fileName);
+        assertThat(storedFile.getSize()).isEqualTo((long) file.length);
     }
 
     // given: 정상적인 파일, 있는 경로, 파일명

@@ -28,7 +28,7 @@ data class MarkerResponse(
         marker.visitedAt,
         marker.source,
         marker.representativeImage?.getId(),
-        marker.representativeImage?.getThumbnailUrl(),
+        marker.representativeImage?.thumbnailUrl,
         marker.getCreatedAt(),
         marker.getUpdatedAt()
     )
