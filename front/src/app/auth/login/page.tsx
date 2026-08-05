@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from '@/lib/validation';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 
 export default function LoginPage() {
@@ -15,6 +16,13 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // 브라우저 기본 검증도 같은 값을 막지만, 안내 문구를 회원가입 화면과 맞추기 위해 직접 확인한다.
+    if (!isValidEmail(form.email)) {
+      setError(INVALID_EMAIL_MESSAGE);
+      return;
+    }
+
     setLoading(true);
     try {
       // 로그인 성공 시 accessToken 응답, refreshToken은 쿠키로 저장됨
@@ -41,7 +49,7 @@ export default function LoginPage() {
               type="email"
               placeholder="name@example.com"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(e) => setForm({ ...form, email: e.target.value.trim() })}
               required
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
             />

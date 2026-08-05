@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, CheckCircle2 } from 'lucide-react';
 import { authApi, ApiError } from '@/lib/api';
 import { applyImageFallback, DEFAULT_PROFILE_AVATAR } from '@/lib/assets';
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from '@/lib/validation';
 
 // 서버 재전송 쿨다운과 같은 값. 서버가 최종 방어선이고 이건 UI 힌트일 뿐이다.
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -59,14 +60,21 @@ export default function SignupPage() {
   };
 
   // 발송된 코드는 그 시점의 주소에 묶여 있다. 주소가 바뀌면 인증 절차를 처음부터 다시 밟게 한다.
+  // 발송·인증·가입이 모두 같은 문자열을 보내도록 입력 시점에 공백을 한 번만 정리한다.
   const handleEmailChange = (email: string) => {
-    setForm({ ...form, email });
+    setForm({ ...form, email: email.trim() });
     if (codeSent) resetVerification();
   };
 
   const handleSendCode = async () => {
-    if (!form.email.trim()) {
+    if (!form.email) {
       setVerificationNotice({ type: 'error', text: '이메일을 먼저 입력해주세요.' });
+      return;
+    }
+
+    // 발송 버튼은 type="button"이라 브라우저 기본 검증을 타지 않는다. 형식 검사를 직접 해준다.
+    if (!isValidEmail(form.email)) {
+      setVerificationNotice({ type: 'error', text: INVALID_EMAIL_MESSAGE });
       return;
     }
 
@@ -120,6 +128,13 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // 인증을 마치면 입력칸이 잠기므로 정상 경로에서는 이미 걸러진 값이다.
+    // 다만 인증 여부와 무관하게 형식은 형식대로 막아야 하므로 제출 시점에도 확인한다.
+    if (!isValidEmail(form.email)) {
+      setError(INVALID_EMAIL_MESSAGE);
+      return;
+    }
 
     if (!emailVerified) {
       setError('이메일 인증을 완료해주세요.');
