@@ -165,11 +165,11 @@ class TripAutoRecordServiceTest {
     @DisplayName("클러스터 첫 사진과 2시간을 초과해 차이나는 이미지는 새 클러스터로 분리한다")
     void clusterImagesByClusterStartTime() {
         TripAutoRecordService service = new TripAutoRecordService(
-            null,
-            null,
-            null,
-            null,
-            null
+            mock(TripRepository.class),
+            mock(ImageRepository.class),
+            mock(PostRepository.class),
+            mock(MarkerRepository.class),
+            mock(ReverseGeocodingClient.class)
         );
         Image first = imageCapturedAt(LocalDateTime.of(2026, 6, 30, 14, 0));
         Image second = imageCapturedAt(LocalDateTime.of(2026, 6, 30, 15, 50));
@@ -190,11 +190,11 @@ class TripAutoRecordServiceTest {
     @DisplayName("자동 생성 후 Trip 국가/도시는 첫 마커 기준, 기간은 첫 사진과 마지막 사진 기준으로 보정한다")
     void applyTripAutoRecordDefaults() {
         TripAutoRecordService service = new TripAutoRecordService(
-            null,
-            null,
-            null,
-            null,
-            null
+            mock(TripRepository.class),
+            mock(ImageRepository.class),
+            mock(PostRepository.class),
+            mock(MarkerRepository.class),
+            mock(ReverseGeocodingClient.class)
         );
         Trip trip = new Trip(
             mock(Member.class),
@@ -226,11 +226,11 @@ class TripAutoRecordServiceTest {
     @DisplayName("자동 생성 마커 중심 좌표는 소수점 7자리까지 버림 처리한다")
     void truncateCoordinateToSevenDecimalPlaces() {
         TripAutoRecordService service = new TripAutoRecordService(
-            null,
-            null,
-            null,
-            null,
-            null
+            mock(TripRepository.class),
+            mock(ImageRepository.class),
+            mock(PostRepository.class),
+            mock(MarkerRepository.class),
+            mock(ReverseGeocodingClient.class)
         );
 
         BigDecimal coordinate = ReflectionTestUtils.invokeMethod(
@@ -244,8 +244,8 @@ class TripAutoRecordServiceTest {
 
     private Image imageCapturedAt(LocalDateTime capturedAt) {
         Image image = new Image(
-            null,
-            null,
+            mock(Member.class),
+            mock(Trip.class),
             null,
             "https://example.com/image.jpg",
             "https://example.com/image-thumbnail.jpg",
