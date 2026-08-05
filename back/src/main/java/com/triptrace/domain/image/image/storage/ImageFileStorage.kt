@@ -8,7 +8,6 @@ import com.triptrace.domain.image.image.processing.dto.SavedFileInfo
 import com.triptrace.domain.image.image.processing.dto.StoredFile
 import com.triptrace.global.app.Domain
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -16,36 +15,30 @@ import java.nio.file.Path
 import java.util.UUID
 
 @Component
-class ImageFileStorage @Autowired constructor(
+class ImageFileStorage(
     properties: ImageStorageProperties,
     private val fileStorage: FileStorage,
     private val imageProcessor: ImageProcessor,
 ) {
-    private val uploadDir = properties.upload().path()
-    private val profileImagesPath = properties.upload().profilePath()
-    private val servingImagesPath = properties.upload().servingPath()
-    private val thumbnailImagesPath = properties.upload().thumbnailPath()
-    private val thumbnailWidth = properties.thumbnail().width()
-    private val thumbnailHeight = properties.thumbnail().height()
-    private val jpegExt = properties.ext().jpg()
+    private val uploadDir = properties.upload.path
+    private val profileImagesPath = properties.upload.profilePath
+    private val servingImagesPath = properties.upload.servingPath
+    private val thumbnailImagesPath = properties.upload.thumbnailPath
+    private val thumbnailWidth = properties.thumbnail.width
+    private val thumbnailHeight = properties.thumbnail.height
+    private val jpegExt = properties.ext.jpg
 
-    constructor(properties: ImageStorageProperties, fileStorage: FileStorage) : this(
-        properties,
-        fileStorage,
-        ImageProcessor(),
-    )
-
-    fun saveProfileImage(image: ByteArray?): String {
+    fun saveProfileImage(image: ByteArray): String {
         val stored = saveImage(
             imageProcessor.read(image),
             resolveUploadPath(profileImagesPath),
             generateFileName(jpegExt),
             false,
         )
-        return "$profileImagesPath/${stored.name()}"
+        return "$profileImagesPath/${stored.name}"
     }
 
-    fun saveImageWithThumbnail(image: ByteArray?, orientation: ExifOrientation?): SavedFileInfo {
+    fun saveImageWithThumbnail(image: ByteArray?, orientation: ExifOrientation): SavedFileInfo {
         if (image == null) {
             throw ImageProcessException(ImageErrorCode.READ_ERROR)
         }
@@ -64,18 +57,18 @@ class ImageFileStorage @Autowired constructor(
                 true,
             )
         } catch (exception: ImageProcessException) {
-            deleteImage("$servingImagesPath/${origin.name()}")
+            deleteImage("$servingImagesPath/${origin.name}")
             throw exception
         }
         return SavedFileInfo(
-            "$servingImagesPath/${origin.name()}",
-            "$thumbnailImagesPath/${thumbnail.name()}",
-            origin.size(),
+            "$servingImagesPath/${origin.name}",
+            "$thumbnailImagesPath/${thumbnail.name}",
+            origin.size,
             "image/$jpegExt",
         )
     }
 
-    fun deleteImage(imagePath: String?): Boolean {
+    fun deleteImage(imagePath: String): Boolean {
         try {
             fileStorage.delete(resolveStoragePath(imagePath))
         } catch (exception: IOException) {
@@ -92,7 +85,7 @@ class ImageFileStorage @Autowired constructor(
 
     fun cleanUp(savedFileInfo: SavedFileInfo) {
         try {
-            deleteImage(savedFileInfo.servingUrl())
+            deleteImage(savedFileInfo.servingUrl)
         } catch (exception: ImageProcessException) {
             log.warn(
                 "[{}] image file storage fallback reason: {}",
@@ -103,7 +96,7 @@ class ImageFileStorage @Autowired constructor(
         }
 
         try {
-            deleteImage(savedFileInfo.thumbnailUrl())
+            deleteImage(savedFileInfo.thumbnailUrl)
         } catch (exception: ImageProcessException) {
             log.warn(
                 "[{}] image file storage fallback reason: {}",
@@ -131,7 +124,6 @@ class ImageFileStorage @Autowired constructor(
                 directoryPath,
                 fileName,
             )
-                ?: throw ImageProcessException(ImageErrorCode.SAVE_ERROR)
         } catch (exception: IOException) {
             log.warn(
                 "[{}] image processor fallback reason: {}",
@@ -147,7 +139,7 @@ class ImageFileStorage @Autowired constructor(
     private fun resolveUploadPath(path: String): String =
         Path.of(uploadDir, path.replaceFirst("^/", "")).toString()
 
-    private fun resolveStoragePath(imagePath: String?) = resolveUploadPath(imagePath!!)
+    private fun resolveStoragePath(imagePath: String) = resolveUploadPath(imagePath)
 
     private companion object {
         private val log = LoggerFactory.getLogger(ImageFileStorage::class.java)

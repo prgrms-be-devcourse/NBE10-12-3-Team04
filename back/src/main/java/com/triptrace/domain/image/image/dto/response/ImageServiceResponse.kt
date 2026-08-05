@@ -17,17 +17,4 @@ data class ImageServiceResponse(
     val capturedAt: LocalDateTime?,
     val deviceInfo: String?,
     val uploadStatus: UploadStatus?,
-) {
-    fun id() = id
-    fun ownerId() = ownerId
-    fun tripId() = tripId
-    fun postId() = postId
-    fun originalFileUrl() = originalFileUrl
-    fun thumbnailUrl() = thumbnailUrl
-    fun mimeType() = mimeType
-    fun latitude() = latitude
-    fun longitude() = longitude
-    fun capturedAt() = capturedAt
-    fun deviceInfo() = deviceInfo
-    fun uploadStatus() = uploadStatus
-}
+)

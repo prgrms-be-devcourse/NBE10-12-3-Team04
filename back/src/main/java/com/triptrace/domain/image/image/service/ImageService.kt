@@ -12,6 +12,7 @@ import com.triptrace.domain.trip.trip.entity.Trip
 import com.triptrace.domain.trip.trip.repository.TripRepository
 import com.triptrace.global.exception.ServiceException
 import org.springframework.stereotype.Service
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -65,13 +66,13 @@ class ImageService(
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): Image = imageRepository.findById(id)
-        .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
+    fun getById(id: Long): Image = imageRepository.findByIdOrNull(id)
+        ?: throw ServiceException(ImageErrorCode.NOT_FOUND)
 
     @Transactional(readOnly = true)
     fun getByUrl(originalFileUrl: String): Image =
         imageRepository.findByOriginalFileUrl(originalFileUrl)
-            .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
+            ?: throw ServiceException(ImageErrorCode.NOT_FOUND)
 
     @Transactional(readOnly = true)
     fun findById(id: Long): ImageServiceResponse = ImageMapper.toServiceResponse(getById(id))
@@ -84,7 +85,7 @@ class ImageService(
     @Transactional
     fun unassign(ownerId: Long, tripId: Long, imageId: Long): ImageServiceResponse {
         val image = imageRepository.findByIdAndOwnerIdAndTripId(imageId, ownerId, tripId)
-            .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
+            ?: throw ServiceException(ImageErrorCode.NOT_FOUND)
         image.modifyPost(null)
         return ImageMapper.toServiceResponse(image)
     }

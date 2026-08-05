@@ -10,12 +10,4 @@ data class ImageUploadResponse(
     val mimeType: String?,
     val uploadStatus: UploadStatus?,
     val message: String?,
-) {
-    fun fileName() = fileName
-    fun id() = id
-    fun originalFileUrl() = originalFileUrl
-    fun thumbnailUrl() = thumbnailUrl
-    fun mimeType() = mimeType
-    fun uploadStatus() = uploadStatus
-    fun message() = message
-}
+)

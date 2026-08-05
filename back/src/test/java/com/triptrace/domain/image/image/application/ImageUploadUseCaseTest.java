@@ -46,8 +46,8 @@ class ImageUploadUseCaseTest {
         List<ImageUploadResponse> responses = fixture.useCase.uploadImages(1L, 2L, new MultipartFile[] {imageFile()});
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
-        assertThat(responses.getFirst().message()).isEqualTo("SUCCESS");
+        assertThat(responses.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(responses.getFirst().getMessage()).isEqualTo("SUCCESS");
         verify(fixture.imageService).create(any());
     }
 
@@ -67,7 +67,7 @@ class ImageUploadUseCaseTest {
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(Image.class);
         verify(fixture.imageService).create(imageCaptor.capture());
         assertThat(imageCaptor.getValue().getPost()).isSameAs(fixture.post);
-        assertThat(responses.getFirst().uploadStatus()).isEqualTo(UploadStatus.STORED);
+        assertThat(responses.getFirst().getUploadStatus()).isEqualTo(UploadStatus.STORED);
     }
 
     // given: 빈 배열 또는 null 이미지 배열
@@ -100,9 +100,9 @@ class ImageUploadUseCaseTest {
             1L, 2L, new MultipartFile[] {emptyFile, imageFile()}
         );
 
-        assertThat(responses).extracting(ImageUploadResponse::uploadStatus)
+        assertThat(responses).extracting(ImageUploadResponse::getUploadStatus)
             .containsExactly(UploadStatus.FAILED, UploadStatus.STORED);
-        assertThat(responses.getFirst().message()).isEqualTo("EMPTY_FILE");
+        assertThat(responses.getFirst().getMessage()).isEqualTo("EMPTY_FILE");
     }
 
     // given: 파일 저장 중 ImageProcessException이 발생하는 이미지 파일
@@ -119,8 +119,8 @@ class ImageUploadUseCaseTest {
             .uploadImages(1L, 2L, new MultipartFile[] {imageFile()})
             .getFirst();
 
-        assertThat(response.uploadStatus()).isEqualTo(UploadStatus.FAILED);
-        assertThat(response.message()).isEqualTo("FILE SAVE FAILED");
+        assertThat(response.getUploadStatus()).isEqualTo(UploadStatus.FAILED);
+        assertThat(response.getMessage()).isEqualTo("FILE SAVE FAILED");
     }
 
     // given: 파일 저장은 성공하고 ImageService 저장이 실패하는 이미지 파일
@@ -137,8 +137,8 @@ class ImageUploadUseCaseTest {
             .uploadImages(1L, 2L, new MultipartFile[] {imageFile()})
             .getFirst();
 
-        assertThat(response.uploadStatus()).isEqualTo(UploadStatus.FAILED);
-        assertThat(response.message()).isEqualTo("SERVER SAVE FAILED");
+        assertThat(response.getUploadStatus()).isEqualTo(UploadStatus.FAILED);
+        assertThat(response.getMessage()).isEqualTo("SERVER SAVE FAILED");
         verify(fixture.imageFileStorage).cleanUp(savedFileInfo);
     }
 

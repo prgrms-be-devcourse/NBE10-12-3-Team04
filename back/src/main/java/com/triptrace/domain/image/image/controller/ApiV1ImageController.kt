@@ -5,6 +5,7 @@ import com.triptrace.domain.image.image.application.ImageModifyUseCase
 import com.triptrace.domain.image.image.application.ImageSearchUseCase
 import com.triptrace.domain.image.image.application.ImageUploadUseCase
 import com.triptrace.domain.image.image.dto.response.ImageResponse
+import com.triptrace.domain.image.image.dto.response.ImageServiceResponse
 import com.triptrace.domain.image.image.dto.response.ImageUploadResponse
 import com.triptrace.global.app.Domain
 import com.triptrace.global.rsData.RsData
@@ -88,7 +89,7 @@ class ApiV1ImageController(
         @PathVariable tripId: Long,
         @RequestParam postId: Long,
         @RequestParam imageId: Long,
-    ): RsData<*> = RsData(
+    ): RsData<ImageServiceResponse> = RsData(
         successCode,
         "수정 되었습니다.",
         imageModifyUseCase.modifyById(ownerId, tripId, postId, imageId),
@@ -106,7 +107,7 @@ class ApiV1ImageController(
         @AuthenticationPrincipal ownerId: Long,
         @PathVariable tripId: Long,
         @PathVariable imageId: Long,
-    ): RsData<*> = RsData(
+    ): RsData<ImageServiceResponse> = RsData(
         successCode,
         "수정 되었습니다.",
         imageModifyUseCase.unassign(ownerId, tripId, imageId),

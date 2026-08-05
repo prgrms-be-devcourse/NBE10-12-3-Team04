@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
+import com.triptrace.domain.image.image.processing.ImageProcessor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
@@ -56,7 +57,7 @@ public class ImageFileStorageTest {
             new ImageStorageProperties.Thumbnail(1024, 1024),
             new ImageStorageProperties.Ext("jpeg")
         );
-        imageFileStorage = new ImageFileStorage(properties, new LocalFileStorage());
+        imageFileStorage = new ImageFileStorage(properties, new LocalFileStorage(), new ImageProcessor());
 
         try (InputStream is = getClass().getResourceAsStream(imageFileName)) {
             imageBytes = is.readAllBytes();
@@ -69,9 +70,9 @@ public class ImageFileStorageTest {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
         assertThat(savedFileInfo).isNotNull();
-        assertThat(savedFileInfo.servingUrl()).startsWith("/images/serving/");
-        assertThat(savedFileInfo.thumbnailUrl()).startsWith("/images/thumbnail/");
-        assertThat(savedFileInfo.size()).isGreaterThan(0);
+        assertThat(savedFileInfo.getServingUrl()).startsWith("/images/serving/");
+        assertThat(savedFileInfo.getThumbnailUrl()).startsWith("/images/thumbnail/");
+        assertThat(savedFileInfo.getSize()).isGreaterThan(0);
     }
 
     @Test
@@ -79,8 +80,8 @@ public class ImageFileStorageTest {
     void test02() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
-        assertThat(Files.exists(diskPath(savedFileInfo.servingUrl()))).isTrue();
-        assertThat(Files.exists(diskPath(savedFileInfo.thumbnailUrl()))).isTrue();
+        assertThat(Files.exists(diskPath(savedFileInfo.getServingUrl()))).isTrue();
+        assertThat(Files.exists(diskPath(savedFileInfo.getThumbnailUrl()))).isTrue();
     }
 
     @Test
@@ -88,7 +89,7 @@ public class ImageFileStorageTest {
     void test03() throws IOException {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
 
-        BufferedImage thumbnail = ImageIO.read(diskPath(savedFileInfo.thumbnailUrl()).toFile());
+        BufferedImage thumbnail = ImageIO.read(diskPath(savedFileInfo.getThumbnailUrl()).toFile());
 
         assertThat(thumbnail.getWidth()).isLessThanOrEqualTo(1024);
         assertThat(thumbnail.getHeight()).isLessThanOrEqualTo(1024);
@@ -100,8 +101,8 @@ public class ImageFileStorageTest {
         SavedFileInfo normal = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
         SavedFileInfo rotated = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.ROTATE_90_CW);
 
-        BufferedImage normalImage = ImageIO.read(diskPath(normal.servingUrl()).toFile());
-        BufferedImage rotatedImage = ImageIO.read(diskPath(rotated.servingUrl()).toFile());
+        BufferedImage normalImage = ImageIO.read(diskPath(normal.getServingUrl()).toFile());
+        BufferedImage rotatedImage = ImageIO.read(diskPath(rotated.getServingUrl()).toFile());
 
         assertThat(rotatedImage.getWidth()).isEqualTo(normalImage.getHeight());
         assertThat(rotatedImage.getHeight()).isEqualTo(normalImage.getWidth());
@@ -120,10 +121,10 @@ public class ImageFileStorageTest {
     @DisplayName("이미지를 삭제하면 디스크에서 파일이 사라진다")
     void test06() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
-        Path originFile = diskPath(savedFileInfo.servingUrl());
+        Path originFile = diskPath(savedFileInfo.getServingUrl());
         assertThat(Files.exists(originFile)).isTrue();
 
-        imageFileStorage.deleteImage(savedFileInfo.servingUrl());
+        imageFileStorage.deleteImage(savedFileInfo.getServingUrl());
 
         assertThat(Files.exists(originFile)).isFalse();
     }
@@ -173,7 +174,7 @@ public class ImageFileStorageTest {
         when(failingFileStorage.save(any(byte[].class), anyString(), anyString()))
             .thenThrow(new IOException("디스크에 파일을 쓸 수 없습니다."));
 
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -195,7 +196,7 @@ public class ImageFileStorageTest {
         when(fileStorage.save(any(byte[].class), anyString(), anyString()))
             .thenReturn(new StoredFile("/images/serving", "origin.jpg", 1024L))
             .thenThrow(new IOException("섬네일을 저장할 수 없습니다."));
-        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -217,7 +218,7 @@ public class ImageFileStorageTest {
         doThrow(new IOException("파일을 삭제할 수 없습니다."))
             .when(failingFileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -236,8 +237,8 @@ public class ImageFileStorageTest {
     @DisplayName("원본과 섬네일 파일을 함께 정리한다")
     void cleanUp_deletesOriginAndThumbnail() {
         SavedFileInfo savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageBytes, ExifOrientation.NORMAL);
-        Path originFile = diskPath(savedFileInfo.servingUrl());
-        Path thumbnailFile = diskPath(savedFileInfo.thumbnailUrl());
+        Path originFile = diskPath(savedFileInfo.getServingUrl());
+        Path thumbnailFile = diskPath(savedFileInfo.getThumbnailUrl());
 
         imageFileStorage.cleanUp(savedFileInfo);
 
@@ -255,7 +256,7 @@ public class ImageFileStorageTest {
         doThrow(new IOException(ImageErrorCode.DELETE_ERROR.getMessage()))
             .when(failingFileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -279,7 +280,7 @@ public class ImageFileStorageTest {
             .doThrow(new IOException(ImageErrorCode.DELETE_ERROR.getMessage()))
             .when(fileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,

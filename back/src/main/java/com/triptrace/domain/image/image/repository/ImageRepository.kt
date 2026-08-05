@@ -11,7 +11,7 @@ interface ImageRepository : JpaRepository<Image, Long> {
     fun findByPostId(postId: Long): List<Image>
     fun findByPostIdIn(postIds: List<Long>): List<Image>
     fun findByOwnerId(ownerId: Long): List<Image>
-    fun findByOriginalFileUrl(originalFileUrl: String): java.util.Optional<Image>
+    fun findByOriginalFileUrl(originalFileUrl: String): Image?
     fun trip(trip: Trip): List<Image>
 
     @Query(
@@ -22,5 +22,5 @@ interface ImageRepository : JpaRepository<Image, Long> {
         @Param("imageId") id: Long,
         @Param("ownerId") ownerId: Long,
         @Param("tripId") tripId: Long,
-    ): java.util.Optional<Image>
+    ): Image?
 }

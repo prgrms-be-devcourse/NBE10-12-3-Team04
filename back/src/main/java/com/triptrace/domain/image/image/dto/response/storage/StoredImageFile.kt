@@ -5,9 +5,4 @@ data class StoredImageFile(
     val thumbnailImageFileUrl: String?,
     val fileSize: Long?,
     val mimeType: String?,
-) {
-    fun imageFileUrl() = imageFileUrl
-    fun thumbnailImageFileUrl() = thumbnailImageFileUrl
-    fun fileSize() = fileSize
-    fun mimeType() = mimeType
-}
+)

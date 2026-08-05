@@ -26,35 +26,33 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class ImageMetadataExtractor {
-    fun extract(bytes: ByteArray): ImageInfo {
-        val imageInfo = ImageInfo()
+    fun extract(bytes: ByteArray): ImageInfo =
         try {
             ByteArrayInputStream(bytes).use { input ->
                 val fileType = FileTypeDetector.detectFileType(input)
-                imageInfo.setFileSize(bytes.size.toLong())
                 if (!fileTypeFilter(fileType)) {
                     throw ImageProcessException(ImageErrorCode.TYPE_ERROR)
                 }
 
                 val metadata = ImageMetadataReader.readMetadata(input)
                 log.debug("[{}] file type: {}", Domain.IMAGE.name, fileType)
-                getImageDateTime(metadata)?.let {
-                    imageInfo.setCapturedAt(it.dateTime())
-                    imageInfo.setTimeZone(it.timeZone())
-                }
-                getExifIf(metadata)?.let {
-                    imageInfo.setMaker(it.maker())
-                    imageInfo.setModel(it.device())
-                    imageInfo.setOrientation(it.orientation())
-                }
-                getWidthHeight(metadata)?.let {
-                    imageInfo.setWidth(it.width())
-                    imageInfo.setHeight(it.height())
-                }
-                getLocation(metadata)?.let {
-                    imageInfo.setLatitude(it.latitude())
-                    imageInfo.setLongitude(it.longitude())
-                }
+                val dateTime = getImageDateTime(metadata)
+                val exif = getExifIf(metadata)
+                val size = getWidthHeight(metadata)
+                val location = getLocation(metadata)
+
+                ImageInfo(
+                    width = size?.width,
+                    height = size?.height,
+                    longitude = location?.longitude,
+                    latitude = location?.latitude,
+                    capturedAt = dateTime?.dateTime,
+                    timeZone = dateTime?.timeZone,
+                    model = exif?.device,
+                    maker = exif?.maker,
+                    orientation = exif?.orientation ?: ExifOrientation.NORMAL,
+                    fileSize = bytes.size.toLong(),
+                )
             }
         } catch (exception: ImageProcessingException) {
             throwExtractException(exception)
@@ -63,8 +61,6 @@ class ImageMetadataExtractor {
         } catch (exception: IOException) {
             throwExtractException(exception)
         }
-        return imageInfo
-    }
 
     private fun getImageDateTime(metadata: Metadata): ImageDateTime? {
         val directory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory::class.java)

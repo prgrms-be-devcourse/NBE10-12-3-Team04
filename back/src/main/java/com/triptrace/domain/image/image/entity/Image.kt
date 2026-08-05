@@ -4,77 +4,44 @@ import com.triptrace.domain.member.member.entity.Member
 import com.triptrace.domain.post.post.entity.Post
 import com.triptrace.domain.trip.trip.entity.Trip
 import com.triptrace.global.jpa.entity.BaseEntity
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-class Image protected constructor() : BaseEntity() {
+class Image(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    lateinit var owner: Member
-
+    var owner: Member,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
-    lateinit var trip: Trip
-
+    var trip: Trip,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    var post: Post? = null
-
+    var post: Post?,
     @Column(nullable = false)
-    lateinit var originalFileUrl: String
-
-    var thumbnailUrl: String? = null
-
+    var originalFileUrl: String,
+    var thumbnailUrl: String?,
     @Column(nullable = false)
-    var fileSize: Long = 0
-
+    var fileSize: Long,
     @Column(length = 50, nullable = false)
-    lateinit var mimeType: String
-
+    var mimeType: String,
     @Column(precision = 10, scale = 7)
-    var gpsLat: BigDecimal? = null
-
+    var gpsLat: BigDecimal?,
     @Column(precision = 10, scale = 7)
-    var gpsLng: BigDecimal? = null
-
-    var capturedAt: LocalDateTime? = null
-
-    var deviceInfo: String? = null
-
+    var gpsLng: BigDecimal?,
+    var capturedAt: LocalDateTime?,
+    var deviceInfo: String?,
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
-    lateinit var uploadStatus: UploadStatus
-
-    constructor(
-        owner: Member,
-        trip: Trip,
-        post: Post?,
-        originalFileUrl: String,
-        thumbnailUrl: String?,
-        fileSize: Long,
-        mimeType: String,
-        gpsLat: BigDecimal?,
-        gpsLng: BigDecimal?,
-        capturedAt: LocalDateTime?,
-        deviceInfo: String?,
-        uploadStatus: UploadStatus,
-    ) : this() {
-        this.owner = owner
-        this.trip = trip
-        this.post = post
-        this.originalFileUrl = originalFileUrl
-        this.thumbnailUrl = thumbnailUrl
-        this.fileSize = fileSize
-        this.mimeType = mimeType
-        this.gpsLat = gpsLat
-        this.gpsLng = gpsLng
-        this.capturedAt = capturedAt
-        this.deviceInfo = deviceInfo
-        this.uploadStatus = uploadStatus
-    }
-
+    var uploadStatus: UploadStatus,
+) : BaseEntity() {
     constructor(
         owner: Member,
         trip: Trip,

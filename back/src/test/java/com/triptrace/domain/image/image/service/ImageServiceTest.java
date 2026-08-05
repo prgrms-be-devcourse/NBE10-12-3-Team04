@@ -85,7 +85,7 @@ class ImageServiceTest {
 
         ImageServiceResponse response = imageService.modifyPost(owner, trip, post, image.getId());
 
-        assertThat(response.postId()).isEqualTo(post.getId());
+        assertThat(response.getPostId()).isEqualTo(post.getId());
     }
 
     @Test
@@ -268,9 +268,9 @@ class ImageServiceTest {
         var responses = imageService.findWithOwner(owner.getId());
 
         assertThat(responses)
-            .extracting(ImageServiceResponse::id)
+            .extracting(ImageServiceResponse::getId)
             .containsExactly(image.getId());
-        assertThat(responses.getFirst().ownerId()).isEqualTo(owner.getId());
+        assertThat(responses.getFirst().getOwnerId()).isEqualTo(owner.getId());
     }
 
     // given: 이미지가 없는 소유자 ID
@@ -322,7 +322,7 @@ class ImageServiceTest {
 
         ImageServiceResponse response = imageService.unassign(owner.getId(), trip.getId(), image.getId());
 
-        assertThat(response.postId()).isNull();
+        assertThat(response.getPostId()).isNull();
         assertThat(imageRepository.findById(image.getId()).orElseThrow().getPost()).isNull();
     }
 

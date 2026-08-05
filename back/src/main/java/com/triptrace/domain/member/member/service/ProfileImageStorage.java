@@ -28,10 +28,10 @@ public class ProfileImageStorage {
     private final ImageProcessor imageProcessor;
 
     public ProfileImageStorage(ImageStorageProperties properties, ImageProcessor imageProcessor) {
-        this.profileImagesPath = Path.of(properties.upload().path() + properties.upload().profilePath())
+        this.profileImagesPath = Path.of(properties.getUpload().getPath() + properties.getUpload().getProfilePath())
             .toAbsolutePath()
             .normalize();
-        this.profileImagesUrlPrefix = properties.upload().profilePath();
+        this.profileImagesUrlPrefix = properties.getUpload().getProfilePath();
         this.imageProcessor = imageProcessor;
     }
 

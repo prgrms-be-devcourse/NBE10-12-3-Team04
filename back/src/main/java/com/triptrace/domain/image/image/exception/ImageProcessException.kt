@@ -2,20 +2,14 @@ package com.triptrace.domain.image.image.exception
 
 import com.triptrace.global.error.ErrorCode
 
-class ImageProcessException : RuntimeException {
-    val resultCode: String
-    val msg: String
-    constructor(
-        resultCode: String,
-        message: String,
-        cause: Throwable? = null,
-    ) : super(message, cause) {
-        this.resultCode = resultCode
-        msg = message
-    }
+class ImageProcessException(
+    val resultCode: String,
+    val msg: String,
+    cause: Throwable? = null,
+) : RuntimeException(msg, cause) {
     @JvmOverloads
-    constructor(errorCode: ErrorCode, message: String = errorCode.message) : super(message) {
-        resultCode = "${errorCode.code}-${errorCode.domain.code}"
-        msg = message
-    }
+    constructor(errorCode: ErrorCode, message: String = errorCode.message) : this(
+        "${errorCode.code}-${errorCode.domain.code}",
+        message,
+    )
 }
