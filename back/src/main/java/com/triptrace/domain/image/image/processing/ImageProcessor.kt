@@ -35,8 +35,8 @@ class ImageProcessor {
         }
     }
 
-    fun rotate(image: BufferedImage, exifOrientation: ExifOrientation?): BufferedImage {
-        if (exifOrientation == null || exifOrientation == ExifOrientation.NORMAL) {
+    fun rotate(image: BufferedImage, exifOrientation: ExifOrientation): BufferedImage {
+        if (exifOrientation == ExifOrientation.NORMAL) {
             return image
         }
 

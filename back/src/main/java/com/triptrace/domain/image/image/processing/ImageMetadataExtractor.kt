@@ -26,8 +26,8 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class ImageMetadataExtractor {
-    fun extract(bytes: ByteArray): ImageInfo {
-        return try {
+    fun extract(bytes: ByteArray): ImageInfo =
+        try {
             ByteArrayInputStream(bytes).use { input ->
                 val fileType = FileTypeDetector.detectFileType(input)
                 if (!fileTypeFilter(fileType)) {
@@ -61,7 +61,6 @@ class ImageMetadataExtractor {
         } catch (exception: IOException) {
             throwExtractException(exception)
         }
-    }
 
     private fun getImageDateTime(metadata: Metadata): ImageDateTime? {
         val directory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory::class.java)

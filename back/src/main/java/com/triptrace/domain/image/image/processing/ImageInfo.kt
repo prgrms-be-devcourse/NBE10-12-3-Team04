@@ -12,5 +12,5 @@ class ImageInfo(
     val model: String? = null,
     val maker: String? = null,
     val orientation: ExifOrientation = ExifOrientation.NORMAL,
-    val fileSize: Long? = 0L,
+    val fileSize: Long = 0L,
 )

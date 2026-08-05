@@ -38,7 +38,7 @@ class ImageFileStorage(
         return "$profileImagesPath/${stored.name}"
     }
 
-    fun saveImageWithThumbnail(image: ByteArray?, orientation: ExifOrientation?): SavedFileInfo {
+    fun saveImageWithThumbnail(image: ByteArray?, orientation: ExifOrientation): SavedFileInfo {
         if (image == null) {
             throw ImageProcessException(ImageErrorCode.READ_ERROR)
         }
