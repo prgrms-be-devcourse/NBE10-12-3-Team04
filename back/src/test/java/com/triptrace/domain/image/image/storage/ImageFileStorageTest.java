@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.triptrace.domain.image.image.error.ImageErrorCode;
 import com.triptrace.domain.image.image.processing.ExifOrientation;
+import com.triptrace.domain.image.image.processing.ImageProcessor;
 import com.triptrace.domain.image.image.processing.dto.SavedFileInfo;
 import com.triptrace.domain.image.image.processing.dto.StoredFile;
 import com.triptrace.domain.image.image.exception.ImageProcessException;
@@ -56,7 +57,7 @@ public class ImageFileStorageTest {
             new ImageStorageProperties.Thumbnail(1024, 1024),
             new ImageStorageProperties.Ext("jpeg")
         );
-        imageFileStorage = new ImageFileStorage(properties, new LocalFileStorage());
+        imageFileStorage = new ImageFileStorage(properties, new LocalFileStorage(), new ImageProcessor());
 
         try (InputStream is = getClass().getResourceAsStream(imageFileName)) {
             imageBytes = is.readAllBytes();
@@ -173,7 +174,7 @@ public class ImageFileStorageTest {
         when(failingFileStorage.save(any(byte[].class), anyString(), anyString()))
             .thenThrow(new IOException("디스크에 파일을 쓸 수 없습니다."));
 
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -195,7 +196,7 @@ public class ImageFileStorageTest {
         when(fileStorage.save(any(byte[].class), anyString(), anyString()))
             .thenReturn(new StoredFile("/images/serving", "origin.jpg", 1024L))
             .thenThrow(new IOException("섬네일을 저장할 수 없습니다."));
-        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -217,7 +218,7 @@ public class ImageFileStorageTest {
         doThrow(new IOException("파일을 삭제할 수 없습니다."))
             .when(failingFileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -255,7 +256,7 @@ public class ImageFileStorageTest {
         doThrow(new IOException(ImageErrorCode.DELETE_ERROR.getMessage()))
             .when(failingFileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), failingFileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
@@ -279,7 +280,7 @@ public class ImageFileStorageTest {
             .doThrow(new IOException(ImageErrorCode.DELETE_ERROR.getMessage()))
             .when(fileStorage)
             .delete(anyString());
-        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage);
+        imageFileStorage = new ImageFileStorage(storageProperties(), fileStorage, new ImageProcessor());
 
         ImageProcessException exception = assertThrows(
             ImageProcessException.class,
