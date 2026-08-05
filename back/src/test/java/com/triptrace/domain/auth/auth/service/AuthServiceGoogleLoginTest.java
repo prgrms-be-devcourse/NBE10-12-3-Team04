@@ -2,9 +2,11 @@ package com.triptrace.domain.auth.auth.service;
 
 import com.triptrace.domain.auth.auth.dto.OAuthLoginResult;
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
+import com.triptrace.domain.auth.auth.entity.EmailVerification;
 import com.triptrace.domain.auth.auth.entity.RefreshToken;
 import com.triptrace.domain.auth.auth.exception.AlreadyRegisteredException;
 import com.triptrace.domain.auth.auth.oauth.GoogleOAuthClient;
+import com.triptrace.domain.auth.auth.repository.EmailVerificationRepository;
 import com.triptrace.domain.auth.auth.repository.RefreshTokenRepository;
 import com.triptrace.domain.member.member.entity.LoginType;
 import com.triptrace.domain.member.member.entity.Member;
@@ -49,6 +51,9 @@ class AuthServiceGoogleLoginTest {
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private EmailVerificationRepository emailVerificationRepository;
 
     @MockitoBean
     private GoogleOAuthClient googleOAuthClient;
@@ -117,6 +122,8 @@ class AuthServiceGoogleLoginTest {
     @Test
     @DisplayName("이미 LOCAL로 가입된 이메일이면 구글 가입을 막고 기존 가입 경로를 알려준다.")
     void loginWithGoogleRejectsEmailTakenByLocalMember() {
+        markEmailVerified("shared@test.com");
+
         authService.signup(new SignupRequest("shared@test.com", "localuser", "password1234", null));
         givenGoogleUser("google-sub-4", "shared@test.com", true);
 
@@ -155,6 +162,15 @@ class AuthServiceGoogleLoginTest {
         assertThatThrownBy(() -> authService.loginWithGoogle("code", REDIRECT_URI))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("구글 사용자 정보 응답에 sub가 없습니다.");
+    }
+
+    // LOCAL 회원가입은 이메일 인증을 마친 주소만 통과하므로, 인증 완료 레코드를 미리 심어둔다.
+    private void markEmailVerified(String email) {
+        EmailVerification verification =
+            EmailVerification.issue(email, "123456", LocalDateTime.now().plusMinutes(5));
+        verification.verify();
+
+        emailVerificationRepository.save(verification);
     }
 
     private void givenGoogleUser(String sub, String email, boolean emailVerified) {

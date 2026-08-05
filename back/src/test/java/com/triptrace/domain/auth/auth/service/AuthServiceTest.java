@@ -3,7 +3,9 @@ package com.triptrace.domain.auth.auth.service;
 import com.triptrace.domain.auth.auth.dto.LoginRequest;
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
 import com.triptrace.domain.auth.auth.dto.TokenPair;
+import com.triptrace.domain.auth.auth.entity.EmailVerification;
 import com.triptrace.domain.auth.auth.entity.RefreshToken;
+import com.triptrace.domain.auth.auth.repository.EmailVerificationRepository;
 import com.triptrace.domain.auth.auth.repository.RefreshTokenRepository;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.repository.MemberRepository;
@@ -37,9 +39,14 @@ class AuthServiceTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailVerificationRepository emailVerificationRepository;
+
     @Test
     @DisplayName("회원가입 시 비밀번호는 해시되어 저장된다.")
     void signup() {
+        markEmailVerified("user@test.com");
+
         authService.signup(new SignupRequest("user@test.com", "user", "password1234", "imageUrl"));
 
         Member member = memberRepository.findByEmail("user@test.com").orElseThrow();
@@ -154,6 +161,17 @@ class AuthServiceTest {
     }
 
     private void signup(String email, String username, String password) {
+        markEmailVerified(email);
+
         authService.signup(new SignupRequest(email, username, password, null));
+    }
+
+    // 회원가입은 이메일 인증을 마친 주소만 통과하므로, 인증 완료 레코드를 미리 심어둔다.
+    private void markEmailVerified(String email) {
+        EmailVerification verification =
+            EmailVerification.issue(email, "123456", LocalDateTime.now().plusMinutes(5));
+        verification.verify();
+
+        emailVerificationRepository.save(verification);
     }
 }

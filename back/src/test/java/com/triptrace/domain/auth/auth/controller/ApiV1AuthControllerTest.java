@@ -1,8 +1,12 @@
 package com.triptrace.domain.auth.auth.controller;
 
 import com.triptrace.domain.auth.auth.dto.SignupRequest;
+import com.triptrace.domain.auth.auth.entity.EmailVerification;
+import com.triptrace.domain.auth.auth.repository.EmailVerificationRepository;
 import com.triptrace.domain.auth.auth.service.AuthService;
 import com.triptrace.global.error.DefaultErrorCode;
+
+import java.time.LocalDateTime;
 
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -35,9 +39,14 @@ class ApiV1AuthControllerTest {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private EmailVerificationRepository emailVerificationRepository;
+
     @Test
     @DisplayName("회원가입 API - 성공 시 201")
     void signup() throws Exception {
+        markEmailVerified("user@test.com");
+
         mvc.perform(post("/api/v1/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -58,6 +67,8 @@ class ApiV1AuthControllerTest {
     @Test
     @DisplayName("회원가입 API - 이메일 중복 시 409")
     void signupDuplicateEmail() throws Exception {
+        markEmailVerified("dup@test.com");
+
         authService.signup(new SignupRequest("dup@test.com", "user1", "password1234", null));
 
         mvc.perform(post("/api/v1/auth/signup")
@@ -94,6 +105,8 @@ class ApiV1AuthControllerTest {
     @Test
     @DisplayName("로그인 API - 성공 시 200 + RT 쿠키")
     void login() throws Exception {
+        markEmailVerified("login@test.com");
+
         authService.signup(new SignupRequest("login@test.com", "loginuser", "password1234", null));
 
         mvc.perform(post("/api/v1/auth/login")
@@ -116,6 +129,8 @@ class ApiV1AuthControllerTest {
     @Test
     @DisplayName("로그인 API - 비밀번호 불일치 시 401")
     void loginWrongPassword() throws Exception {
+        markEmailVerified("wrong@test.com");
+
         authService.signup(new SignupRequest("wrong@test.com", "wronguser", "password1234", null));
 
         mvc.perform(post("/api/v1/auth/login")
@@ -134,6 +149,8 @@ class ApiV1AuthControllerTest {
     @Test
     @DisplayName("토큰 재발급 API - 성공 시 200 + 새 AT")
     void reissue() throws Exception {
+        markEmailVerified("reissue@test.com");
+
         authService.signup(new SignupRequest("reissue@test.com", "reissueuser", "password1234", null));
         String refreshToken = loginAndGetRefreshToken("reissue@test.com", "password1234");
 
@@ -148,6 +165,8 @@ class ApiV1AuthControllerTest {
     @Test
     @DisplayName("로그아웃 API - 성공 시 200 + 쿠키 만료")
     void logout() throws Exception {
+        markEmailVerified("logout@test.com");
+
         authService.signup(new SignupRequest("logout@test.com", "logoutuser", "password1234", null));
         String refreshToken = loginAndGetRefreshToken("logout@test.com", "password1234");
 
@@ -157,6 +176,15 @@ class ApiV1AuthControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultCode").value("200-1"))
             .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
+    }
+
+    // 회원가입은 이메일 인증을 마친 주소만 통과하므로, 인증 완료 레코드를 미리 심어둔다.
+    private void markEmailVerified(String email) {
+        EmailVerification verification =
+            EmailVerification.issue(email, "123456", LocalDateTime.now().plusMinutes(5));
+        verification.verify();
+
+        emailVerificationRepository.save(verification);
     }
 
     private String loginAndGetRefreshToken(String email, String password) throws Exception {
