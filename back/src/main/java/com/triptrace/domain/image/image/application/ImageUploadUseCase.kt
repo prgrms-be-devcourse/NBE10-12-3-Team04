@@ -64,7 +64,7 @@ class ImageUploadUseCase(
         try {
             savedFileInfo = imageFileStorage.saveImageWithThumbnail(
                 imageFile.bytes,
-                imageInfo.orientation!!,
+                imageInfo.orientation,
             )
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo)
         } catch (e: IOException) {
