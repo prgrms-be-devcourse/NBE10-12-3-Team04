@@ -8,7 +8,6 @@ import com.triptrace.domain.image.image.processing.dto.SavedFileInfo
 import com.triptrace.domain.image.image.processing.dto.StoredFile
 import com.triptrace.global.app.Domain
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -16,24 +15,18 @@ import java.nio.file.Path
 import java.util.UUID
 
 @Component
-class ImageFileStorage @Autowired constructor(
+class ImageFileStorage(
     properties: ImageStorageProperties,
     private val fileStorage: FileStorage,
     private val imageProcessor: ImageProcessor,
 ) {
-    private val uploadDir = properties.upload().path()
-    private val profileImagesPath = properties.upload().profilePath()
-    private val servingImagesPath = properties.upload().servingPath()
-    private val thumbnailImagesPath = properties.upload().thumbnailPath()
-    private val thumbnailWidth = properties.thumbnail().width()
-    private val thumbnailHeight = properties.thumbnail().height()
-    private val jpegExt = properties.ext().jpg()
-
-    constructor(properties: ImageStorageProperties, fileStorage: FileStorage) : this(
-        properties,
-        fileStorage,
-        ImageProcessor(),
-    )
+    private val uploadDir = properties.upload.path
+    private val profileImagesPath = properties.upload.profilePath
+    private val servingImagesPath = properties.upload.servingPath
+    private val thumbnailImagesPath = properties.upload.thumbnailPath
+    private val thumbnailWidth = properties.thumbnail.width
+    private val thumbnailHeight = properties.thumbnail.height
+    private val jpegExt = properties.ext.jpg
 
     fun saveProfileImage(image: ByteArray?): String {
         val stored = saveImage(
@@ -131,7 +124,6 @@ class ImageFileStorage @Autowired constructor(
                 directoryPath,
                 fileName,
             )
-                ?: throw ImageProcessException(ImageErrorCode.SAVE_ERROR)
         } catch (exception: IOException) {
             log.warn(
                 "[{}] image processor fallback reason: {}",
@@ -147,7 +139,8 @@ class ImageFileStorage @Autowired constructor(
     private fun resolveUploadPath(path: String): String =
         Path.of(uploadDir, path.replaceFirst("^/", "")).toString()
 
-    private fun resolveStoragePath(imagePath: String?) = resolveUploadPath(imagePath!!)
+    private fun resolveStoragePath(imagePath: String?) =
+        resolveUploadPath(requireNotNull(imagePath) { "이미지 경로는 null일 수 없습니다." })
 
     private companion object {
         private val log = LoggerFactory.getLogger(ImageFileStorage::class.java)

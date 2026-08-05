@@ -14,10 +14,6 @@ data class ImageStorageProperties(
     @field:NotNull @field:Valid val thumbnail: Thumbnail,
     @field:NotNull @field:Valid val ext: Ext,
 ) {
-    fun upload() = upload
-    fun thumbnail() = thumbnail
-    fun ext() = ext
-
     data class Upload(
         @field:NotBlank
         val path: String,
@@ -33,13 +29,7 @@ data class ImageStorageProperties(
 
         @field:NotBlank
         val publicPrefix: String,
-    ) {
-        fun path() = path
-        fun servingPath() = servingPath
-        fun thumbnailPath() = thumbnailPath
-        fun profilePath() = profilePath
-        fun publicPrefix() = publicPrefix
-    }
+    )
 
     data class Thumbnail(
         @field:Min(1)
@@ -47,15 +37,10 @@ data class ImageStorageProperties(
 
         @field:Min(1)
         val height: Int,
-    ) {
-        fun width() = width
-        fun height() = height
-    }
+    )
 
     data class Ext(
         @field:NotBlank
         val jpg: String,
-    ) {
-        fun jpg() = jpg
-    }
+    )
 }

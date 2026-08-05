@@ -18,19 +18,19 @@ public class StaticResourceConfig implements WebMvcConfigurer {
     public StaticResourceConfig(
         ImageStorageProperties imageStorageProperties
     ) {
-        this.upload = imageStorageProperties.upload();
-        this.servingImagesPath = toResourceLocation(resolveUploadPath(upload.servingPath()));
-        this.thumbnailImagesPath = toResourceLocation(resolveUploadPath(upload.thumbnailPath()));
-        this.profileImagesPath = toResourceLocation(resolveUploadPath(upload.profilePath()));
+        this.upload = imageStorageProperties.getUpload();
+        this.servingImagesPath = toResourceLocation(resolveUploadPath(upload.getServingPath()));
+        this.thumbnailImagesPath = toResourceLocation(resolveUploadPath(upload.getThumbnailPath()));
+        this.profileImagesPath = toResourceLocation(resolveUploadPath(upload.getProfilePath()));
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(upload.servingPath() + "/**")
+        registry.addResourceHandler(upload.getServingPath() + "/**")
             .addResourceLocations(servingImagesPath);
-        registry.addResourceHandler(upload.thumbnailPath() + "/**")
+        registry.addResourceHandler(upload.getThumbnailPath() + "/**")
             .addResourceLocations(thumbnailImagesPath);
-        registry.addResourceHandler(upload.profilePath() + "/**")
+        registry.addResourceHandler(upload.getProfilePath() + "/**")
             .addResourceLocations(profileImagesPath);
     }
 
@@ -39,6 +39,6 @@ public class StaticResourceConfig implements WebMvcConfigurer {
     }
 
     private String resolveUploadPath(String path) {
-        return Path.of(upload.path(), path).toString();
+        return Path.of(upload.getPath(), path).toString();
     }
 }
