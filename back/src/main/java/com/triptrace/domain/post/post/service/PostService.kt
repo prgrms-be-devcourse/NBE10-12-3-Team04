@@ -120,7 +120,7 @@ class PostService(
         validateOwner(post.trip, ownerId)
 
         val representativeImage = post.trip.representativeImage
-        val usesRepresentativeImage = representativeImage?.getPost()?.getId() == postId
+        val usesRepresentativeImage = representativeImage?.post?.id == postId
 
         markerRepository.findByPostId(postId).ifPresent(markerRepository::delete)
         imageRepository.findByPostId(postId).forEach { it.disconnectPost() }
@@ -159,7 +159,7 @@ class PostService(
         }
 
         val postIds = posts.map { it.getId() }
-        val imagesByPostId = imageRepository.findByPostIdIn(postIds).groupBy { it.getPost().getId() }
+        val imagesByPostId = imageRepository.findByPostIdIn(postIds).groupBy { it.post?.id }
         val markerByPostId = markerRepository.findByPostIdIn(postIds).associateBy { it.post.getId() }
 
         return posts

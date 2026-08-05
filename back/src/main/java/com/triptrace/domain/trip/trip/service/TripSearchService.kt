@@ -103,7 +103,7 @@ class TripSearchService(
     }
 
     private fun toResponse(trip: Trip, posts: List<Post>): TripSearchResponse {
-        val thumbnailUrl = trip.representativeImage?.getThumbnailUrl()
+        val thumbnailUrl = trip.representativeImage?.thumbnailUrl
         val previewText = if (posts.isEmpty()) null else createPreview(posts.first().memo)
 
         return TripSearchResponse(
