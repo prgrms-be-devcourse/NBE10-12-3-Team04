@@ -7,11 +7,4 @@ data class ImageResponse(
     val postId: Long?,
     val originalUrl: String?,
     val thumbnailUrl: String?,
-) {
-    fun id() = id
-    fun ownerId() = ownerId
-    fun tripId() = tripId
-    fun postId() = postId
-    fun originalUrl() = originalUrl
-    fun thumbnailUrl() = thumbnailUrl
-}
+)

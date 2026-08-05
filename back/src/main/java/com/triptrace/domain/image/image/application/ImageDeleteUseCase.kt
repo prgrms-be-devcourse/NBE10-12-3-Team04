@@ -41,8 +41,8 @@ class ImageDeleteUseCase(
         val owner = memberService.findById(ownerId)
         val trip = tripService.findOwnedTrip(tripId, owner.id)
         val image = imageService.delete(owner, trip, imageId)
-        imageFileStorage.deleteImage(image.originalFileUrl())
-        imageFileStorage.deleteImage(image.thumbnailUrl())
+        imageFileStorage.deleteImage(image.originalFileUrl)
+        imageFileStorage.deleteImage(image.thumbnailUrl)
     }
 
     private fun delete(
@@ -59,7 +59,7 @@ class ImageDeleteUseCase(
         val trip = tripService.findOwnedTrip(tripId, owner.id)
         val post = postService.getPost(trip, postId)
         val image = action(owner, trip, post)
-        imageFileStorage.deleteImage(image.originalFileUrl())
-        imageFileStorage.deleteImage(image.thumbnailUrl())
+        imageFileStorage.deleteImage(image.originalFileUrl)
+        imageFileStorage.deleteImage(image.thumbnailUrl)
     }
 }

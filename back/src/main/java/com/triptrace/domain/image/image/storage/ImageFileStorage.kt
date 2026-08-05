@@ -42,7 +42,7 @@ class ImageFileStorage @Autowired constructor(
             generateFileName(jpegExt),
             false,
         )
-        return "$profileImagesPath/${stored.name()}"
+        return "$profileImagesPath/${stored.name}"
     }
 
     fun saveImageWithThumbnail(image: ByteArray?, orientation: ExifOrientation?): SavedFileInfo {
@@ -64,13 +64,13 @@ class ImageFileStorage @Autowired constructor(
                 true,
             )
         } catch (exception: ImageProcessException) {
-            deleteImage("$servingImagesPath/${origin.name()}")
+            deleteImage("$servingImagesPath/${origin.name}")
             throw exception
         }
         return SavedFileInfo(
-            "$servingImagesPath/${origin.name()}",
-            "$thumbnailImagesPath/${thumbnail.name()}",
-            origin.size(),
+            "$servingImagesPath/${origin.name}",
+            "$thumbnailImagesPath/${thumbnail.name}",
+            origin.size,
             "image/$jpegExt",
         )
     }
@@ -92,7 +92,7 @@ class ImageFileStorage @Autowired constructor(
 
     fun cleanUp(savedFileInfo: SavedFileInfo) {
         try {
-            deleteImage(savedFileInfo.servingUrl())
+            deleteImage(savedFileInfo.servingUrl)
         } catch (exception: ImageProcessException) {
             log.warn(
                 "[{}] image file storage fallback reason: {}",
@@ -103,7 +103,7 @@ class ImageFileStorage @Autowired constructor(
         }
 
         try {
-            deleteImage(savedFileInfo.thumbnailUrl())
+            deleteImage(savedFileInfo.thumbnailUrl)
         } catch (exception: ImageProcessException) {
             log.warn(
                 "[{}] image file storage fallback reason: {}",

@@ -39,21 +39,21 @@ class ImageMetadataExtractor {
                 val metadata = ImageMetadataReader.readMetadata(input)
                 log.debug("[{}] file type: {}", Domain.IMAGE.name, fileType)
                 getImageDateTime(metadata)?.let {
-                    imageInfo.setCapturedAt(it.dateTime())
-                    imageInfo.setTimeZone(it.timeZone())
+                    imageInfo.setCapturedAt(it.dateTime)
+                    imageInfo.setTimeZone(it.timeZone)
                 }
                 getExifIf(metadata)?.let {
-                    imageInfo.setMaker(it.maker())
-                    imageInfo.setModel(it.device())
-                    imageInfo.setOrientation(it.orientation())
+                    imageInfo.setMaker(it.maker)
+                    imageInfo.setModel(it.device)
+                    imageInfo.setOrientation(it.orientation)
                 }
                 getWidthHeight(metadata)?.let {
-                    imageInfo.setWidth(it.width())
-                    imageInfo.setHeight(it.height())
+                    imageInfo.setWidth(it.width)
+                    imageInfo.setHeight(it.height)
                 }
                 getLocation(metadata)?.let {
-                    imageInfo.setLatitude(it.latitude())
-                    imageInfo.setLongitude(it.longitude())
+                    imageInfo.setLatitude(it.latitude)
+                    imageInfo.setLongitude(it.longitude)
                 }
             }
         } catch (exception: ImageProcessingException) {

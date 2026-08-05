@@ -4,8 +4,4 @@ data class StoredFile(
     val path: String?,
     val name: String?,
     val size: Long?,
-) {
-    fun path() = path
-    fun name() = name
-    fun size() = size
-}
+)
