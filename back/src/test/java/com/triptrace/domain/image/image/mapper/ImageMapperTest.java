@@ -5,6 +5,7 @@ import com.triptrace.domain.image.image.dto.response.ImageServiceResponse;
 import com.triptrace.domain.image.image.dto.response.storage.StoredImageFile;
 import com.triptrace.domain.image.image.entity.Image;
 import com.triptrace.domain.image.image.entity.UploadStatus;
+import com.triptrace.domain.image.image.processing.ExifOrientation;
 import com.triptrace.domain.image.image.processing.ImageInfo;
 import com.triptrace.domain.member.member.entity.Member;
 import com.triptrace.domain.member.member.entity.MemberStatus;
@@ -16,7 +17,6 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,12 +39,7 @@ class ImageMapperTest {
         post = new Post(trip, LocalDate.of(2024, 4, 1), "첫날", "교토에 도착했다.");
 
         // imageInfo: EXIF에서 추출되는 메타데이터
-        imageInfo = new ImageInfo();
-        ReflectionTestUtils.setField(imageInfo, "latitude", 35.011636D);
-        ReflectionTestUtils.setField(imageInfo, "longitude", 135.768029D);
-        ReflectionTestUtils.setField(imageInfo, "capturedAt", LocalDateTime.of(2024, 4, 1, 10, 30));
-        ReflectionTestUtils.setField(imageInfo, "maker", "Apple");
-        ReflectionTestUtils.setField(imageInfo, "model", "iPhone 15");
+        imageInfo = imageInfo(135.768029D);
 
         // storedImageFile: 파일 저장소가 반환하는 저장 결과
         storedImageFile = new StoredImageFile(
@@ -97,7 +92,7 @@ class ImageMapperTest {
     @Test
     @DisplayName("위도 또는 경도 하나만 있으면 GPS 정보를 설정하지 않는다")
     void toEntity_withIncompleteGps_doesNotSetGps() {
-        ReflectionTestUtils.setField(imageInfo, "longitude", null);
+        imageInfo = imageInfo(null);
 
         Image image = ImageMapper.toEntity(owner, trip, post, imageInfo, storedImageFile);
 
@@ -127,5 +122,20 @@ class ImageMapperTest {
         assertThat(response.getPostId()).isEqualTo(4L);
         assertThat(response.getOriginalUrl()).isEqualTo("https://example.com/images/kyoto.jpg");
         assertThat(response.getThumbnailUrl()).isEqualTo("https://example.com/images/kyoto-thumb.jpg");
+    }
+
+    private static ImageInfo imageInfo(Double longitude) {
+        return new ImageInfo(
+            0,
+            0,
+            longitude,
+            35.011636D,
+            LocalDateTime.of(2024, 4, 1, 10, 30),
+            null,
+            "iPhone 15",
+            "Apple",
+            ExifOrientation.NORMAL,
+            0L
+        );
     }
 }
