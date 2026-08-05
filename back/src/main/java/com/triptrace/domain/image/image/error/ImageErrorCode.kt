@@ -1,7 +1,6 @@
 package com.triptrace.domain.image.image.error
 
 import com.triptrace.global.app.Domain
-import com.triptrace.global.error.DefaultErrorCode
 import com.triptrace.global.error.ErrorCode
 
 enum class ImageErrorCode(private val code: String, private val message: String) : ErrorCode {
