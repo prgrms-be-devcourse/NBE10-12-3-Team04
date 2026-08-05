@@ -127,12 +127,12 @@ class ImageRepositoryTest {
     // originalFileUrl로 이미지 데이터 조회: 단건, 미존재
     @Test @DisplayName("원본 파일 URL로 이미지를 조회한다")
     void findByOriginalFileUrl_returnsImage() {
-        assertThat(imageRepository.findByOriginalFileUrl(image.getOriginalFileUrl())).contains(image);
+        assertThat(imageRepository.findByOriginalFileUrl(image.getOriginalFileUrl())).isEqualTo(image);
     }
 
-    @Test @DisplayName("존재하지 않는 원본 파일 URL로 조회하면 빈 Optional을 반환한다")
+    @Test @DisplayName("존재하지 않는 원본 파일 URL로 조회하면 null을 반환한다")
     void findByOriginalFileUrl_returnsEmptyWhenUrlDoesNotExist() {
-        assertThat(imageRepository.findByOriginalFileUrl("https://example.com/images/missing.jpg")).isEmpty();
+        assertThat(imageRepository.findByOriginalFileUrl("https://example.com/images/missing.jpg")).isNull();
     }
 
     // trip으로 이미지 데이터 다건 조회: 단건, 다건, 미존재
@@ -165,12 +165,12 @@ class ImageRepositoryTest {
     @Test @DisplayName("이미지 ID, 소유자 ID, 여행 ID가 모두 일치하면 이미지를 조회한다")
     void findByIdAndOwnerIdAndTripId_returnsImageWhenAllIdsMatch() {
         assertThat(imageRepository.findByIdAndOwnerIdAndTripId(image.getId(), owner.getId(), trip.getId()))
-            .contains(image);
+            .isEqualTo(image);
     }
 
     @Test @DisplayName("이미지 ID가 다르면 이미지를 조회하지 않는다")
     void findByIdAndOwnerIdAndTripId_returnsEmptyWhenImageIdDiffers() {
-        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(-1L, owner.getId(), trip.getId())).isEmpty();
+        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(-1L, owner.getId(), trip.getId())).isNull();
     }
 
     @Test @DisplayName("소유자 ID가 다르면 이미지를 조회하지 않는다")
@@ -179,7 +179,7 @@ class ImageRepositoryTest {
             "another@example.com", "another", "passwordHash", null, MemberStatus.ACTIVE
         ));
 
-        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(image.getId(), anotherOwner.getId(), trip.getId())).isEmpty();
+        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(image.getId(), anotherOwner.getId(), trip.getId())).isNull();
     }
 
     @Test @DisplayName("여행 ID가 다르면 이미지를 조회하지 않는다")
@@ -189,7 +189,7 @@ class ImageRepositoryTest {
             LocalDateTime.of(2024, 5, 1, 0, 0), LocalDateTime.of(2024, 5, 5, 0, 0), true
         ));
 
-        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(image.getId(), owner.getId(), anotherTrip.getId())).isEmpty();
+        assertThat(imageRepository.findByIdAndOwnerIdAndTripId(image.getId(), owner.getId(), anotherTrip.getId())).isNull();
     }
 
     // 다른 여행/다른 소유자의 이미지가 결과에 섞이지 않는가
