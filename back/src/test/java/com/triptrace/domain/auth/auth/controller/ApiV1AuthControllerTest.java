@@ -102,6 +102,23 @@ class ApiV1AuthControllerTest {
             .andExpect(jsonPath("$.resultCode").value(DefaultErrorCode.BAD_REQUEST.getCode()));
     }
 
+    // 코틀린 전환 시 @field: 타겟을 빠뜨리면 검증이 조용히 꺼지므로, 형식 검사까지 함께 확인한다.
+    @Test
+    @DisplayName("회원가입 API - 이메일 형식이 잘못되면 400")
+    void signupInvalidEmailFormat() throws Exception {
+        mvc.perform(post("/api/v1/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "email": "not-an-email",
+                      "username": "user",
+                      "password": "password1234"
+                    }
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.resultCode").value(DefaultErrorCode.BAD_REQUEST.getCode()));
+    }
+
     @Test
     @DisplayName("로그인 API - 성공 시 200 + RT 쿠키")
     void login() throws Exception {
