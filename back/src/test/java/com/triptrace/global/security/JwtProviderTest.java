@@ -57,8 +57,13 @@ class JwtProviderTest {
     @DisplayName("서명 부분이 변조된 토큰은 검증에 실패한다.")
     void rejectTamperedToken() {
         String token = jwtProvider.generateAccessToken(1L, "user@test.com");
-        String tampered = token.substring(0, token.length() - 1)
-            + (token.endsWith("A") ? "B" : "A");
+        String[] parts = token.split("\\.");
+
+        // 서명의 마지막 글자는 데이터 4비트 + 미사용 2비트라, 바꿔도 디코딩 결과가 그대로일 수 있다.
+        // 6비트를 온전히 담는 첫 글자를 바꿔야 서명 바이트가 확실히 달라진다.
+        char head = parts[2].charAt(0);
+        String tamperedSignature = (head == 'a' ? 'b' : 'a') + parts[2].substring(1);
+        String tampered = parts[0] + "." + parts[1] + "." + tamperedSignature;
 
         assertThat(jwtProvider.validateToken(tampered)).isFalse();
     }
