@@ -30,9 +30,9 @@ data class TripResponse(
             trip.owner.getUsername(),
             trip.owner.getProfileImageUrl()
         ),
-        trip.representativeImage?.getThumbnailUrl(),
-        trip.representativeImage?.getGpsLat(),
-        trip.representativeImage?.getGpsLng(),
+        trip.representativeImage?.thumbnailUrl,
+        trip.representativeImage?.gpsLat,
+        trip.representativeImage?.gpsLng,
         trip.title,
         trip.country,
         trip.city,

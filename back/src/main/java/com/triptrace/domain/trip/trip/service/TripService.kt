@@ -131,7 +131,7 @@ class TripService(
         val image = imageRepository.findById(imageId)
             .orElseThrow { ServiceException(TripErrorCode.IMAGE_NOT_FOUND) }
 
-        if (image.getTrip().getId() != trip.getId() || image.getOwner().getId() != ownerId) {
+        if (image.trip.id != trip.id || image.owner.id != ownerId) {
             throw ServiceException(TripErrorCode.IMAGE_FORBIDDEN)
         }
         trip.changeRepresentativeImage(image)
@@ -171,7 +171,7 @@ class TripService(
                 country,
                 city,
                 (row[2] as Number).toLong(),
-                representative?.representativeImage?.getThumbnailUrl(),
+                representative?.representativeImage?.thumbnailUrl,
                 representative?.getId()
             )
         }

@@ -45,10 +45,10 @@ data class PostResponse(
     ) {
         constructor(image: Image) : this(
             image.getId(),
-            image.getOriginalFileUrl(),
-            image.getThumbnailUrl(),
-            image.getMimeType(),
-            image.getCapturedAt()
+            image.originalFileUrl,
+            image.thumbnailUrl,
+            image.mimeType,
+            image.capturedAt
         )
     }
 
@@ -73,7 +73,7 @@ data class PostResponse(
             marker.visitedAt,
             marker.source.name,
             marker.representativeImage?.getId(),
-            marker.representativeImage?.getThumbnailUrl()
+            marker.representativeImage?.thumbnailUrl
         )
     }
 }
