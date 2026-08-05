@@ -98,10 +98,20 @@ class ImageMetadataExtractor {
             val orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION)
             val make = directory.getDescription(ExifIFD0Directory.TAG_MAKE)
             val model = directory.getDescription(ExifIFD0Directory.TAG_MODEL)
-            log.debug("[{}] orientation: {},make: {},model: {}", Domain.IMAGE.name, orientation, make, model)
+            log.debug(
+                "[{}] orientation: {},make: {},model: {}",
+                Domain.IMAGE.name,
+                orientation,
+                make,
+                model,
+            )
             ImageExifIF(ExifOrientation.fromExifValue(orientation), model, make)
         } catch (exception: MetadataException) {
-            log.warn("[{}] orientation make model parsing fallback reason : {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] orientation make model parsing fallback reason : {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             null
         }
     }
@@ -119,7 +129,11 @@ class ImageMetadataExtractor {
             log.debug("[{}] height: {}, width: {}", Domain.IMAGE.name, height, width)
             ImageWidthHeight(width, height)
         } catch (exception: MetadataException) {
-            log.warn("[{}] image size parsing fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image size parsing fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             null
         }
     }
@@ -149,7 +163,11 @@ class ImageMetadataExtractor {
     }
 
     private fun throwExtractException(exception: Exception): Nothing {
-        log.warn("[{}] image metadata parsing fallback reason: {}", Domain.IMAGE.name, exception.message)
+        log.warn(
+            "[{}] image metadata parsing fallback reason: {}",
+            Domain.IMAGE.name,
+            exception.message,
+        )
         throw ImageProcessException(ImageErrorCode.FILE_EXTRACT_ERROR)
     }
 

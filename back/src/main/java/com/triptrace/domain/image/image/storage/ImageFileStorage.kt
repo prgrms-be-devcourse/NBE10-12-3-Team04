@@ -94,14 +94,22 @@ class ImageFileStorage @Autowired constructor(
         try {
             deleteImage(savedFileInfo.servingUrl())
         } catch (exception: ImageProcessException) {
-            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image file storage fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             throw ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR)
         }
 
         try {
             deleteImage(savedFileInfo.thumbnailUrl())
         } catch (exception: ImageProcessException) {
-            log.warn("[{}] image file storage fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image file storage fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             throw ImageProcessException(ImageErrorCode.REWARD_TRANSACTION_ERROR)
         }
     }
@@ -118,10 +126,18 @@ class ImageFileStorage @Autowired constructor(
             } else {
                 image
             }
-            return fileStorage.save(imageProcessor.encodeJpeg(imageToSave, jpegExt), directoryPath, fileName)
+            return fileStorage.save(
+                imageProcessor.encodeJpeg(imageToSave, jpegExt),
+                directoryPath,
+                fileName,
+            )
                 ?: throw ImageProcessException(ImageErrorCode.SAVE_ERROR)
         } catch (exception: IOException) {
-            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image processor fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             throw ImageProcessException(ImageErrorCode.SAVE_ERROR)
         }
     }

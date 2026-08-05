@@ -62,7 +62,10 @@ class ImageUploadUseCase(
         val storedImageFile: StoredImageFile
 
         try {
-            savedFileInfo = imageFileStorage.saveImageWithThumbnail(imageFile.bytes, imageInfo.orientation!!)
+            savedFileInfo = imageFileStorage.saveImageWithThumbnail(
+                imageFile.bytes,
+                imageInfo.orientation!!,
+            )
             storedImageFile = ImageMapper.toStoredImageFile(savedFileInfo)
         } catch (e: IOException) {
             log.warn("[{}] image upload use case fallback reason: {}", Domain.IMAGE.name, e.message)
@@ -88,7 +91,11 @@ class ImageUploadUseCase(
         return ImageMapper.toUploadResponse(fileName, imageServiceResponse)
     }
 
-    fun uploadImages(ownerId: Long, tripId: Long, @NotEmpty images: Array<MultipartFile>): List<ImageUploadResponse> {
+    fun uploadImages(
+        ownerId: Long,
+        tripId: Long,
+        @NotEmpty images: Array<MultipartFile>,
+    ): List<ImageUploadResponse> {
         validateImagesRequest(images)
         val owner = memberService.findById(ownerId)
         val trip = tripService.findOwnedTrip(tripId, owner.id)

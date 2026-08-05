@@ -26,7 +26,11 @@ class ImageProcessor {
             return ImageIO.read(ByteArrayInputStream(image))
                 ?: throw ImageProcessException(ImageErrorCode.READ_ERROR)
         } catch (exception: IOException) {
-            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image processor fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             throw ImageProcessException(ImageErrorCode.IMAGE_PROCESSING_ERROR)
         }
     }
@@ -56,7 +60,8 @@ class ImageProcessor {
             ExifOrientation.NORMAL -> Unit
         }
 
-        return AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR).filter(image, null)
+        return AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR)
+            .filter(image, null)
     }
 
     fun resizeToFit(image: BufferedImage, newWidth: Int, newHeight: Int): BufferedImage {
@@ -68,7 +73,10 @@ class ImageProcessor {
         val scaleWidth = (image.width * ratio).toInt()
         val resized = BufferedImage(scaleWidth, scaleHeight, image.type)
         val graphics = resized.createGraphics()
-        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+        graphics.setRenderingHint(
+            RenderingHints.KEY_INTERPOLATION,
+            RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+        )
         graphics.drawImage(image, 0, 0, scaleWidth, scaleHeight, null)
         graphics.dispose()
         return resized
@@ -83,7 +91,11 @@ class ImageProcessor {
             }
             return bytes.toByteArray()
         } catch (exception: IOException) {
-            log.warn("[{}] image processor fallback reason: {}", Domain.IMAGE.name, exception.message)
+            log.warn(
+                "[{}] image processor fallback reason: {}",
+                Domain.IMAGE.name,
+                exception.message,
+            )
             throw ImageProcessException(ImageErrorCode.SAVE_ERROR)
         }
     }

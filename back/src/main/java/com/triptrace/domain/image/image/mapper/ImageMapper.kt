@@ -48,7 +48,12 @@ class ImageMapper private constructor() {
             thumbnailImageFileUrl: String?,
             fileSize: Long?,
             mimeType: String?,
-        ): StoredImageFile = StoredImageFile(imageFileUrl, thumbnailImageFileUrl, fileSize, mimeType)
+        ): StoredImageFile = StoredImageFile(
+            imageFileUrl,
+            thumbnailImageFileUrl,
+            fileSize,
+            mimeType,
+        )
 
         @JvmStatic
         fun toStoredImageFile(savedFileInfo: SavedFileInfo): StoredImageFile = toStoredImageFile(
@@ -65,7 +70,15 @@ class ImageMapper private constructor() {
             message: String,
         ): ImageUploadResponse {
             if (imageServiceResponse == null) {
-                return ImageUploadResponse(fileName, null, null, null, null, UploadStatus.FAILED, message)
+                return ImageUploadResponse(
+                    fileName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    UploadStatus.FAILED,
+                    message,
+                )
             }
 
             return ImageUploadResponse(
@@ -103,11 +116,13 @@ class ImageMapper private constructor() {
             } else {
                 null
             }
-            val (latitude, longitude) = if (imageInfo.latitude != null && imageInfo.longitude != null) {
-                BigDecimal.valueOf(imageInfo.latitude!!) to BigDecimal.valueOf(imageInfo.longitude!!)
-            } else {
-                null to null
-            }
+            val (latitude, longitude) =
+                if (imageInfo.latitude != null && imageInfo.longitude != null) {
+                    BigDecimal.valueOf(imageInfo.latitude!!) to
+                        BigDecimal.valueOf(imageInfo.longitude!!)
+                } else {
+                    null to null
+                }
 
             return Image(
                 owner,
@@ -126,14 +141,17 @@ class ImageMapper private constructor() {
         }
 
         @JvmStatic
-        fun toImageResponse(imageServiceResponse: ImageServiceResponse): ImageResponse = ImageResponse(
-            imageServiceResponse.id,
-            imageServiceResponse.ownerId,
-            imageServiceResponse.tripId,
-            imageServiceResponse.postId,
-            imageServiceResponse.originalFileUrl,
-            imageServiceResponse.thumbnailUrl,
-        )
+        fun toImageResponse(
+            imageServiceResponse: ImageServiceResponse,
+        ): ImageResponse =
+            ImageResponse(
+                imageServiceResponse.id,
+                imageServiceResponse.ownerId,
+                imageServiceResponse.tripId,
+                imageServiceResponse.postId,
+                imageServiceResponse.originalFileUrl,
+                imageServiceResponse.thumbnailUrl,
+            )
 
         private fun toPublicGps(value: BigDecimal?): BigDecimal? =
             value?.setScale(PUBLIC_GPS_SCALE, RoundingMode.FLOOR)

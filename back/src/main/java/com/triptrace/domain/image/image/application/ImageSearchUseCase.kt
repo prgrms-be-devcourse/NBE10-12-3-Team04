@@ -7,5 +7,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class ImageSearchUseCase(private val imageService: ImageService) {
-    fun getImages(ownerId: Long): List<ImageResponse> = imageService.findWithOwner(ownerId).map(ImageMapper::toImageResponse)
+    fun getImages(ownerId: Long): List<ImageResponse> =
+        imageService.findWithOwner(ownerId).map(ImageMapper::toImageResponse)
 }

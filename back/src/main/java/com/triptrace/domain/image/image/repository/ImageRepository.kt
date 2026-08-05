@@ -14,6 +14,13 @@ interface ImageRepository : JpaRepository<Image, Long> {
     fun findByOriginalFileUrl(originalFileUrl: String): java.util.Optional<Image>
     fun trip(trip: Trip): List<Image>
 
-    @Query("""select i from Image i where i.id = :imageId and i.owner.id = :ownerId and i.trip.id = :tripId""")
-    fun findByIdAndOwnerIdAndTripId(@Param("imageId") id: Long, @Param("ownerId") ownerId: Long, @Param("tripId") tripId: Long): java.util.Optional<Image>
+    @Query(
+        "select i from Image i " +
+            "where i.id = :imageId and i.owner.id = :ownerId and i.trip.id = :tripId",
+    )
+    fun findByIdAndOwnerIdAndTripId(
+        @Param("imageId") id: Long,
+        @Param("ownerId") ownerId: Long,
+        @Param("tripId") tripId: Long,
+    ): java.util.Optional<Image>
 }

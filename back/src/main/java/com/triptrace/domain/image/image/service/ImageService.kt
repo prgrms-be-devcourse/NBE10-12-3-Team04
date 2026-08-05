@@ -21,7 +21,8 @@ class ImageService(
     private val markerRepository: MarkerRepository,
 ) {
     @Transactional
-    fun create(image: Image): ImageServiceResponse = ImageMapper.toServiceResponse(imageRepository.save(image))
+    fun create(image: Image): ImageServiceResponse =
+        ImageMapper.toServiceResponse(imageRepository.save(image))
 
     @Transactional
     fun delete(image: Image): ImageServiceResponse {
@@ -68,15 +69,17 @@ class ImageService(
         .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
 
     @Transactional(readOnly = true)
-    fun getByUrl(originalFileUrl: String): Image = imageRepository.findByOriginalFileUrl(originalFileUrl)
-        .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
+    fun getByUrl(originalFileUrl: String): Image =
+        imageRepository.findByOriginalFileUrl(originalFileUrl)
+            .orElseThrow { ServiceException(ImageErrorCode.NOT_FOUND) }
 
     @Transactional(readOnly = true)
     fun findById(id: Long): ImageServiceResponse = ImageMapper.toServiceResponse(getById(id))
 
     @Transactional(readOnly = true)
-    fun findWithOwner(ownerId: Long): List<ImageServiceResponse> = imageRepository.findByOwnerId(ownerId)
-        .map(ImageMapper::toServiceResponse)
+    fun findWithOwner(ownerId: Long): List<ImageServiceResponse> =
+        imageRepository.findByOwnerId(ownerId)
+            .map(ImageMapper::toServiceResponse)
 
     @Transactional
     fun unassign(ownerId: Long, tripId: Long, imageId: Long): ImageServiceResponse {
